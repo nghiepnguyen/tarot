@@ -37,7 +37,7 @@ export function ReadingView({ question, cards, readingId, onReset }: ReadingView
             <Link href="/login" className="text-accent hover:underline">
               Đăng nhập
             </Link>{" "}
-            để lưu lịch sử và mở khóa diễn giải AI cho lần trải bài này.
+            để lưu lịch sử và mở khóa diễn giải chuyên sâu cho lần trải bài này.
           </p>
         )}
       </div>

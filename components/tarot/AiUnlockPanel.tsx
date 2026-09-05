@@ -37,7 +37,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
     return (
       <div className="flex flex-col gap-5 rounded-2xl border border-border bg-sage-tint/40 p-5">
         <div className="flex flex-col gap-2">
-          <h4 className="text-sm font-medium text-foreground">Diễn giải AI</h4>
+          <h4 className="text-sm font-medium text-foreground">Diễn giải chuyên sâu</h4>
           {data.summary ? (
             <p className="text-base font-medium leading-relaxed text-foreground">
               {data.summary}
@@ -107,7 +107,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
       <Button variant="secondary" disabled={isPending} onClick={handleUnlock}>
         {isPending
           ? "Đang tạo diễn giải..."
-          : `Mở khóa diễn giải AI (${COST_PER_INTERPRETATION} credit)`}
+          : `Mở khóa diễn giải chuyên sâu (${COST_PER_INTERPRETATION} credit)`}
       </Button>
       {error ? (
         <div className="flex items-center gap-3">

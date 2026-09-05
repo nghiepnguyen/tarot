@@ -12,7 +12,7 @@ export default function RefundPage() {
       <section>
         <h2>1. Credit và gói VIP</h2>
         <p>
-          Diễn giải AI được tạo ngay khi bạn xác nhận sử dụng credit hoặc gói
+          Diễn giải chuyên sâu được tạo ngay khi bạn xác nhận sử dụng credit hoặc gói
           VIP, vì vậy credit đã dùng để mở khóa một reading cụ thể không được
           hoàn lại. Nếu hệ thống gặp lỗi khiến bạn bị trừ credit nhưng không
           nhận được kết quả, chúng tôi sẽ hoàn lại credit đó hoặc số tiền

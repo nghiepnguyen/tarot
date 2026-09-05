@@ -14,7 +14,7 @@ export default function TermsPage() {
         <p>
           Tarot Reading Web cung cấp trải nghiệm xem bài tarot mang tính tham
           khảo và tự phản tỉnh. Kết quả trải bài, diễn giải cơ bản và diễn
-          giải AI (nếu có) không phải là lời khuyên y tế, pháp lý, tài chính
+          giải chuyên sâu (nếu có) không phải là lời khuyên y tế, pháp lý, tài chính
           hay lời tiên tri chắc chắn về tương lai. Bạn tự chịu trách nhiệm về
           các quyết định thực hiện dựa trên nội dung dịch vụ cung cấp.
         </p>

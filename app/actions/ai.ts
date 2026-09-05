@@ -23,7 +23,7 @@ export type UnlockResult =
 
 export async function unlockAiInterpretationAction(readingId: string): Promise<UnlockResult> {
   const session = await auth();
-  if (!session?.user) return { ok: false, error: "Vui lòng đăng nhập để mở khóa diễn giải AI." };
+  if (!session?.user) return { ok: false, error: "Vui lòng đăng nhập để mở khóa diễn giải chuyên sâu." };
 
   const reading = await prisma.reading.findFirst({
     where: { id: readingId, userId: session.user.id },
@@ -89,7 +89,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     const message =
       error instanceof MissingApiKeyError
         ? error.message
-        : "Không thể tạo diễn giải AI lúc này, vui lòng thử lại.";
+        : "Không thể tạo diễn giải chuyên sâu lúc này, vui lòng thử lại.";
     return { ok: false, error: message };
   }
 }

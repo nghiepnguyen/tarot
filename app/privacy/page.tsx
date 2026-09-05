@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       <section>
         <h2>2. Mục đích sử dụng dữ liệu</h2>
         <p>
-          Dữ liệu được dùng để tạo trải bài, sinh diễn giải AI theo yêu cầu
+          Dữ liệu được dùng để tạo trải bài, sinh diễn giải chuyên sâu theo yêu cầu
           của bạn, lưu lịch sử khi bạn đăng nhập, xử lý thanh toán, và cải
           thiện chất lượng dịch vụ. Câu hỏi và nội dung trải bài không được
           bán cho bên thứ ba.
@@ -32,8 +32,9 @@ export default function PrivacyPage() {
       <section>
         <h2>3. Chia sẻ với bên thứ ba</h2>
         <p>
-          Chúng tôi chỉ chia sẻ dữ liệu cần thiết với nhà cung cấp AI, cổng
-          thanh toán, hoặc dịch vụ email khi bạn chủ động sử dụng các tính
+          Chúng tôi chỉ chia sẻ dữ liệu cần thiết với nhà cung cấp dịch vụ
+          diễn giải chuyên sâu, cổng thanh toán, hoặc dịch vụ email khi bạn
+          chủ động sử dụng các tính
           năng tương ứng, và chỉ ở mức tối thiểu để hoàn tất yêu cầu đó.
         </p>
       </section>

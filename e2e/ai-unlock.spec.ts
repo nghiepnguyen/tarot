@@ -32,7 +32,7 @@ test("unlocking AI without a configured API key shows a clear error with retry",
   await deckButtons.nth(2).click();
   await page.getByRole("button", { name: "Mở lá bài" }).click();
 
-  await page.getByRole("button", { name: /Mở khóa diễn giải AI/ }).click();
+  await page.getByRole("button", { name: /Mở khóa diễn giải chuyên sâu/ }).click();
 
   await expect(page.getByText("GEMINI_API_KEY chưa được cấu hình.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Thử lại" })).toBeVisible();
