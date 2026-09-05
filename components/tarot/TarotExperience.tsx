@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { startTransition, useState } from "react";
 import { ArcDeck } from "@/components/tarot/ArcDeck";
 import { QuestionForm } from "@/components/tarot/QuestionForm";
 import { ReadingView } from "@/components/tarot/ReadingView";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { drawSpreadPool, DECK_SPREAD_SIZE } from "@/lib/tarot/draw";
+import { drawSpreadPool, DECK_SPREAD_SIZE, SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import type { DrawnCard } from "@/lib/tarot/draw";
+import { saveReadingAction } from "@/app/actions/readings";
 
 type Status = "question" | "picking" | "revealed";
 
@@ -40,7 +41,24 @@ export function TarotExperience() {
 
   const handleReveal = () => {
     if (selectedSlots.length !== 3) return;
-    setStatus("revealed");
+    const cards = selectedSlots.map((i) => pool[i]);
+
+    startTransition(async () => {
+      try {
+        await saveReadingAction(
+          question,
+          cards.map((drawn, i) => ({
+            cardId: drawn.card.id,
+            orientation: drawn.orientation,
+            position: SPREAD_POSITIONS[i],
+          })),
+        );
+      } catch {
+        // Anonymous users or a transient save failure shouldn't block the
+        // reading the user is about to see on screen.
+      }
+      setStatus("revealed");
+    });
   };
 
   const handleReset = () => {

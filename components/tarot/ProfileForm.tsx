@@ -1,0 +1,63 @@
+"use client";
+
+import { useTransition } from "react";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
+import { updateProfileAction } from "@/app/actions/auth";
+
+interface ProfileFormProps {
+  email: string;
+  name: string;
+  language: string;
+}
+
+export function ProfileForm({ email, name, language }: ProfileFormProps) {
+  const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
+
+  return (
+    <form
+      action={(formData) => {
+        startTransition(async () => {
+          await updateProfileAction(formData);
+          showToast("Đã lưu thay đổi hồ sơ.");
+        });
+      }}
+      className="flex max-w-sm flex-col gap-4"
+    >
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs text-muted" htmlFor="email">
+          Email
+        </label>
+        <Input id="email" value={email} disabled />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs text-muted" htmlFor="name">
+          Tên hiển thị
+        </label>
+        <Input id="name" name="name" defaultValue={name} maxLength={60} />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs text-muted" htmlFor="language">
+          Ngôn ngữ
+        </label>
+        <select
+          id="language"
+          name="language"
+          defaultValue={language}
+          className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+        >
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <Button type="submit" disabled={isPending} className="mt-2 self-start">
+        {isPending ? "Đang lưu..." : "Lưu thay đổi"}
+      </Button>
+    </form>
+  );
+}

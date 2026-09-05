@@ -30,7 +30,10 @@ Tạo file `.env.local` ở local. Không commit file này vào Git.
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-DATABASE_URL=postgresql://user:password@localhost:5432/tarot
+DATABASE_URL=postgresql://tarot:tarot@localhost:5432/tarot
+
+# Generate with: openssl rand -base64 32
+AUTH_SECRET=
 
 AI_PROVIDER_API_KEY=your_server_side_key
 AI_MODEL=your_selected_model
@@ -52,19 +55,28 @@ Chỉ các biến bắt đầu bằng `NEXT_PUBLIC_` mới được đưa vào c
 
 ## Chạy local
 
+Khởi động Postgres local qua Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Sao chép `.env.example` thành `.env.local`, điền `AUTH_SECRET` (dùng `openssl rand -base64 32`), rồi:
+
 ```bash
 pnpm install
+pnpm db:migrate
 pnpm dev
 ```
 
 Mở [http://localhost:3000](http://localhost:3000).
 
-Nếu dùng Prisma:
+`pnpm install` tự chạy `prisma generate` qua hook `postinstall`. Các lệnh Prisma khác:
 
 ```bash
-pnpm prisma generate
-pnpm prisma migrate dev --name init
-pnpm prisma db seed
+pnpm db:migrate   # tạo/áp dụng migration ở local
+pnpm db:seed      # seed dữ liệu mẫu (khi có prisma/seed.ts)
+pnpm db:studio    # mở Prisma Studio để xem dữ liệu
 ```
 
 Các lệnh kiểm tra đề xuất:
@@ -72,7 +84,7 @@ Các lệnh kiểm tra đề xuất:
 ```bash
 pnpm lint
 pnpm test
-pnpm exec playwright test
+pnpm test:e2e
 pnpm build
 pnpm start
 ```

@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tarot
+      POSTGRES_PASSWORD: tarot
+      POSTGRES_DB: tarot
+    ports:
+      - "5432:5432"
+    volumes:
+      - tarot-db:/var/lib/postgresql/data
+
+volumes:
+  tarot-db:
