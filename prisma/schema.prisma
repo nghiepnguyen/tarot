@@ -31,14 +31,20 @@ model Reading {
 }
 
 model AiInterpretation {
-  id                 String   @id @default(cuid())
-  readingId          String   @unique
-  reading            Reading  @relation(fields: [readingId], references: [id], onDelete: Cascade)
-  overview           String
-  perCard            Json
-  connections        String
-  actionSuggestions  String
-  reflectiveQuestion String
-  model              String
-  createdAt          DateTime @default(now())
+  id                    String   @id @default(cuid())
+  readingId             String   @unique
+  reading               Reading  @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  summary               String?
+  overview              String
+  themes                Json?
+  perCard               Json
+  connections           String
+  // Legacy single-paragraph form, kept for rows written before
+  // actionSuggestionsList existed.
+  actionSuggestions     String
+  actionSuggestionsList Json?
+  reflectiveQuestion    String
+  closingNote           String?
+  model                 String
+  createdAt             DateTime @default(now())
 }

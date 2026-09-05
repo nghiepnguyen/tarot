@@ -7,7 +7,7 @@ import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { HistoryList } from "@/components/tarot/HistoryList";
 import type { StoredCard } from "@/app/actions/readings";
-import type { InterpretationResult } from "@/lib/ai/interpretation";
+import { toDisplayInterpretation } from "@/lib/ai/interpretation";
 
 export const metadata: Metadata = {
   title: "Lịch sử trải bài — Tarot Reading Web",
@@ -39,13 +39,7 @@ export default async function HistoryPage() {
                 cards: r.cards as unknown as StoredCard[],
                 createdAt: r.createdAt.toISOString(),
                 aiInterpretation: r.aiInterpretation
-                  ? ({
-                      overview: r.aiInterpretation.overview,
-                      perCard: r.aiInterpretation.perCard as unknown as InterpretationResult["perCard"],
-                      connections: r.aiInterpretation.connections,
-                      actionSuggestions: r.aiInterpretation.actionSuggestions,
-                      reflectiveQuestion: r.aiInterpretation.reflectiveQuestion,
-                    } satisfies InterpretationResult)
+                  ? toDisplayInterpretation(r.aiInterpretation)
                   : null,
               }))}
             />

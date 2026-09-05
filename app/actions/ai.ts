@@ -10,14 +10,15 @@ import {
   COST_PER_INTERPRETATION,
   DEMO_TOPUP_AMOUNT,
   GEMINI_MODEL,
+  toDisplayInterpretation,
+  type DisplayInterpretation,
   type InterpretationCardInput,
-  type InterpretationResult,
 } from "@/lib/ai/interpretation";
 import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/gemini";
 import type { StoredCard } from "@/app/actions/readings";
 
 export type UnlockResult =
-  | { ok: true; data: InterpretationResult }
+  | { ok: true; data: DisplayInterpretation }
   | { ok: false; error: string };
 
 export async function unlockAiInterpretationAction(readingId: string): Promise<UnlockResult> {
@@ -31,17 +32,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   if (!reading) return { ok: false, error: "Không tìm thấy lần trải bài này." };
 
   if (reading.aiInterpretation) {
-    const existing = reading.aiInterpretation;
-    return {
-      ok: true,
-      data: {
-        overview: existing.overview,
-        perCard: existing.perCard as unknown as InterpretationResult["perCard"],
-        connections: existing.connections,
-        actionSuggestions: existing.actionSuggestions,
-        reflectiveQuestion: existing.reflectiveQuestion,
-      },
-    };
+    return { ok: true, data: toDisplayInterpretation(reading.aiInterpretation) };
   }
 
   if (!checkRateLimit(`ai-unlock:${session.user.id}`, 20, 60 * 60 * 1000)) {
@@ -72,11 +63,17 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     await prisma.aiInterpretation.create({
       data: {
         readingId: reading.id,
+        summary: result.summary,
         overview: result.overview,
+        themes: result.themes as unknown as Prisma.InputJsonValue,
         perCard: result.perCard as unknown as Prisma.InputJsonValue,
         connections: result.connections,
-        actionSuggestions: result.actionSuggestions,
+        // Legacy column: keep it populated (it's NOT NULL) with a joined
+        // fallback in case anything ever reads it directly.
+        actionSuggestions: result.actionSuggestions.join("\n"),
+        actionSuggestionsList: result.actionSuggestions as unknown as Prisma.InputJsonValue,
         reflectiveQuestion: result.reflectiveQuestion,
+        closingNote: result.closingNote,
         model: GEMINI_MODEL,
       },
     });

@@ -7,14 +7,14 @@ import { deleteAllReadingsAction, deleteReadingAction } from "@/app/actions/read
 import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { StoredCard } from "@/app/actions/readings";
-import type { InterpretationResult } from "@/lib/ai/interpretation";
+import type { DisplayInterpretation } from "@/lib/ai/interpretation";
 
 interface HistoryReading {
   id: string;
   question: string;
   cards: StoredCard[];
   createdAt: string;
-  aiInterpretation: InterpretationResult | null;
+  aiInterpretation: DisplayInterpretation | null;
 }
 
 interface HistoryListProps {
