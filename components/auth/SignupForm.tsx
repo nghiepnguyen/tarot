@@ -48,8 +48,12 @@ export function SignupForm() {
             type="password"
             placeholder="Mật khẩu"
             autoComplete="new-password"
+            minLength={8}
             required
           />
+          <p className="text-xs text-muted">
+            Ít nhất 8 ký tự, gồm cả chữ cái và chữ số.
+          </p>
           {state?.errors?.password?.map((error) => (
             <p key={error} className="text-xs text-red-600">{error}</p>
           ))}

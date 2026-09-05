@@ -9,6 +9,7 @@ import { TAROT_CARDS } from "@/lib/tarot/cards";
 import {
   COST_PER_INTERPRETATION,
   DEMO_TOPUP_AMOUNT,
+  GEMINI_MODEL,
   type InterpretationCardInput,
   type InterpretationResult,
 } from "@/lib/ai/interpretation";
@@ -76,7 +77,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
         connections: result.connections,
         actionSuggestions: result.actionSuggestions,
         reflectiveQuestion: result.reflectiveQuestion,
-        model: "gemini-2.5-flash",
+        model: GEMINI_MODEL,
       },
     });
 

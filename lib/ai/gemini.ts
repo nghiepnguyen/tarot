@@ -1,6 +1,7 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import {
+  GEMINI_MODEL,
   INTERPRETATION_RESPONSE_SCHEMA,
   InterpretationResultSchema,
   SYSTEM_INSTRUCTION,
@@ -32,7 +33,7 @@ export async function generateInterpretation(
   const ai = getClient();
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     contents: buildInterpretationPrompt(question, cards),
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
