@@ -4,7 +4,7 @@ import type { Orientation } from "@/lib/tarot/draw";
 
 export const COST_PER_INTERPRETATION = 10;
 export const DEMO_TOPUP_AMOUNT = 50;
-export const GEMINI_MODEL = "gemini-3.6-flash";
+export const GEMINI_MODEL = "gemini-3-flash-preview";
 
 export interface InterpretationCardInput {
   position: string;
