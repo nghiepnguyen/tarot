@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  /* Mystical Minimalism / Modern Botanical: cream base, sage as the one
+     locked interactive accent. Rose quartz and warm earth are a supporting
+     illustration palette (leaf/gem line-art fills), never used on
+     buttons or focus states, so the interactive accent stays singular. */
+  --background: #fdfbf7;
+  --surface: #f8f2e8;
+  --foreground: #33291f;
+  --muted: #6e6555;
+  --border: #e5dcc8;
+  --accent: #5f7a56;
+  --accent-foreground: #fdfbf7;
+  --rose: #e8c6be;
+  --earth: #b98a63;
+  --sage-tint: #e7ead9;
+  --font-sans: var(--font-lora);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-rose: var(--rose);
+  --color-earth: var(--earth);
+  --color-sage-tint: var(--sage-tint);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #14150f;
+    --surface: #1b1d14;
+    --foreground: #f3efe4;
+    --muted: #a6a08f;
+    --border: #2b2c22;
+    --accent: #8fae7e;
+    --accent-foreground: #14150f;
+    --rose: #c99189;
+    --earth: #c79966;
+    --sage-tint: #232619;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
