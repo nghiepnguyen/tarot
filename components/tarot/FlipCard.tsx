@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { DrawnCard } from "@/lib/tarot/draw";
 
 interface FlipCardProps {
@@ -13,12 +13,14 @@ interface FlipCardProps {
 export function FlipCard({ position, drawn, delay }: FlipCardProps) {
   const { card, orientation } = drawn;
   const isReversed = orientation === "reversed";
+  const prefersReducedMotion = useReducedMotion();
+  const entryDelay = prefersReducedMotion ? 0 : delay;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: entryDelay, ease: "easeOut" }}
       className="flex flex-col items-center gap-3 text-center"
     >
       <span className="text-xs font-medium tracking-[0.15em] uppercase text-muted">
@@ -26,9 +28,13 @@ export function FlipCard({ position, drawn, delay }: FlipCardProps) {
       </span>
 
       <motion.div
-        initial={{ rotateY: 180 }}
+        initial={{ rotateY: prefersReducedMotion ? 0 : 180 }}
         animate={{ rotateY: 0 }}
-        transition={{ duration: 0.7, delay: delay + 0.15, ease: "easeOut" }}
+        transition={{
+          duration: prefersReducedMotion ? 0 : 0.7,
+          delay: prefersReducedMotion ? 0 : delay + 0.15,
+          ease: "easeOut",
+        }}
         style={{ transformStyle: "preserve-3d" }}
         className="relative w-36 aspect-[24/41] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_8px_24px_-16px_rgba(51,41,31,0.35)]"
       >

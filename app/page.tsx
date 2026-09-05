@@ -1,4 +1,5 @@
 import { Header } from "@/components/ui/Header";
+import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { TarotExperience } from "@/components/tarot/TarotExperience";
 import { LockedAiSection } from "@/components/tarot/LockedAiSection";
@@ -23,6 +24,7 @@ export default function Home() {
           <Disclaimer />
         </Section>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -104,7 +104,7 @@ export function ArcDeck({
                   isSelected ? `Lá đã chọn, vị trí ${order + 1}` : `Chọn lá thứ ${i + 1}`
                 }
                 aria-pressed={isSelected}
-                className={`h-full w-full rounded-lg border bg-accent transition-transform duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-default ${
+                className={`h-full w-full rounded-lg border bg-accent transition-transform duration-300 ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-default ${
                   interactive ? "cursor-pointer hover:-translate-y-2" : ""
                 } ${isSelected ? "-translate-y-4 border-foreground" : "border-accent"}`}
               >
