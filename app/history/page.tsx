@@ -7,6 +7,7 @@ import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { HistoryList } from "@/components/tarot/HistoryList";
 import type { StoredCard } from "@/app/actions/readings";
+import type { InterpretationResult } from "@/lib/ai/interpretation";
 
 export const metadata: Metadata = {
   title: "Lịch sử trải bài — Tarot Reading Web",
@@ -19,6 +20,7 @@ export default async function HistoryPage() {
   const readings = await prisma.reading.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    include: { aiInterpretation: true },
   });
 
   return (
@@ -36,6 +38,15 @@ export default async function HistoryPage() {
                 question: r.question,
                 cards: r.cards as unknown as StoredCard[],
                 createdAt: r.createdAt.toISOString(),
+                aiInterpretation: r.aiInterpretation
+                  ? ({
+                      overview: r.aiInterpretation.overview,
+                      perCard: r.aiInterpretation.perCard as unknown as InterpretationResult["perCard"],
+                      connections: r.aiInterpretation.connections,
+                      actionSuggestions: r.aiInterpretation.actionSuggestions,
+                      reflectiveQuestion: r.aiInterpretation.reflectiveQuestion,
+                    } satisfies InterpretationResult)
+                  : null,
               }))}
             />
           </div>

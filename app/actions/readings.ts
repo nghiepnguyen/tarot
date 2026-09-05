@@ -13,18 +13,21 @@ export interface StoredCard {
   position: string;
 }
 
-export async function saveReadingAction(question: string, cards: StoredCard[]) {
+export async function saveReadingAction(
+  question: string,
+  cards: StoredCard[],
+): Promise<{ id: string } | null> {
   const session = await auth();
-  if (!session?.user) return;
+  if (!session?.user) return null;
 
   if (!checkRateLimit(`save-reading:${session.user.id}`, 30, 60 * 60 * 1000)) {
-    return;
+    return null;
   }
 
   const trimmedQuestion = question.trim().slice(0, 300);
-  if (!trimmedQuestion || cards.length !== 3) return;
+  if (!trimmedQuestion || cards.length !== 3) return null;
 
-  await prisma.reading.create({
+  const reading = await prisma.reading.create({
     data: {
       userId: session.user.id,
       question: trimmedQuestion,
@@ -33,6 +36,7 @@ export async function saveReadingAction(question: string, cards: StoredCard[]) {
   });
 
   revalidatePath("/history");
+  return { id: reading.id };
 }
 
 export async function deleteReadingAction(readingId: string) {

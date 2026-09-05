@@ -4,14 +4,17 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { deleteAllReadingsAction, deleteReadingAction } from "@/app/actions/readings";
+import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { StoredCard } from "@/app/actions/readings";
+import type { InterpretationResult } from "@/lib/ai/interpretation";
 
 interface HistoryReading {
   id: string;
   question: string;
   cards: StoredCard[];
   createdAt: string;
+  aiInterpretation: InterpretationResult | null;
 }
 
 interface HistoryListProps {
@@ -97,6 +100,8 @@ export function HistoryList({ readings }: HistoryListProps) {
               );
             })}
           </div>
+
+          <AiUnlockPanel readingId={reading.id} initialData={reading.aiInterpretation} />
         </Card>
       ))}
     </div>

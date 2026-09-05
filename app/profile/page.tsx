@@ -6,6 +6,7 @@ import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { ProfileForm } from "@/components/tarot/ProfileForm";
+import { CreditsPanel } from "@/components/tarot/CreditsPanel";
 
 export const metadata: Metadata = {
   title: "Hồ sơ — Tarot Reading Web",
@@ -32,6 +33,7 @@ export default async function ProfilePage() {
               name={user.name ?? ""}
               language={user.language}
             />
+            <CreditsPanel credits={user.credits} />
           </div>
         </Section>
       </main>

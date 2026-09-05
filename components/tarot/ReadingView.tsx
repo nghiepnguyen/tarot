@@ -1,14 +1,17 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { FlipCard } from "@/components/tarot/FlipCard";
+import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
 
 interface ReadingViewProps {
   question: string;
   cards: DrawnCard[];
+  readingId: string | null;
   onReset: () => void;
 }
 
-export function ReadingView({ question, cards, onReset }: ReadingViewProps) {
+export function ReadingView({ question, cards, readingId, onReset }: ReadingViewProps) {
   return (
     <div className="flex w-full flex-col items-center gap-10">
       <p className="max-w-xl text-center text-sm text-muted">
@@ -24,6 +27,19 @@ export function ReadingView({ question, cards, onReset }: ReadingViewProps) {
             delay={i * 0.25}
           />
         ))}
+      </div>
+
+      <div className="w-full max-w-xl">
+        {readingId ? (
+          <AiUnlockPanel readingId={readingId} />
+        ) : (
+          <p className="rounded-2xl border border-border bg-surface p-5 text-center text-sm text-muted">
+            <Link href="/login" className="text-accent hover:underline">
+              Đăng nhập
+            </Link>{" "}
+            để lưu lịch sử và mở khóa diễn giải AI cho lần trải bài này.
+          </p>
+        )}
       </div>
 
       <Button variant="secondary" onClick={onReset}>

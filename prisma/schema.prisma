@@ -13,17 +13,32 @@ model User {
   passwordHash String
   name         String?
   language     String    @default("vi")
+  credits      Int       @default(0)
   createdAt    DateTime  @default(now())
   readings     Reading[]
 }
 
 model Reading {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  question  String
-  cards     Json
-  createdAt DateTime @default(now())
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question         String
+  cards            Json
+  createdAt        DateTime          @default(now())
+  aiInterpretation AiInterpretation?
 
   @@index([userId, createdAt])
+}
+
+model AiInterpretation {
+  id                 String   @id @default(cuid())
+  readingId          String   @unique
+  reading            Reading  @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  overview           String
+  perCard            Json
+  connections        String
+  actionSuggestions  String
+  reflectiveQuestion String
+  model              String
+  createdAt          DateTime @default(now())
 }

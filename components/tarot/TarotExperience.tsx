@@ -17,6 +17,7 @@ export function TarotExperience() {
   const [status, setStatus] = useState<Status>("question");
   const [pool, setPool] = useState<DrawnCard[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  const [readingId, setReadingId] = useState<string | null>(null);
   const { showToast } = useToast();
 
   const handleStartDraw = () => {
@@ -45,7 +46,7 @@ export function TarotExperience() {
 
     startTransition(async () => {
       try {
-        await saveReadingAction(
+        const saved = await saveReadingAction(
           question,
           cards.map((drawn, i) => ({
             cardId: drawn.card.id,
@@ -53,9 +54,11 @@ export function TarotExperience() {
             position: SPREAD_POSITIONS[i],
           })),
         );
+        setReadingId(saved?.id ?? null);
       } catch {
         // Anonymous users or a transient save failure shouldn't block the
         // reading the user is about to see on screen.
+        setReadingId(null);
       }
       setStatus("revealed");
     });
@@ -65,12 +68,20 @@ export function TarotExperience() {
     setQuestion("");
     setPool([]);
     setSelectedSlots([]);
+    setReadingId(null);
     setStatus("question");
   };
 
   if (status === "revealed") {
     const cards = selectedSlots.map((i) => pool[i]);
-    return <ReadingView question={question} cards={cards} onReset={handleReset} />;
+    return (
+      <ReadingView
+        question={question}
+        cards={cards}
+        readingId={readingId}
+        onReset={handleReset}
+      />
+    );
   }
 
   if (status === "picking") {

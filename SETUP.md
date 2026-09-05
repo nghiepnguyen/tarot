@@ -6,7 +6,7 @@
 - npm, pnpm hoặc yarn. Khuyến nghị pnpm để cài đặt nhanh và quản lý workspace tốt.
 - PostgreSQL nếu bật tính năng tài khoản và lịch sử.
 - Redis và object storage khi triển khai production có cache, audio hoặc job bất đồng bộ.
-- API key của AI provider nếu bật giải thích nâng cao.
+- API key Google Gemini (`GEMINI_API_KEY`) nếu bật diễn giải AI. Không có key, nút mở khóa AI vẫn hoạt động và hiển thị lỗi rõ ràng thay vì crash.
 
 ## Tạo project
 
@@ -35,8 +35,8 @@ DATABASE_URL=postgresql://tarot:tarot@localhost:5432/tarot
 # Generate with: openssl rand -base64 32
 AUTH_SECRET=
 
-AI_PROVIDER_API_KEY=your_server_side_key
-AI_MODEL=your_selected_model
+# Get a key at https://aistudio.google.com/apikey
+GEMINI_API_KEY=your_gemini_api_key
 
 REDIS_URL=redis://localhost:6379
 STORAGE_ENDPOINT=https://your-storage-endpoint

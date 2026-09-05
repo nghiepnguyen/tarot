@@ -18,9 +18,9 @@ test("full reading flow: question -> pick three cards -> reveal", async ({ page 
 
   await page.getByRole("button", { name: "Mở lá bài" }).click();
 
-  await expect(page.getByText("Bối cảnh")).toBeVisible();
-  await expect(page.getByText("Hiện tại")).toBeVisible();
-  await expect(page.getByText("Hướng đi")).toBeVisible();
+  await expect(page.getByText("Bối cảnh", { exact: true })).toBeVisible();
+  await expect(page.getByText("Hiện tại", { exact: true })).toBeVisible();
+  await expect(page.getByText("Hướng đi", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Trải bài mới" })).toBeVisible();
 });
 
