@@ -48,8 +48,9 @@
 ## Phase 3 — VIP và AI
 
 - Hiển thị phần AI bị khóa sau phần diễn giải cơ bản.
-- Mô tả rõ quyền lợi VIP và giá trước khi thanh toán.
-- Nạp credit hoặc mua gói VIP.
+- Mô tả rõ quyền lợi và giá trước khi thanh toán.
+- Tặng 2 lượt xem miễn phí khi đăng ký (one-time), sau đó nạp credit theo gói (5/10/20/50 lượt) qua PayOS — chưa có gói VIP theo tháng ở giai đoạn này.
+- Ghi sổ giao dịch credit (free grant, mua, chi tiêu, hoàn tiền) để đo tỷ lệ free-to-paid.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
 - Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh.
 - Cho phép nghe audio bằng text-to-speech.
@@ -83,5 +84,5 @@
 - Bộ bài vòng cung hiển thị tốt trên mobile và desktop.
 - Kết quả có trạng thái loading, success và error rõ ràng.
 - Mỗi lá có tên, hình ảnh và diễn giải cơ bản.
-- Paywall AI hiển thị minh bạch nhưng chưa bắt buộc phải có thanh toán thật.
+- Paywall AI hiển thị minh bạch; free trial và nạp credit qua thanh toán thật (PayOS) đã hoạt động.
 - Có disclaimer và xử lý dữ liệu tối thiểu an toàn.

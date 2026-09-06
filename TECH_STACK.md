@@ -20,7 +20,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 | Công nghệ | Phiên bản đề xuất | Lý do chọn |
 |---|---:|---|
 | Next.js Route Handlers / Server Actions | Theo Next.js | API nội bộ, mutation và bảo vệ secret ở server. |
-| PostgreSQL | 16+ hoặc managed stable | Dữ liệu quan hệ cho người dùng, tarot card, readings, credits và booking. |
+| PostgreSQL | 16+ hoặc managed stable | Dữ liệu quan hệ cho người dùng, tarot card, readings, credit/giao dịch (order, ledger) và booking. |
 | Prisma ORM | 6.x hoặc stable mới nhất | Schema rõ ràng, migration và type-safe query. |
 | Redis | Managed stable | Rate limit, cache card metadata, job trạng thái và session phụ trợ. |
 | Object Storage | S3-compatible | Lưu ảnh card, audio AI và tài liệu liên quan. |
@@ -35,7 +35,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 
 ## Thanh toán và lịch hẹn
 
-- Tích hợp cổng thanh toán phù hợp thị trường Việt Nam hoặc Stripe nếu sản phẩm phục vụ quốc tế.
+- Cổng thanh toán: PayOS (QR chuyển khoản, phù hợp app indie tại Việt Nam) đã tích hợp cho nạp credit; cân nhắc Stripe nếu sản phẩm mở rộng ra quốc tế.
 - Xác nhận giao dịch bằng webhook server-side, không chỉ dựa vào redirect từ trình duyệt.
 - Giai đoạn đầu có thể dùng form đặt lịch và email notification; sau đó tích hợp Google Calendar hoặc hệ thống booking chuyên dụng.
 

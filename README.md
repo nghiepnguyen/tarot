@@ -27,7 +27,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 1. Nhập một câu hỏi về tình cảm, công việc, tài chính hoặc định hướng cá nhân.
 2. Bốc ba lá bài từ bộ bài được trình bày dạng vòng cung.
 3. Xem tên, hình ảnh và ý nghĩa cơ bản của từng lá.
-4. Nạp tiền hoặc sử dụng gói VIP để nghe phần giải thích tường tận bằng AI.
+4. Dùng 2 lượt miễn phí đầu tiên, sau đó nạp credit qua PayOS để xem phần diễn giải chuyên sâu bằng AI.
 5. Liên hệ hoặc đặt lịch với người tư vấn cho nhu cầu cao cấp hơn.
 
 ## Nguyên tắc sản phẩm
@@ -39,7 +39,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 
 ## Phạm vi phiên bản đầu
 
-MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, khu vực khóa nội dung AI và CTA đặt lịch tư vấn. Các chức năng tài khoản, thanh toán thật và quản trị có thể triển khai ở các phase sau.
+MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, và khu vực khóa nội dung AI. Tài khoản, lịch sử, free trial và nạp credit thật qua PayOS đã có; CTA đặt lịch tư vấn và quản trị để triển khai ở các phase sau.
 
 ## Phát triển
 
