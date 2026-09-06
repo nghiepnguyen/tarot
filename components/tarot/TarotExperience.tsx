@@ -67,29 +67,32 @@ function readRestorableReading(): PendingReading | null {
 }
 
 export function TarotExperience() {
-  // Read once, lazily, on first render so a reading restored after a
-  // login/signup redirect is part of the initial state instead of a
-  // setState call inside an effect.
-  const [restored] = useState(readRestorableReading);
-
-  const [question, setQuestion] = useState(restored?.question ?? "");
-  const [status, setStatus] = useState<Status>(restored ? "revealed" : "question");
-  const [pool, setPool] = useState<DrawnCard[]>(() =>
-    restored ? toDrawnCards(restored.cards) : [],
-  );
-  const [selectedSlots, setSelectedSlots] = useState<number[]>(restored ? [0, 1, 2] : []);
+  const [question, setQuestion] = useState("");
+  const [status, setStatus] = useState<Status>("question");
+  const [pool, setPool] = useState<DrawnCard[]>([]);
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [readingId, setReadingId] = useState<string | null>(null);
   const { showToast } = useToast();
 
-  // After a login/signup redirect, try to save the restored reading now
-  // that the user is authenticated, and unlock it immediately instead of
-  // asking them to redraw their 3 cards.
+  // sessionStorage is a browser-only external store: it must not be read
+  // during the initial render (server-rendered HTML always starts at
+  // "question", and reading it there would make the client's first paint
+  // diverge from that markup and crash hydration). Read it here, after
+  // mount, and sync React state from it instead.
   useEffect(() => {
-    if (!restored) return;
+    const pending = readRestorableReading();
+    if (!pending) return;
+
+    const cards = toDrawnCards(pending.cards);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing initial state from an external, browser-only store (sessionStorage) that is unavailable during SSR; cannot run during render without breaking hydration.
+    setQuestion(pending.question);
+    setPool(cards);
+    setSelectedSlots([0, 1, 2]);
+    setStatus("revealed");
 
     startTransition(async () => {
       try {
-        const saved = await saveReadingAction(restored.question, restored.cards);
+        const saved = await saveReadingAction(pending.question, pending.cards);
         if (saved) {
           setReadingId(saved.id);
           clearPendingReading();
@@ -99,7 +102,7 @@ export function TarotExperience() {
         // so the next mount (e.g. after a successful login) can retry.
       }
     });
-  }, [restored]);
+  }, []);
 
   const handleStartDraw = () => {
     if (question.trim().length === 0) {
