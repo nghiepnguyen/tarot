@@ -1,8 +1,14 @@
 import { z } from "zod";
 
+const EmailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Email không hợp lệ."));
+
 export const SignupSchema = z.object({
   name: z.string().trim().min(2, "Tên cần ít nhất 2 ký tự.").max(60),
-  email: z.email("Email không hợp lệ.").trim().toLowerCase(),
+  email: EmailField,
   password: z
     .string()
     .min(8, "Mật khẩu cần ít nhất 8 ký tự.")
@@ -11,7 +17,7 @@ export const SignupSchema = z.object({
 });
 
 export const LoginSchema = z.object({
-  email: z.email("Email không hợp lệ.").trim().toLowerCase(),
+  email: EmailField,
   password: z.string().min(1, "Vui lòng nhập mật khẩu."),
 });
 

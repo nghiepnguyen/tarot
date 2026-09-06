@@ -19,6 +19,11 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user) redirect("/login");
 
+  const packages = await prisma.creditPackage.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
   return (
     <div className="flex flex-1 flex-col">
       <Header />
@@ -33,7 +38,11 @@ export default async function ProfilePage() {
               name={user.name ?? ""}
               language={user.language}
             />
-            <CreditsPanel credits={user.credits} />
+            <CreditsPanel
+              credits={user.credits}
+              packages={packages}
+              showDemoTopup={process.env.NODE_ENV !== "production"}
+            />
           </div>
         </Section>
       </main>

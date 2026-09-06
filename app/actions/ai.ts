@@ -50,6 +50,20 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     };
   }
 
+  const balanceAfterSpend = await prisma.user.findUniqueOrThrow({
+    where: { id: session.user.id },
+    select: { credits: true },
+  });
+  await prisma.creditTransaction.create({
+    data: {
+      userId: session.user.id,
+      type: "UNLOCK_SPEND",
+      amount: -COST_PER_INTERPRETATION,
+      balanceAfter: balanceAfterSpend.credits,
+      relatedReadingId: reading.id,
+    },
+  });
+
   const storedCards = reading.cards as unknown as StoredCard[];
   const cardInputs: InterpretationCardInput[] = storedCards.map((stored) => {
     const card = TAROT_CARDS.find((c) => c.id === stored.cardId);
@@ -81,9 +95,18 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     revalidatePath("/history");
     return { ok: true, data: result };
   } catch (error) {
-    await prisma.user.update({
+    const refunded = await prisma.user.update({
       where: { id: session.user.id },
       data: { credits: { increment: COST_PER_INTERPRETATION } },
+    });
+    await prisma.creditTransaction.create({
+      data: {
+        userId: session.user.id,
+        type: "REFUND",
+        amount: COST_PER_INTERPRETATION,
+        balanceAfter: refunded.credits,
+        relatedReadingId: reading.id,
+      },
     });
 
     const message =
@@ -94,7 +117,30 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   }
 }
 
+export interface CreditStatus {
+  credits: number;
+  hasPurchased: boolean;
+}
+
+export async function getCreditStatusAction(): Promise<CreditStatus | null> {
+  const session = await auth();
+  if (!session?.user) return null;
+
+  const [user, purchase] = await Promise.all([
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } }),
+    prisma.creditTransaction.findFirst({
+      where: { userId: session.user.id, type: "PURCHASE" },
+      select: { id: true },
+    }),
+  ]);
+  if (!user) return null;
+
+  return { credits: user.credits, hasPurchased: purchase !== null };
+}
+
 export async function topUpCreditsAction() {
+  if (process.env.NODE_ENV === "production") return;
+
   const session = await auth();
   if (!session?.user) return;
 

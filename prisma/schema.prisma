@@ -8,14 +8,74 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String?
-  language     String    @default("vi")
-  credits      Int       @default(0)
-  createdAt    DateTime  @default(now())
-  readings     Reading[]
+  id                   String             @id @default(cuid())
+  email                String             @unique
+  passwordHash         String
+  name                 String?
+  language             String             @default("vi")
+  credits              Int                @default(0)
+  freeCreditsGrantedAt DateTime?
+  createdAt            DateTime           @default(now())
+  readings             Reading[]
+  creditTransactions   CreditTransaction[]
+  orders               Order[]
+}
+
+enum CreditTransactionType {
+  FREE_GRANT
+  PURCHASE
+  UNLOCK_SPEND
+  REFUND
+  ADMIN_ADJUST
+}
+
+model CreditTransaction {
+  id               String                @id @default(cuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             CreditTransactionType
+  amount           Int
+  balanceAfter     Int
+  relatedReadingId String?
+  relatedOrderId   String?
+  createdAt        DateTime              @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model CreditPackage {
+  id        String   @id @default(cuid())
+  name      String
+  credits   Int
+  priceVnd  Int
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId       String
+  package         CreditPackage @relation(fields: [packageId], references: [id])
+  provider        String
+  providerOrderId String        @unique
+  amountVnd       Int
+  creditsGranted  Int
+  status          OrderStatus   @default(PENDING)
+  createdAt       DateTime      @default(now())
+  paidAt          DateTime?
+
+  @@index([userId, createdAt])
 }
 
 model Reading {

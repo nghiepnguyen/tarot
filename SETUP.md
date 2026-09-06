@@ -44,9 +44,9 @@ STORAGE_BUCKET=tarot-assets
 STORAGE_ACCESS_KEY=your_access_key
 STORAGE_SECRET_KEY=your_secret_key
 
-PAYMENT_PROVIDER=your_provider
-PAYMENT_SECRET_KEY=your_payment_secret
-PAYMENT_WEBHOOK_SECRET=your_webhook_secret
+PAYOS_CLIENT_ID=your_payos_client_id
+PAYOS_API_KEY=your_payos_api_key
+PAYOS_CHECKSUM_KEY=your_payos_checksum_key
 
 EMAIL_PROVIDER_API_KEY=your_email_key
 ```

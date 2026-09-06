@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "."),
+      // "server-only" throws unconditionally outside Next's build pipeline;
+      // stub it so lib/ modules that import it are still unit-testable.
+      "server-only": path.resolve(import.meta.dirname, "test/server-only-stub.ts"),
     },
   },
 });

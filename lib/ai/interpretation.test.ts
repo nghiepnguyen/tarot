@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  COST_PER_INTERPRETATION,
+  FREE_TRIAL_CREDITS,
+  FREE_TRIAL_UNLOCKS,
   InterpretationResultSchema,
   buildInterpretationPrompt,
   toDisplayInterpretation,
@@ -7,6 +10,13 @@ import {
 } from "./interpretation";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { AiInterpretation } from "@prisma/client";
+
+describe("FREE_TRIAL_CREDITS", () => {
+  it("grants exactly enough credit for FREE_TRIAL_UNLOCKS unlocks, no partial unlock left over", () => {
+    expect(FREE_TRIAL_CREDITS).toBe(FREE_TRIAL_UNLOCKS * COST_PER_INTERPRETATION);
+    expect(FREE_TRIAL_CREDITS % COST_PER_INTERPRETATION).toBe(0);
+  });
+});
 
 const sampleCards: InterpretationCardInput[] = [
   { position: "Bối cảnh", card: TAROT_CARDS[0], orientation: "upright" },

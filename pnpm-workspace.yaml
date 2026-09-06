@@ -1,3 +1,6 @@
+overrides:
+  deepmerge-ts: '>=8.0.0'
+
 allowBuilds:
   '@google/genai': false
   '@prisma/client': true

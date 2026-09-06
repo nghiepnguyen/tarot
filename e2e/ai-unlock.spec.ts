@@ -16,11 +16,10 @@ test("unlocking AI without a configured API key shows a clear error with retry",
   await page.getByRole("button", { name: "Đăng ký" }).click();
   await expect(page).toHaveURL("/");
 
-  // Top up credits first so the failure we see is specifically the missing
-  // API key, not "not enough credit".
+  // New accounts get 2 free unlocks (20 credit), which already covers the
+  // one unlock attempt below — no need to top up.
   await page.goto("/profile");
-  await page.getByRole("button", { name: /Nạp \d+ credit \(demo\)/ }).click();
-  await expect(page.getByText("50", { exact: true })).toBeVisible();
+  await expect(page.getByText("2 lượt diễn giải chuyên sâu")).toBeVisible();
 
   await page.goto("/");
   await page.getByLabel("Câu hỏi của bạn").fill("Tôi nên tập trung vào điều gì?");
@@ -39,5 +38,5 @@ test("unlocking AI without a configured API key shows a clear error with retry",
 
   // The failed generation should have refunded the credit spend.
   await page.goto("/profile");
-  await expect(page.getByText("50", { exact: true })).toBeVisible();
+  await expect(page.getByText("2 lượt diễn giải chuyên sâu")).toBeVisible();
 });

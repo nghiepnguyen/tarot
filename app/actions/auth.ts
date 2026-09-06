@@ -6,6 +6,7 @@ import { AuthError } from "next-auth";
 import { auth, signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
+import { FREE_TRIAL_CREDITS } from "@/lib/ai/interpretation";
 import {
   LoginSchema,
   SignupSchema,
@@ -40,8 +41,24 @@ export async function signupAction(
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.user.create({
-    data: { name, email, passwordHash },
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        credits: FREE_TRIAL_CREDITS,
+        freeCreditsGrantedAt: new Date(),
+      },
+    });
+    await tx.creditTransaction.create({
+      data: {
+        userId: user.id,
+        type: "FREE_GRANT",
+        amount: FREE_TRIAL_CREDITS,
+        balanceAfter: FREE_TRIAL_CREDITS,
+      },
+    });
   });
 
   await signIn("credentials", { email, password, redirect: false });

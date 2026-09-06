@@ -7,6 +7,9 @@ export const COST_PER_INTERPRETATION = 10;
 export const DEMO_TOPUP_AMOUNT = 50;
 export const GEMINI_MODEL = "gemini-3-flash-preview";
 
+export const FREE_TRIAL_UNLOCKS = 2;
+export const FREE_TRIAL_CREDITS = FREE_TRIAL_UNLOCKS * COST_PER_INTERPRETATION;
+
 export interface InterpretationCardInput {
   position: string;
   card: TarotCard;
