@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -55,6 +56,13 @@ export function QuestionForm({ question, onChange, onSubmit, disabled }: Questio
       >
         Bốc 3 lá bài
       </Button>
+
+      <p className="self-center text-center text-xs text-muted">
+        <Link href="/login" className="text-accent hover:underline">
+          Đăng nhập
+        </Link>{" "}
+        để dùng tính năng diễn giải chuyên sâu
+      </p>
     </div>
   );
 }

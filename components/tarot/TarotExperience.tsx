@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { ArcDeck } from "@/components/tarot/ArcDeck";
 import { QuestionForm } from "@/components/tarot/QuestionForm";
 import { ReadingView } from "@/components/tarot/ReadingView";
@@ -8,17 +8,98 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { drawSpreadPool, DECK_SPREAD_SIZE, SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import type { DrawnCard } from "@/lib/tarot/draw";
+import { TAROT_CARDS } from "@/lib/tarot/cards";
 import { saveReadingAction } from "@/app/actions/readings";
+import type { StoredCard } from "@/app/actions/readings";
 
 type Status = "question" | "picking" | "revealed";
 
+const PENDING_READING_KEY = "tarot:pendingReading";
+
+interface PendingReading {
+  question: string;
+  cards: StoredCard[];
+}
+
+function savePendingReading(pending: PendingReading) {
+  try {
+    sessionStorage.setItem(PENDING_READING_KEY, JSON.stringify(pending));
+  } catch {
+    // Storage unavailable (private mode, disabled) — the login gate still
+    // works, the user just has to redraw after logging in.
+  }
+}
+
+function loadPendingReading(): PendingReading | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_READING_KEY);
+    return raw ? (JSON.parse(raw) as PendingReading) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingReading() {
+  try {
+    sessionStorage.removeItem(PENDING_READING_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function toDrawnCards(cards: StoredCard[]): DrawnCard[] {
+  return cards
+    .map((stored) => {
+      const card = TAROT_CARDS.find((c) => c.id === stored.cardId);
+      return card ? { card, orientation: stored.orientation } : null;
+    })
+    .filter((drawn): drawn is DrawnCard => drawn !== null);
+}
+
+function readRestorableReading(): PendingReading | null {
+  const pending = loadPendingReading();
+  if (!pending) return null;
+  if (toDrawnCards(pending.cards).length !== 3) {
+    clearPendingReading();
+    return null;
+  }
+  return pending;
+}
+
 export function TarotExperience() {
-  const [question, setQuestion] = useState("");
-  const [status, setStatus] = useState<Status>("question");
-  const [pool, setPool] = useState<DrawnCard[]>([]);
-  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  // Read once, lazily, on first render so a reading restored after a
+  // login/signup redirect is part of the initial state instead of a
+  // setState call inside an effect.
+  const [restored] = useState(readRestorableReading);
+
+  const [question, setQuestion] = useState(restored?.question ?? "");
+  const [status, setStatus] = useState<Status>(restored ? "revealed" : "question");
+  const [pool, setPool] = useState<DrawnCard[]>(() =>
+    restored ? toDrawnCards(restored.cards) : [],
+  );
+  const [selectedSlots, setSelectedSlots] = useState<number[]>(restored ? [0, 1, 2] : []);
   const [readingId, setReadingId] = useState<string | null>(null);
   const { showToast } = useToast();
+
+  // After a login/signup redirect, try to save the restored reading now
+  // that the user is authenticated, and unlock it immediately instead of
+  // asking them to redraw their 3 cards.
+  useEffect(() => {
+    if (!restored) return;
+
+    startTransition(async () => {
+      try {
+        const saved = await saveReadingAction(restored.question, restored.cards);
+        if (saved) {
+          setReadingId(saved.id);
+          clearPendingReading();
+        }
+      } catch {
+        // Still anonymous or a transient failure — keep the pending reading
+        // so the next mount (e.g. after a successful login) can retry.
+      }
+    });
+  }, [restored]);
 
   const handleStartDraw = () => {
     if (question.trim().length === 0) {
@@ -43,22 +124,28 @@ export function TarotExperience() {
   const handleReveal = () => {
     if (selectedSlots.length !== 3) return;
     const cards = selectedSlots.map((i) => pool[i]);
+    const storedCards = cards.map((drawn, i) => ({
+      cardId: drawn.card.id,
+      orientation: drawn.orientation,
+      position: SPREAD_POSITIONS[i],
+    }));
 
     startTransition(async () => {
       try {
-        const saved = await saveReadingAction(
-          question,
-          cards.map((drawn, i) => ({
-            cardId: drawn.card.id,
-            orientation: drawn.orientation,
-            position: SPREAD_POSITIONS[i],
-          })),
-        );
-        setReadingId(saved?.id ?? null);
+        const saved = await saveReadingAction(question, storedCards);
+        if (saved) {
+          setReadingId(saved.id);
+          clearPendingReading();
+        } else {
+          // Anonymous users or a transient save failure shouldn't block the
+          // reading the user is about to see on screen. Keep the question
+          // and cards around so they can be restored after login/signup.
+          setReadingId(null);
+          savePendingReading({ question, cards: storedCards });
+        }
       } catch {
-        // Anonymous users or a transient save failure shouldn't block the
-        // reading the user is about to see on screen.
         setReadingId(null);
+        savePendingReading({ question, cards: storedCards });
       }
       setStatus("revealed");
     });
@@ -70,6 +157,7 @@ export function TarotExperience() {
     setSelectedSlots([]);
     setReadingId(null);
     setStatus("question");
+    clearPendingReading();
   };
 
   if (status === "revealed") {
