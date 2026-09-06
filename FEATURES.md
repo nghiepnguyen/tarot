@@ -29,6 +29,8 @@
 - Hiển thị tên, hình ảnh, từ khóa và ý nghĩa cơ bản.
 - Hiển thị lại câu hỏi để người dùng duy trì ngữ cảnh.
 - Nút thực hiện trải bài mới.
+- Ghi chú nhỏ dưới nút "Bốc 3 lá bài" nhắc đăng nhập để dùng diễn giải chuyên sâu.
+- Người dùng chưa đăng nhập vẫn bốc bài và xem 3 lá bình thường; câu hỏi và 3 lá được giữ lại (sessionStorage) qua lúc đăng nhập/đăng ký, tự khôi phục và mở khóa ngay sau khi đăng nhập thành công thay vì bắt bốc lại.
 
 ### Nội dung và an toàn
 

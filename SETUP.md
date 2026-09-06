@@ -133,6 +133,8 @@ public/
 
 ### Checklist production
 
+- Sau khi thêm/sửa biến môi trường trên Vercel, xác nhận nó thực sự có giá trị (không chỉ tạo key rồi để trống). Biến đánh dấu "Sensitive" không xem lại được giá trị qua dashboard lẫn `vercel env pull` — kể cả khi đang hoạt động đúng ở runtime, lệnh pull vẫn trả về rỗng cho biến đó, đây là hành vi bình thường chứ không phải dấu hiệu lỗi.
+- `next build` không tự chạy migration. Vercel build hiện KHÔNG đọc được các biến bị coi là Sensitive (lỗi kiểu `Environment variable not found: DATABASE_URL` nếu build script có chạy `prisma migrate deploy`), nên phải áp migration production bằng cách chạy `prisma migrate deploy` thủ công từ máy có `DATABASE_URL` thật (lấy trực tiếp từ dashboard của provider DB, ví dụ Neon, không qua Vercel), mỗi khi thêm migration mới.
 - Chạy migration production bằng pipeline kiểm soát, không chạy migrate dev.
 - Kiểm tra webhook thanh toán có verify chữ ký và idempotency.
 - Bật rate limit cho API bốc bài và AI.
