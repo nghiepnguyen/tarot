@@ -61,34 +61,46 @@ const STATEMENTS = [
 ];
 
 export async function POST(req: NextRequest) {
-  const token = req.headers.get("x-migrate-token");
-  if (!token || !process.env.MIGRATE_TOKEN || token !== process.env.MIGRATE_TOKEN) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
-  const already = await prisma.$queryRawUnsafe<{ migration_name: string }[]>(
-    `select migration_name from _prisma_migrations where migration_name = $1`,
-    MIGRATION_NAME,
-  );
-  if (already.length > 0) {
-    return NextResponse.json({ status: "already-applied" });
-  }
-
   try {
+    const token = req.headers.get("x-migrate-token");
+    if (!token || !process.env.MIGRATE_TOKEN || token !== process.env.MIGRATE_TOKEN) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const already = await prisma.$queryRawUnsafe<{ table_name: string }[]>(
+      `select table_name from information_schema.tables where table_schema = 'public' and table_name = 'CreditTransaction'`,
+    );
+    if (already.length > 0) {
+      return NextResponse.json({ status: "already-applied" });
+    }
+
     await prisma.$transaction(async (tx) => {
       for (const statement of STATEMENTS) {
         await tx.$executeRawUnsafe(statement);
       }
-      await tx.$executeRawUnsafe(
-        `insert into _prisma_migrations (id, checksum, migration_name, started_at, finished_at, applied_steps_count) values ($1, $2, $3, now(), now(), 1)`,
-        randomUUID(),
-        MIGRATION_CHECKSUM,
-        MIGRATION_NAME,
-      );
     });
+
+    // Best-effort: only some environments track migrations via Prisma
+    // Migrate's own history table. Don't fail the whole request if it's
+    // missing or this insert doesn't match its exact shape.
+    try {
+      const trackingTableExists = await prisma.$queryRawUnsafe<{ table_name: string }[]>(
+        `select table_name from information_schema.tables where table_schema = 'public' and table_name = '_prisma_migrations'`,
+      );
+      if (trackingTableExists.length > 0) {
+        await prisma.$executeRawUnsafe(
+          `insert into _prisma_migrations (id, checksum, migration_name, started_at, finished_at, applied_steps_count) values ($1, $2, $3, now(), now(), 1)`,
+          randomUUID(),
+          MIGRATION_CHECKSUM,
+          MIGRATION_NAME,
+        );
+      }
+    } catch {
+      // ignore: the real fix (the tables above) already committed
+    }
+
+    return NextResponse.json({ status: "applied" });
   } catch (error) {
     return NextResponse.json({ status: "error", message: String(error) }, { status: 500 });
   }
-
-  return NextResponse.json({ status: "applied" });
 }
