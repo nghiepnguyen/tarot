@@ -141,6 +141,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
 
   const remainingUnlocks = creditStatus ? Math.floor(creditStatus.credits / COST_PER_INTERPRETATION) : null;
   const outOfCredits = creditStatus !== null && creditStatus.credits < COST_PER_INTERPRETATION;
+  const isOnFreeTrial = !outOfCredits && creditStatus !== null && !creditStatus.hasPurchased;
 
   return (
     <Card className="flex flex-col items-center gap-4 text-center">
@@ -155,7 +156,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
         </p>
       </div>
 
-      {!outOfCredits && creditStatus && !creditStatus.hasPurchased ? (
+      {isOnFreeTrial ? (
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted">
           {`Miễn phí ${remainingUnlocks}/${FREE_TRIAL_UNLOCKS} lượt còn lại`}
         </span>
@@ -182,7 +183,9 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
           ) : (
             <>
               <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {`Mở khóa diễn giải chuyên sâu (${COST_PER_INTERPRETATION} credit)`}
+              {isOnFreeTrial
+                ? "Mở khóa diễn giải chuyên sâu"
+                : `Mở khóa diễn giải chuyên sâu (${COST_PER_INTERPRETATION} credit)`}
             </>
           )}
         </Button>
