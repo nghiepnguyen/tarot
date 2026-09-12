@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { Sparkles, WalletCards } from "lucide-react";
 import { Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -18,9 +20,19 @@ interface QuestionFormProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  isLoggedIn?: boolean;
 }
 
-export function QuestionForm({ question, onChange, onSubmit, disabled }: QuestionFormProps) {
+export function QuestionForm({
+  question,
+  onChange,
+  onSubmit,
+  disabled,
+  isLoggedIn = false,
+}: QuestionFormProps) {
+  const prefersReducedMotion = useReducedMotion();
+  const canSubmit = !disabled && question.trim().length > 0;
+
   return (
     <div className="flex w-full flex-col gap-4">
       <Textarea
@@ -48,21 +60,39 @@ export function QuestionForm({ question, onChange, onSubmit, disabled }: Questio
         ))}
       </div>
 
-      <Button
-        type="button"
-        onClick={onSubmit}
-        disabled={disabled || question.trim().length === 0}
-        className="self-center"
+      {/* A one-shot pop the moment the question makes the draw possible:
+          the button is the only way forward from here, and it sat inert
+          long enough that people stopped looking at it. */}
+      <motion.div
+        className="mt-2 flex w-full justify-center"
+        animate={canSubmit && !prefersReducedMotion ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
       >
-        Bốc 3 lá bài
-      </Button>
+        <Button
+          type="button"
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          className="w-full px-8 py-4 text-base sm:w-auto"
+        >
+          <WalletCards className="h-5 w-5 shrink-0" aria-hidden="true" />
+          Bốc 3 lá bài
+        </Button>
+      </motion.div>
 
-      <p className="self-center text-center text-xs text-muted">
-        <Link href="/login" className="text-accent hover:underline">
-          Đăng nhập
-        </Link>{" "}
-        để dùng tính năng diễn giải chuyên sâu
-      </p>
+      {isLoggedIn ? null : (
+        <div className="flex items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-sage-tint px-4 py-3 text-center text-sm text-foreground">
+          <Sparkles className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+          <span>
+            <Link
+              href="/login"
+              className="font-semibold text-foreground underline decoration-accent decoration-2 underline-offset-4 transition-colors duration-200 hover:text-accent"
+            >
+              Đăng nhập
+            </Link>{" "}
+            để dùng tính năng diễn giải chuyên sâu
+          </span>
+        </div>
+      )}
     </div>
   );
 }

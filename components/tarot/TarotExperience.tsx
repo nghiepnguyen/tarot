@@ -66,7 +66,7 @@ function readRestorableReading(): PendingReading | null {
   return pending;
 }
 
-export function TarotExperience() {
+export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [question, setQuestion] = useState("");
   const [status, setStatus] = useState<Status>("question");
   const [pool, setPool] = useState<DrawnCard[]>([]);
@@ -225,6 +225,7 @@ export function TarotExperience() {
           question={question}
           onChange={setQuestion}
           onSubmit={handleStartDraw}
+          isLoggedIn={isLoggedIn}
         />
       </div>
 
