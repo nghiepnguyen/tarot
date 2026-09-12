@@ -20,7 +20,7 @@ export function LegalPage({ title, updatedAt, children }: LegalPageProps) {
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {title}
               </h1>
-              <p className="text-xs text-muted">Cập nhật lần cuối: {updatedAt}</p>
+              <p className="text-sm text-muted">Cập nhật lần cuối: {updatedAt}</p>
             </div>
             <div className="flex flex-col gap-6 text-sm leading-relaxed text-foreground [&_h2]:text-base [&_h2]:font-medium [&_h2]:tracking-tight [&_p]:text-muted [&_li]:text-muted">
               {children}

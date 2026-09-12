@@ -26,14 +26,14 @@ export function ProfileForm({ email, name }: ProfileFormProps) {
       className="flex max-w-sm flex-col gap-4"
     >
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-muted" htmlFor="email">
+        <label className="text-sm text-muted" htmlFor="email">
           Email
         </label>
         <Input id="email" value={email} disabled />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-muted" htmlFor="name">
+        <label className="text-sm text-muted" htmlFor="name">
           Tên hiển thị
         </label>
         <Input id="name" name="name" defaultValue={name} maxLength={60} />

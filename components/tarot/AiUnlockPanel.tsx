@@ -80,7 +80,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
               {data.themes.map((theme) => (
                 <span
                   key={theme}
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted"
+                  className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted"
                 >
                   {theme}
                 </span>
@@ -94,7 +94,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
         <div className="flex flex-col divide-y divide-border border-y border-border">
           {data.perCard.map((entry) => (
             <div key={entry.position} className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0">
-              <p className="text-xs font-medium text-accent">{entry.position}</p>
+              <p className="text-sm font-medium text-accent">{entry.position}</p>
               {entry.keyMessage ? (
                 <p className="text-sm font-medium text-foreground">{entry.keyMessage}</p>
               ) : null}
@@ -157,7 +157,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
       </div>
 
       {isOnFreeTrial ? (
-        <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted">
+        <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
           {`Miễn phí ${remainingUnlocks}/${FREE_TRIAL_UNLOCKS} lượt còn lại`}
         </span>
       ) : null}
@@ -193,11 +193,11 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
 
       {error && !outOfCredits ? (
         <div className="flex items-center gap-3">
-          <p className="text-xs text-red-600">{error}</p>
+          <p className="text-sm text-red-600">{error}</p>
           <button
             type="button"
             onClick={handleUnlock}
-            className="text-xs text-accent hover:underline"
+            className="text-sm text-accent hover:underline"
           >
             Thử lại
           </button>

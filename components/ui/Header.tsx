@@ -18,7 +18,7 @@ export async function Header() {
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-6 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-base font-medium tracking-[0.08em] text-foreground"
+          className="flex min-h-11 shrink-0 items-center gap-2 text-base font-medium tracking-[0.08em] text-foreground"
         >
           <LeafSprig className="h-5 w-5 text-accent" />
           Tarot
@@ -26,18 +26,24 @@ export async function Header() {
 
         {user ? (
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-            <span className="shrink-0 rounded-full bg-sage-tint px-2 py-1 text-xs font-medium text-accent">
+            <span className="shrink-0 rounded-full bg-sage-tint px-2.5 py-1 text-sm font-medium text-accent">
               {user.credits} credit
             </span>
 
             <UserMenu label={user.name || user.email.split("@")[0]} />
           </div>
         ) : (
-          <nav className="flex items-center gap-4 text-xs text-muted">
-            <Link href="/login" className="transition-colors duration-300 hover:text-accent">
+          <nav className="flex items-center gap-2 text-sm text-muted">
+            <Link
+              href="/login"
+              className="inline-flex min-h-11 items-center px-2 transition-colors duration-300 hover:text-accent"
+            >
               Đăng nhập
             </Link>
-            <Link href="/signup" className="transition-colors duration-300 hover:text-accent">
+            <Link
+              href="/signup"
+              className="inline-flex min-h-11 items-center px-2 transition-colors duration-300 hover:text-accent"
+            >
               Đăng ký
             </Link>
           </nav>

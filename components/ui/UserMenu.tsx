@@ -31,7 +31,7 @@ export function UserMenu({ label }: { label: string }) {
   }, [open]);
 
   const itemClass =
-    "flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-xs text-foreground transition-colors duration-300 hover:bg-sage-tint hover:text-accent";
+    "flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-sm text-foreground transition-colors duration-300 hover:bg-sage-tint hover:text-accent";
 
   return (
     <div ref={containerRef} className="relative min-w-0">
@@ -40,7 +40,7 @@ export function UserMenu({ label }: { label: string }) {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1.5 text-xs text-foreground transition-colors duration-300 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:gap-2 sm:px-3"
+        className="flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-border min-h-11 px-3 text-sm text-foreground transition-colors duration-300 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:gap-2 sm:px-3"
       >
         <span className="min-w-0 max-w-[4.5rem] truncate sm:max-w-[8rem]">{label}</span>
         <ChevronDown

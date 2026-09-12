@@ -23,7 +23,7 @@ export function FlipCard({ position, drawn, delay }: FlipCardProps) {
       transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: entryDelay, ease: "easeOut" }}
       className="flex flex-col items-center gap-3 text-center"
     >
-      <span className="text-xs font-medium tracking-[0.15em] uppercase text-muted">
+      <span className="text-sm font-medium tracking-[0.15em] uppercase text-muted">
         {position}
       </span>
 
@@ -51,12 +51,12 @@ export function FlipCard({ position, drawn, delay }: FlipCardProps) {
       <div className="max-w-[11rem]">
         <p className="text-sm font-medium text-foreground">
           {card.name}
-          <span className="ml-1 text-xs font-normal text-muted">
+          <span className="ml-1 text-sm font-normal text-muted">
             ({isReversed ? "ngược" : "xuôi"})
           </span>
         </p>
-        <p className="mt-1 text-xs text-muted">{card.keywords.join(" · ")}</p>
-        <p className="mt-2 text-xs leading-relaxed text-foreground">
+        <p className="mt-1 text-sm text-muted">{card.keywords.join(" · ")}</p>
+        <p className="mt-2 text-sm leading-relaxed text-foreground">
           {isReversed ? card.reversedMeaning : card.basicMeaning}
         </p>
       </div>

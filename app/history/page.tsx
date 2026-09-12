@@ -39,7 +39,7 @@ function PageLink({
 }) {
   if (disabled) {
     return (
-      <span className="rounded-full border border-border px-4 py-2 text-xs text-muted opacity-40">
+      <span className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm text-muted opacity-40">
         {children}
       </span>
     );
@@ -47,7 +47,7 @@ function PageLink({
   return (
     <Link
       href={buildHref(q, page)}
-      className="cursor-pointer rounded-full border border-border px-4 py-2 text-xs text-foreground transition-colors duration-300 hover:border-accent hover:text-accent"
+      className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border px-4 text-sm text-foreground transition-colors duration-300 hover:border-accent hover:text-accent"
     >
       {children}
     </Link>
@@ -147,8 +147,7 @@ export default async function HistoryPage({
                 <PageLink q={q} page={page - 1} disabled={page <= 1}>
                   Trước
                 </PageLink>
-                <p className="text-xs text-muted">
-                  Trang {page} / {totalPages}
+                <p className="text-sm text-muted">                  Trang {page} / {totalPages}
                 </p>
                 <PageLink q={q} page={page + 1} disabled={page >= totalPages}>
                   Sau

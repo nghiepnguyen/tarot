@@ -185,7 +185,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
           <p className="max-w-md text-sm text-muted">
             Câu hỏi: <span className="text-foreground">“{question}”</span>
           </p>
-          <p className="text-xs text-muted">Đã chọn {selectedSlots.length}/3</p>
+          <p className="text-sm text-muted">Đã chọn {selectedSlots.length}/3</p>
         </div>
 
         <ArcDeck

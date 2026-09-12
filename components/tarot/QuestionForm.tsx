@@ -43,7 +43,7 @@ export function QuestionForm({
         maxLength={MAX_LENGTH}
         aria-label="Câu hỏi của bạn"
       />
-      <div className="flex items-center justify-between text-xs text-muted">
+      <div className="flex items-center justify-between text-sm text-muted">
         <span>{question.length}/{MAX_LENGTH} ký tự</span>
       </div>
 
@@ -53,7 +53,7 @@ export function QuestionForm({
             key={topic.label}
             type="button"
             onClick={() => onChange(topic.question)}
-            className="rounded-full border border-border px-4 py-2 text-xs text-muted transition-colors duration-300 hover:border-accent hover:bg-sage-tint hover:text-accent"
+            className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border px-4 text-sm text-muted transition-colors duration-300 hover:border-accent hover:bg-sage-tint hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {topic.label}
           </button>
@@ -85,7 +85,7 @@ export function QuestionForm({
           <span>
             <Link
               href="/login"
-              className="font-semibold text-foreground underline decoration-accent decoration-2 underline-offset-4 transition-colors duration-200 hover:text-accent"
+              className="inline-flex min-h-11 items-center px-1 font-semibold text-foreground underline decoration-accent decoration-2 underline-offset-4 transition-colors duration-200 hover:text-accent"
             >
               Đăng nhập
             </Link>{" "}

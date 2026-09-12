@@ -58,7 +58,7 @@ export function HistoryList({ readings }: HistoryListProps) {
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
               <div className="flex min-w-0 flex-col gap-1">
                 <p className="truncate text-sm text-foreground">“{reading.question}”</p>
-                <p className="truncate text-xs text-muted">
+                <p className="truncate text-sm text-muted">
                   {new Date(reading.createdAt).toLocaleString("vi-VN")}
                   {cardNames.length > 0 ? ` · ${cardNames.join(", ")}` : null}
                 </p>
@@ -79,7 +79,7 @@ export function HistoryList({ readings }: HistoryListProps) {
                       void deleteReadingAction(reading.id);
                     });
                   }}
-                  className="cursor-pointer text-xs text-muted transition-colors duration-300 hover:text-red-600"
+                  className="inline-flex min-h-11 cursor-pointer items-center text-sm text-muted transition-colors duration-300 hover:text-red-600"
                 >
                   Xóa lần trải bài này
                 </button>
@@ -92,16 +92,16 @@ export function HistoryList({ readings }: HistoryListProps) {
                   const isReversed = stored.orientation === "reversed";
                   return (
                     <div key={i} className="flex flex-col gap-1">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted">
+                      <span className="text-sm font-medium uppercase tracking-[0.15em] text-muted">
                         {stored.position}
                       </span>
                       <p className="text-sm font-medium text-foreground">
                         {card.name}{" "}
-                        <span className="text-xs font-normal text-muted">
+                        <span className="text-sm font-normal text-muted">
                           ({isReversed ? "ngược" : "xuôi"})
                         </span>
                       </p>
-                      <p className="text-xs leading-relaxed text-muted">
+                      <p className="text-sm leading-relaxed text-muted">
                         {isReversed ? card.reversedMeaning : card.basicMeaning}
                       </p>
                     </div>

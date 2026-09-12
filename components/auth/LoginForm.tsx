@@ -29,7 +29,7 @@ export function LoginForm() {
             required
           />
           {state?.errors?.email?.map((error) => (
-            <p key={error} className="text-xs text-red-600">{error}</p>
+            <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
         </div>
 
@@ -42,20 +42,20 @@ export function LoginForm() {
             required
           />
           {state?.errors?.password?.map((error) => (
-            <p key={error} className="text-xs text-red-600">{error}</p>
+            <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
         </div>
 
-        {state?.message ? <p className="text-xs text-red-600">{state.message}</p> : null}
+        {state?.message ? <p className="text-sm text-red-600">{state.message}</p> : null}
 
         <Button type="submit" disabled={pending} className="mt-2">
           {pending ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>
       </form>
 
-      <p className="text-center text-xs text-muted">
+      <p className="text-center text-sm text-muted">
         Chưa có tài khoản?{" "}
-        <Link href="/signup" className="text-accent hover:underline">
+        <Link href="/signup" className="inline-flex min-h-11 items-center px-1 font-medium text-accent underline underline-offset-4">
           Đăng ký
         </Link>
       </p>

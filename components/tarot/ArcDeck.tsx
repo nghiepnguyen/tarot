@@ -177,7 +177,7 @@ function CardCarousel({
       </div>
 
       {pages.length > 1 ? (
-        <div className="mt-3 flex items-center justify-center gap-2">
+        <div className="mt-1 flex items-center justify-center">
           {pages.map((_, pageIndex) => (
             <button
               key={pageIndex}
@@ -191,10 +191,16 @@ function CardCarousel({
                   behavior: prefersReducedMotion ? "auto" : "smooth",
                 });
               }}
-              className={`h-2 w-2 cursor-pointer rounded-full transition-colors ${
-                pageIndex === activePage ? "bg-foreground" : "bg-accent"
-              }`}
-            />
+              // The dot stays small; the button around it carries a finger-sized
+              // hit area, so the pager is tappable without looking heavy.
+              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <span
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  pageIndex === activePage ? "bg-foreground" : "bg-accent"
+                }`}
+              />
+            </button>
           ))}
         </div>
       ) : null}

@@ -43,15 +43,15 @@ export function CreditsPanel({ credits, packages, showDemoTopup }: CreditsPanelP
   return (
     <Card className="flex max-w-lg flex-col gap-5">
       <div>
-        <p className="text-xs text-muted">Còn lại</p>
+        <p className="text-sm text-muted">Còn lại</p>
         <p className="text-2xl font-semibold text-foreground">
           {remainingUnlocks} lượt diễn giải chuyên sâu
         </p>
-        <p className="text-xs text-muted">({credits} credit)</p>
+        <p className="text-sm text-muted">({credits} credit)</p>
       </div>
 
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-medium text-muted">Nạp thêm credit</p>
+        <p className="text-sm font-medium text-muted">Nạp thêm credit</p>
         <div className="grid grid-cols-2 gap-3">
           {packages.map((pkg) => (
             <button
@@ -62,7 +62,7 @@ export function CreditsPanel({ credits, packages, showDemoTopup }: CreditsPanelP
               className="flex flex-col items-start gap-1 rounded-xl border border-border bg-background px-4 py-3 text-left transition-colors duration-200 hover:border-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="text-sm font-medium text-foreground">{pkg.name}</span>
-              <span className="text-xs text-muted">
+              <span className="text-sm text-muted">
                 {pkg.credits / COST_PER_INTERPRETATION} lượt
               </span>
               <span className="text-sm font-semibold text-accent">
@@ -71,12 +71,12 @@ export function CreditsPanel({ credits, packages, showDemoTopup }: CreditsPanelP
             </button>
           ))}
         </div>
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
       </div>
 
       {showDemoTopup ? (
         <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <p className="text-xs text-muted">
+          <p className="text-sm text-muted">
             Nút dưới đây chỉ hiện ở môi trường dev, dùng để test không cần thanh toán thật.
           </p>
           <Button

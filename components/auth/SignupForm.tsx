@@ -25,7 +25,7 @@ export function SignupForm() {
         <div className="flex flex-col gap-1.5">
           <Input name="name" placeholder="Tên hiển thị" autoComplete="name" required />
           {state?.errors?.name?.map((error) => (
-            <p key={error} className="text-xs text-red-600">{error}</p>
+            <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
         </div>
 
@@ -38,7 +38,7 @@ export function SignupForm() {
             required
           />
           {state?.errors?.email?.map((error) => (
-            <p key={error} className="text-xs text-red-600">{error}</p>
+            <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
         </div>
 
@@ -51,24 +51,24 @@ export function SignupForm() {
             minLength={8}
             required
           />
-          <p className="text-xs text-muted">
+          <p className="text-sm text-muted">
             Ít nhất 8 ký tự, gồm cả chữ cái và chữ số.
           </p>
           {state?.errors?.password?.map((error) => (
-            <p key={error} className="text-xs text-red-600">{error}</p>
+            <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
         </div>
 
-        {state?.message ? <p className="text-xs text-red-600">{state.message}</p> : null}
+        {state?.message ? <p className="text-sm text-red-600">{state.message}</p> : null}
 
         <Button type="submit" disabled={pending} className="mt-2">
           {pending ? "Đang tạo tài khoản..." : "Đăng ký"}
         </Button>
       </form>
 
-      <p className="text-center text-xs text-muted">
+      <p className="text-center text-sm text-muted">
         Đã có tài khoản?{" "}
-        <Link href="/login" className="text-accent hover:underline">
+        <Link href="/login" className="inline-flex min-h-11 items-center px-1 font-medium text-accent underline underline-offset-4">
           Đăng nhập
         </Link>
       </p>
