@@ -23,9 +23,11 @@ export function ConsentBanner() {
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p className="text-sm leading-relaxed text-muted">
-          Chúng tôi muốn dùng Google Analytics để biết mọi người sử dụng trang
-          thế nào. Số liệu này không bao gồm câu hỏi, email hay tên của bạn. Từ
-          chối cũng không ảnh hưởng gì tới việc bốc bài.{" "}
+          Chúng tôi dùng Google Analytics để biết mọi người sử dụng trang thế
+          nào. Số liệu này không bao gồm câu hỏi, email hay tên của bạn. Đồng ý
+          nghĩa là cho phép đặt cookie phân tích; từ chối thì chúng tôi chỉ đếm
+          lượt truy cập ẩn danh, không cookie và không nhận diện bạn. Dù chọn
+          gì thì việc bốc bài cũng không đổi.{" "}
           <Link
             href="/privacy"
             className="font-medium text-accent underline underline-offset-4"

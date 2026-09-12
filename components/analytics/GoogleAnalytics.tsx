@@ -5,7 +5,6 @@ import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { GA_MEASUREMENT_ID, initGtag, trackPageView } from "@/lib/analytics/gtag";
 import { ConsentBanner } from "@/components/analytics/ConsentBanner";
-import { useConsent } from "@/components/analytics/useConsent";
 
 // gtag không tự bắn page_view (`send_page_view: false`) vì App Router điều
 // hướng ở client, gtag chỉ thấy được lần load đầu tiên. Effect này phụ trách
@@ -23,26 +22,20 @@ function PageViewTracker() {
 }
 
 export function GoogleAnalytics() {
-  const { value } = useConsent();
-  const isGranted = value === "granted";
-
-  // Định nghĩa window.gtag và gửi config ngay khi có đồng ý, không chờ script
-  // tải xong: dataLayer là hàng đợi nên gọi sớm vẫn an toàn, và đây là mốc để
-  // xả những event đã xếp hàng từ trước.
+  // Consent Mode v2: script nạp cho mọi người, nhưng initGtag đặt
+  // `analytics_storage: denied` làm mặc định nên chưa đồng ý thì không có
+  // cookie nào được ghi. Chạy trong effect (không phải thẻ script inline) để
+  // thứ tự `consent default` trước `config` luôn xác định.
   useEffect(() => {
-    if (isGranted) initGtag();
-  }, [isGranted]);
+    initGtag();
+  }, []);
 
   return (
     <>
-      {/* Chưa đồng ý thì script không được nạp, nên không có cookie _ga nào
-          được đặt. Từ chối rồi thì các lần tải trang sau cũng không nạp lại. */}
-      {isGranted ? (
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
-        />
-      ) : null}
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
 
       {/* useSearchParams làm cây client bên trên nó phải render ở client;
           bọc Suspense để phần còn lại của trang vẫn được prerender. */}

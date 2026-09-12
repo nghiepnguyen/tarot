@@ -15,19 +15,23 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `components/analytics/ConsentBanner.tsx` | Banner xin đồng ý, neo ở đáy màn hình. |
 | `components/analytics/CookieSettingsButton.tsx` | Link "Tùy chọn cookie" ở footer để mở lại banner. |
 | `components/analytics/useConsent.ts` | `useSyncExternalStore` đọc trạng thái đồng ý. |
-| `lib/analytics/consent.ts` | Lưu lựa chọn, phát tín hiệu đổi trạng thái, rút lại đồng ý. |
+| `lib/analytics/consent.ts` | Lưu lựa chọn, phát tín hiệu đổi trạng thái, xóa cookie khi rút lại đồng ý. |
 
 Measurement ID hardcode trong `lib/analytics/gtag.ts` chứ không để ở biến môi trường: nó vốn công khai trong HTML, và để trong code thì preview deploy không cần cấu hình thêm. Đổi property thì sửa đúng một hằng số đó.
 
-### Đồng ý trước, đo lường sau
+### Consent Mode v2
 
-Script gtag.js **không được nạp** cho tới khi người dùng bấm "Đồng ý" ở `ConsentBanner`. Chưa trả lời hoặc đã từ chối thì không có request nào tới `googletagmanager.com` và không có cookie `_ga` nào được đặt.
+Script gtag.js được nạp cho mọi người, nhưng `initGtag()` đẩy `consent default` với `analytics_storage: denied` vào dataLayer **trước** `config`. Ở trạng thái denied, gtag vẫn gửi ping ẩn danh nhưng không ghi cookie và không gắn định danh nào với người dùng. Bấm "Đồng ý" thì `consent update` nâng lên `granted` và cookie `_ga` mới được đặt.
 
-Lựa chọn lưu ở `localStorage["tarot:analyticsConsent"]` (`"granted"` | `"denied"`). Không lưu được (private mode, chặn cookie) thì coi như chưa chọn — banner hiện lại ở phiên sau.
+Sản phẩm không chạy quảng cáo nên `ad_storage`, `ad_user_data`, `ad_personalization` luôn denied, không bao giờ update.
 
-Những event xảy ra trước khi người dùng trả lời được xếp vào hàng đợi trong bộ nhớ (tối đa 20, giữ lại những cái mới nhất) và chỉ được gửi đi nếu người dùng đồng ý. Từ chối thì hàng đợi bị xóa. Nhờ vậy không mất phễu của những người trả lời banner sau vài thao tác, mà cũng không có gì rời khỏi trình duyệt trước khi có đồng ý.
+Thứ tự là phần dễ hỏng nhất: `consent default` mà nằm sau `config` thì gtag coi như được phép ghi cookie trong lúc chờ. Vì vậy toàn bộ khởi tạo nằm trong `initGtag()` gọi từ effect, chứ không rải ra thẻ `<Script>` inline — dataLayer là hàng đợi nên gọi trước khi gtag.js tải xong vẫn an toàn. Người đã đồng ý từ phiên trước được `consent update` ngay trong `initGtag()`, trước `config`, để hit đầu tiên không bị mất quyền ghi cookie.
 
-Rút lại đồng ý giữa chừng: không gỡ được script đã nạp, nên `setConsent("denied")` bật cờ opt-out chính thức `window["ga-disable-G-YR3ZHD8JBV"]` và xóa cookie `_ga*`. Lần tải trang sau script không được nạp nữa.
+Lựa chọn lưu ở `localStorage["tarot:analyticsConsent"]` (`"granted"` | `"denied"`). Không lưu được (private mode, chặn cookie) thì coi như chưa chọn — banner hiện lại ở phiên sau, và trạng thái vẫn là denied nên không có gì bị ghi.
+
+Rút lại đồng ý: `consent update` sang denied chỉ chặn ghi cookie từ lúc đó, cookie đã đặt vẫn nằm lại, nên `setConsent("denied")` tự xóa các cookie `_ga*`.
+
+Đây là đánh đổi có chủ ý so với cách chặn cứng (không nạp script cho tới khi đồng ý): Google Analytics phát hiện được tag nên không còn cảnh báo "Your Google tag wasn't detected", và có dữ liệu mô hình hóa cho những người từ chối. Đổi lại, có request tới Google trước khi người dùng trả lời banner. Banner và mục 6 của chính sách riêng tư nói đúng điều này — sửa hành vi thì phải sửa cả hai.
 
 Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner neo ở đáy màn hình sẽ che nút và làm Playwright báo element không nhận được pointer event.
 
@@ -108,11 +112,13 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 
 ### Trạng thái đồng ý
 
-| Trạng thái | Script | Event |
-|---|---|---|
-| Chưa chọn | Không nạp | Xếp hàng đợi (tối đa 20) |
-| `granted` | Nạp | Gửi đi, xả hàng đợi trước đó |
-| `denied` | Không nạp | Bỏ qua, xóa hàng đợi |
+| Trạng thái | `analytics_storage` | Cookie `_ga` | Dữ liệu gửi đi |
+|---|---|---|---|
+| Chưa chọn | `denied` | Không | Ping ẩn danh |
+| `denied` | `denied` | Không, xóa cookie cũ nếu có | Ping ẩn danh |
+| `granted` | `granted` | Có | Đầy đủ |
+
+Hàng đợi trong `gtag.ts` chỉ phục vụ khoảng thời gian ngắn giữa lúc component mount và lúc `initGtag()` chạy (tối đa 20 event, giữ lại cái mới nhất). Nó không liên quan tới đồng ý — Consent Mode lo phần đó ở phía gtag.
 
 ## Việc phải làm trong GA4 UI
 
@@ -129,4 +135,4 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 ## Còn thiếu
 
 - `page_view` gửi kèm query string, nên `?auth=...` và `?order=...` xuất hiện trong báo cáo path dù URL đã được dọn ngay sau đó.
-- Chưa dùng Consent Mode v2 của Google (nạp gtag ngay với `analytics_storage: denied` rồi `consent update` khi được đồng ý). Cách hiện tại chặt hơn: chưa đồng ý thì không có request nào rời trình duyệt, đổi lại mất phần dữ liệu mô hình hóa mà Consent Mode cung cấp.
+- Chưa bật Google signals hay quảng cáo; `ad_*` luôn denied nên các báo cáo liên quan tới quảng cáo sẽ trống.

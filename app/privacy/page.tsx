@@ -72,12 +72,19 @@ export default function PrivacyPage() {
           bao gồm nội dung câu hỏi, email hay tên của bạn.
         </p>
         <p>
-          Google Analytics chỉ được nạp sau khi bạn bấm “Đồng ý” ở thông báo
-          cookie. Nếu bạn từ chối hoặc chưa trả lời, script không được tải và
-          không có cookie phân tích nào được đặt. Bạn có thể đổi lựa chọn bất cứ
-          lúc nào qua liên kết “Tùy chọn cookie” ở chân trang; khi rút lại đồng
-          ý, chúng tôi ngừng gửi dữ liệu và xóa cookie phân tích đã đặt. Dịch vụ
-          hoạt động như nhau ở cả hai lựa chọn.
+          Mặc định, Google Analytics chạy ở chế độ không lưu trữ: không cookie
+          phân tích nào được đặt và không có định danh nào gắn với bạn, chúng
+          tôi chỉ nhận được số liệu tổng hợp ẩn danh. Chỉ khi bạn bấm “Đồng ý” ở
+          thông báo cookie thì cookie phân tích mới được đặt để nhận ra các lượt
+          truy cập của cùng một người. Nếu bạn từ chối, chế độ ẩn danh nói trên
+          được giữ nguyên.
+        </p>
+        <p>
+          Bạn có thể đổi lựa chọn bất cứ lúc nào qua liên kết “Tùy chọn cookie” ở
+          chân trang; khi rút lại đồng ý, chúng tôi ngừng đặt cookie phân tích và
+          xóa những cookie đã đặt trước đó. Muốn chặn hoàn toàn, bạn có thể dùng
+          tiện ích chặn quảng cáo hoặc cài đặt riêng tư của trình duyệt. Dịch vụ
+          hoạt động như nhau ở mọi lựa chọn.
         </p>
       </section>
     </LegalPage>

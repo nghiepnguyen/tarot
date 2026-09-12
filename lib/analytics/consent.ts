@@ -1,4 +1,4 @@
-import { CONSENT_STORAGE_KEY, GA_MEASUREMENT_ID, clearQueuedEvents } from "@/lib/analytics/gtag";
+import { CONSENT_STORAGE_KEY, updateConsent } from "@/lib/analytics/gtag";
 
 export type ConsentValue = "granted" | "denied";
 
@@ -59,10 +59,8 @@ export function setConsent(value: ConsentValue) {
   } catch {
     // Không lưu được thì lựa chọn chỉ có hiệu lực trong phiên này.
   }
-  if (value === "denied") {
-    clearQueuedEvents();
-    disableAnalytics();
-  }
+  updateConsent(value);
+  if (value === "denied") deleteGaCookies();
   setSnapshot({ value, isBannerOpen: false });
 }
 
@@ -78,14 +76,11 @@ export function closeConsentSettings() {
 }
 
 /**
- * Rút lại đồng ý sau khi gtag.js đã tải: không gỡ được script ra khỏi trang,
- * nên dùng cờ opt-out chính thức của gtag và xoá cookie `_ga*` mà nó đã đặt.
- * Tải lại trang sẽ không nạp script nữa.
+ * `consent update` sang denied chỉ chặn gtag ghi cookie từ lúc đó trở đi; cookie
+ * đã đặt trong lúc còn được đồng ý thì vẫn nằm lại, nên phải tự xoá.
  */
-function disableAnalytics() {
+function deleteGaCookies() {
   if (typeof window === "undefined") return;
-
-  (window as unknown as Record<string, boolean>)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
 
   const gaCookies = document.cookie
     .split(";")

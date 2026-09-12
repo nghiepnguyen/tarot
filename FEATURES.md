@@ -77,7 +77,7 @@
 - Dashboard conversion: nhập câu hỏi, bốc bài, unlock AI, đặt lịch. Số liệu thô đã có trên Google Analytics 4; dashboard trong trang quản trị thì chưa.
 - A/B testing CTA, giá và nội dung paywall.
 - SEO landing pages theo chủ đề câu hỏi.
-- Analytics: GA4 đã gắn, phủ toàn bộ phễu bốc bài, mở khóa AI, thanh toán và tài khoản — xem `ANALYTICS.md`. Event không chứa câu hỏi, email hay tên người dùng. Có banner xin đồng ý: chưa đồng ý thì script GA không được nạp và không có cookie phân tích nào được đặt; đổi lựa chọn qua “Tùy chọn cookie” ở chân trang.
+- Analytics: GA4 đã gắn, phủ toàn bộ phễu bốc bài, mở khóa AI, thanh toán và tài khoản — xem `ANALYTICS.md`. Event không chứa câu hỏi, email hay tên người dùng. Có banner xin đồng ý chạy theo Consent Mode v2: chưa đồng ý thì không cookie phân tích nào được đặt và số liệu chỉ ở dạng ẩn danh; đổi lựa chọn qua “Tùy chọn cookie” ở chân trang.
 
 ## Lưu trữ — không nằm trong kế hoạch
 

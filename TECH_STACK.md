@@ -44,7 +44,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - `page_view` tự bắn theo route vì App Router điều hướng ở client; `gtag('config')` chạy với `send_page_view: false`.
 - Event sản phẩm đi qua `trackEvent()` trong `lib/analytics/gtag.ts`, no-op khi gtag bị chặn để tracking không bao giờ làm hỏng luồng chính.
 - Không gửi câu hỏi, email hay tên người dùng vào event. Doanh thu đối soát bằng bảng `Order`, không bằng GA.
-- Consent: script GA chỉ được nạp sau khi người dùng đồng ý ở cookie banner; event phát sinh trước đó nằm trong hàng đợi ở bộ nhớ và bị xóa nếu người dùng từ chối.
+- Consent Mode v2: gtag mặc định `analytics_storage: denied` (ping ẩn danh, không cookie), chỉ nâng lên `granted` sau khi người dùng đồng ý ở cookie banner. `ad_*` luôn denied vì sản phẩm không chạy quảng cáo.
 - Danh mục event đầy đủ và quy ước đặt tên: `ANALYTICS.md`.
 
 ## Kiểm thử và chất lượng
