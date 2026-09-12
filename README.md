@@ -1,5 +1,7 @@
 # Tarot Reading Web
 
+Production: <https://tarot.thanhnghiep.top>
+
 ## Tổng quan
 
 Tarot Reading Web là nền tảng xem bài tarot trực tuyến, kết hợp trải nghiệm tối giản với khả năng giải nghĩa bằng AI và dịch vụ tư vấn trực tiếp. Người dùng nhập câu hỏi, bốc ba lá bài và nhận phần diễn giải cơ bản ngay trên trang.
@@ -48,4 +50,4 @@ pnpm install
 pnpm dev
 ```
 
-Mở [http://localhost:3000](http://localhost:3000). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md).
+Mở [http://localhost:3000](http://localhost:3000), bản production ở [https://tarot.thanhnghiep.top](https://tarot.thanhnghiep.top/). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md).

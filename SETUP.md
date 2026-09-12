@@ -28,6 +28,7 @@ pnpm add -D prisma vitest playwright prettier
 Tạo file `.env.local` ở local. Không commit file này vào Git.
 
 ```env
+# Local. Production dùng https://tarot.thanhnghiep.top
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 DATABASE_URL=postgresql://tarot:tarot@localhost:5432/tarot
@@ -42,6 +43,14 @@ PAYOS_CLIENT_ID=your_payos_client_id
 PAYOS_API_KEY=your_payos_api_key
 PAYOS_CHECKSUM_KEY=your_payos_checksum_key
 ```
+
+`NEXT_PUBLIC_APP_URL` là origin dùng để dựng `returnUrl`/`cancelUrl` của PayOS trong `app/actions/payments.ts`. Sai giá trị thì sau khi thanh toán người dùng bị đẩy về nhầm domain. Giá trị theo môi trường:
+
+| Môi trường | Giá trị |
+| --- | --- |
+| Local | `http://localhost:3000` |
+| Production (Vercel) | `https://tarot.thanhnghiep.top` |
+| Preview (Vercel) | không set biến; code tự lấy `https://$VERCEL_URL` của deployment đó |
 
 Đây là toàn bộ biến code đang đọc. Redis, object storage và email provider chưa có trong dự án nên không có biến tương ứng.
 
@@ -178,7 +187,8 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 4. Thêm toàn bộ biến môi trường cho Development, Preview và Production.
 5. Kết nối PostgreSQL managed (đang dùng Neon), rồi áp migration lên đó trước lần deploy đầu.
 6. Deploy preview trước để kiểm tra flow bốc bài, paywall và responsive.
-7. Cấu hình domain, HTTPS, webhook thanh toán và redirect URL.
+7. Cấu hình domain, HTTPS, webhook thanh toán và redirect URL. Domain production là `tarot.thanhnghiep.top`; sau khi trỏ DNS xong phải cập nhật `NEXT_PUBLIC_APP_URL=https://tarot.thanhnghiep.top` cho môi trường Production rồi redeploy, vì biến `NEXT_PUBLIC_` được nướng vào bundle lúc build chứ không đọc lại lúc chạy.
+8. Khai báo webhook PayOS trỏ về `https://tarot.thanhnghiep.top/api/webhooks/payos` và kiểm tra lại một giao dịch thật.
 
 ### Checklist production
 

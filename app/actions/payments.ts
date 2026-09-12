@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit } from "@/lib/auth/rate-limit";
 import { createPaymentLink } from "@/lib/payments/payos";
+import { SITE_URL } from "@/lib/seo/site";
 
 export type CreateOrderResult =
   | { ok: true; checkoutUrl: string }
@@ -38,15 +39,13 @@ export async function createOrderAction(packageId: string): Promise<CreateOrderR
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
   try {
     const { checkoutUrl } = await createPaymentLink({
       orderCode,
       amountVnd: creditPackage.priceVnd,
       description: `Nạp ${creditPackage.credits} credit`,
-      returnUrl: `${appUrl}/profile?order=${order.id}&status=success`,
-      cancelUrl: `${appUrl}/profile?order=${order.id}&status=cancelled`,
+      returnUrl: `${SITE_URL}/profile?order=${order.id}&status=success`,
+      cancelUrl: `${SITE_URL}/profile?order=${order.id}&status=cancelled`,
     });
     return { ok: true, checkoutUrl };
   } catch {
