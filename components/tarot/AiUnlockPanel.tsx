@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Link2, ListChecks, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
 
@@ -45,14 +46,40 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
     };
   }, [data]);
 
+  const remainingUnlocks = creditStatus ? Math.floor(creditStatus.credits / COST_PER_INTERPRETATION) : null;
+  const outOfCredits = creditStatus !== null && creditStatus.credits < COST_PER_INTERPRETATION;
+  const isOnFreeTrial = !outOfCredits && creditStatus !== null && !creditStatus.hasPurchased;
+
+  // Impression của panel khoá: mẫu số để tính tỉ lệ chuyển đổi sang unlock.
+  useEffect(() => {
+    if (data || !creditStatus) return;
+    trackEvent("ai_unlock_view", {
+      reading_id: readingId,
+      is_free_trial: isOnFreeTrial,
+      out_of_credits: outOfCredits,
+      credits_left: creditStatus.credits,
+    });
+  }, [data, creditStatus, readingId, isOnFreeTrial, outOfCredits]);
+
   const handleUnlock = () => {
     setError(null);
+    trackEvent("ai_unlock_click", {
+      reading_id: readingId,
+      is_free_trial: isOnFreeTrial,
+      credits_left: creditStatus?.credits,
+    });
     startTransition(async () => {
       const result = await unlockAiInterpretationAction(readingId);
       if (result.ok) {
         setData(result.data);
+        trackEvent("ai_unlock_success", {
+          reading_id: readingId,
+          is_free_trial: isOnFreeTrial,
+          credits_spent: COST_PER_INTERPRETATION,
+        });
       } else {
         setError(result.error);
+        trackEvent("ai_unlock_error", { reading_id: readingId, error: result.error });
         getCreditStatusAction().then(setCreditStatus);
       }
     });
@@ -139,10 +166,6 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
     );
   }
 
-  const remainingUnlocks = creditStatus ? Math.floor(creditStatus.credits / COST_PER_INTERPRETATION) : null;
-  const outOfCredits = creditStatus !== null && creditStatus.credits < COST_PER_INTERPRETATION;
-  const isOnFreeTrial = !outOfCredits && creditStatus !== null && !creditStatus.hasPurchased;
-
   return (
     <Card className="flex flex-col items-center gap-4 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-tint">
@@ -165,6 +188,12 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
       {outOfCredits ? (
         <Link
           href="/profile"
+          onClick={() =>
+            trackEvent("topup_prompt_click", {
+              reading_id: readingId,
+              has_purchased: creditStatus?.hasPurchased ?? false,
+            })
+          }
           className="inline-flex items-center justify-center gap-2 rounded-full border border-accent bg-accent px-6 py-3 text-sm font-medium tracking-wide text-accent-foreground transition-colors duration-300 hover:opacity-90"
         >
           {creditStatus?.hasPurchased
@@ -196,7 +225,10 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
           <p className="text-sm text-red-600">{error}</p>
           <button
             type="button"
-            onClick={handleUnlock}
+            onClick={() => {
+              trackEvent("ai_unlock_retry", { reading_id: readingId });
+              handleUnlock();
+            }}
             className="text-sm text-accent hover:underline"
           >
             Thử lại

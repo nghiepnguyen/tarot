@@ -1,14 +1,27 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
 import { loginAction } from "@/app/actions/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { trackEvent } from "@/lib/analytics/gtag";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(loginAction, undefined);
+
+  // Thành công thì server redirect, state không bao giờ quay lại — nên ở đây
+  // chỉ có thể ghi nhận thất bại. Conversion thành công do AuthSuccessTracker
+  // bắn sau khi về trang chủ.
+  useEffect(() => {
+    if (!state) return;
+    const fieldErrors = Object.keys(state.errors ?? {});
+    trackEvent("login_failed", {
+      reason: state.message ? "server" : "validation",
+      fields: fieldErrors.join(",") || undefined,
+    });
+  }, [state]);
 
   return (
     <Card className="flex w-full max-w-sm flex-col gap-5">
@@ -19,7 +32,11 @@ export function LoginForm() {
         <p className="text-sm text-muted">Xem lại lịch sử trải bài của bạn.</p>
       </div>
 
-      <form action={action} className="flex flex-col gap-4">
+      <form
+        action={action}
+        onSubmit={() => trackEvent("login_submit")}
+        className="flex flex-col gap-4"
+      >
         <div className="flex flex-col gap-1.5">
           <Input
             name="email"

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
+import { trackEvent } from "@/lib/analytics/gtag";
 
 // Opening on hover alone left the menu unreachable on phones: Safari does
 // not focus a button on tap, so neither hover nor focus-within ever fired.
@@ -54,13 +55,27 @@ export function UserMenu({ label }: { label: string }) {
       {open ? (
         <div className="absolute right-0 top-full z-20 w-40 pt-2">
           <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-[0_8px_24px_-16px_rgba(51,41,31,0.25)]">
-            <Link href="/history" className={itemClass} onClick={() => setOpen(false)}>
+            <Link
+              href="/history"
+              className={itemClass}
+              onClick={() => {
+                trackEvent("nav_click", { destination: "/history", source: "user_menu" });
+                setOpen(false);
+              }}
+            >
               Lịch sử
             </Link>
-            <Link href="/profile" className={itemClass} onClick={() => setOpen(false)}>
+            <Link
+              href="/profile"
+              className={itemClass}
+              onClick={() => {
+                trackEvent("nav_click", { destination: "/profile", source: "user_menu" });
+                setOpen(false);
+              }}
+            >
               Hồ sơ
             </Link>
-            <form action={logoutAction}>
+            <form action={logoutAction} onSubmit={() => trackEvent("logout")}>
               <button type="submit" className={`w-full text-left ${itemClass}`}>
                 Đăng xuất
               </button>

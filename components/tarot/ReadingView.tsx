@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { FlipCard } from "@/components/tarot/FlipCard";
 import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
+import { LoginPromptLink } from "@/components/analytics/LoginPromptLink";
 
 interface ReadingViewProps {
   question: string;
@@ -34,9 +34,7 @@ export function ReadingView({ question, cards, readingId, onReset }: ReadingView
           <AiUnlockPanel readingId={readingId} />
         ) : (
           <p className="rounded-2xl border border-border bg-surface p-5 text-center text-sm text-muted">
-            <Link href="/login" className="text-accent hover:underline">
-              Đăng nhập
-            </Link>{" "}
+            <LoginPromptLink placement="reading_view" />{" "}
             để lưu lịch sử và mở khóa diễn giải chuyên sâu cho lần trải bài này.
           </p>
         )}

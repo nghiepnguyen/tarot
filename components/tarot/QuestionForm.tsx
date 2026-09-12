@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Sparkles, WalletCards } from "lucide-react";
 import { Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { trackEvent } from "@/lib/analytics/gtag";
 
 const MAX_LENGTH = 300;
 
@@ -52,7 +53,10 @@ export function QuestionForm({
           <button
             key={topic.label}
             type="button"
-            onClick={() => onChange(topic.question)}
+            onClick={() => {
+              trackEvent("question_suggestion_click", { topic: topic.label });
+              onChange(topic.question);
+            }}
             className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border px-4 text-sm text-muted transition-colors duration-300 hover:border-accent hover:bg-sage-tint hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {topic.label}
@@ -85,6 +89,7 @@ export function QuestionForm({
           <span>
             <Link
               href="/login"
+              onClick={() => trackEvent("login_prompt_click", { placement: "question_form" })}
               className="inline-flex min-h-11 items-center px-1 font-semibold text-foreground underline decoration-accent decoration-2 underline-offset-4 transition-colors duration-200 hover:text-accent"
             >
               Đăng nhập

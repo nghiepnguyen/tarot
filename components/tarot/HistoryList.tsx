@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { trackEvent } from "@/lib/analytics/gtag";
 import { deleteAllReadingsAction, deleteReadingAction } from "@/app/actions/readings";
 import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
@@ -35,7 +36,11 @@ export function HistoryList({ readings }: HistoryListProps) {
           variant="secondary"
           disabled={isPending}
           onClick={() => {
-            if (!window.confirm("Xóa toàn bộ lịch sử trải bài?")) return;
+            if (!window.confirm("Xóa toàn bộ lịch sử trải bài?")) {
+              trackEvent("history_delete_all_cancelled");
+              return;
+            }
+            trackEvent("history_delete_all", { reading_count: readings.length });
             startTransition(() => {
               void deleteAllReadingsAction();
             });
@@ -55,7 +60,15 @@ export function HistoryList({ readings }: HistoryListProps) {
             key={reading.id}
             className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_8px_24px_-16px_rgba(51,41,31,0.25)]"
           >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
+            <summary
+              onClick={(event) => {
+                // <details> chưa đổi trạng thái lúc click trên summary; open hiện
+                // tại vẫn là trạng thái cũ nên phải đảo lại.
+                const isOpening = !event.currentTarget.parentElement?.hasAttribute("open");
+                if (isOpening) trackEvent("history_reading_expand", { reading_id: reading.id });
+              }}
+              className="flex cursor-pointer list-none items-center justify-between gap-4 p-5"
+            >
               <div className="flex min-w-0 flex-col gap-1">
                 <p className="truncate text-sm text-foreground">“{reading.question}”</p>
                 <p className="truncate text-sm text-muted">
@@ -75,6 +88,7 @@ export function HistoryList({ readings }: HistoryListProps) {
                   type="button"
                   disabled={isPending}
                   onClick={() => {
+                    trackEvent("history_delete_one", { reading_id: reading.id });
                     startTransition(() => {
                       void deleteReadingAction(reading.id);
                     });

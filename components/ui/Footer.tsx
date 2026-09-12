@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsButton } from "@/components/analytics/CookieSettingsButton";
 
 const LEGAL_LINKS = [
   { href: "/terms", label: "Điều khoản sử dụng" },
@@ -21,6 +22,7 @@ export function Footer() {
               {link.label}
             </Link>
           ))}
+          <CookieSettingsButton />
         </nav>
       </div>
     </footer>

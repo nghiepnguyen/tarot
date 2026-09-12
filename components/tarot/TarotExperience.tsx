@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { drawSpreadPool, DECK_SPREAD_SIZE, SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import type { DrawnCard } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
+import { trackEvent } from "@/lib/analytics/gtag";
 import { saveReadingAction } from "@/app/actions/readings";
 import type { StoredCard } from "@/app/actions/readings";
 
@@ -96,6 +97,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
         if (saved) {
           setReadingId(saved.id);
           clearPendingReading();
+          trackEvent("reading_restored", { reading_id: saved.id });
         }
       } catch {
         // Still anonymous or a transient failure — keep the pending reading
@@ -107,26 +109,41 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
   const handleStartDraw = () => {
     if (question.trim().length === 0) {
       showToast("Vui lòng nhập câu hỏi trước khi bốc bài.", "error");
+      trackEvent("draw_blocked", { reason: "empty_question" });
       return;
     }
+    trackEvent("draw_start", {
+      question_length: question.trim().length,
+      is_logged_in: isLoggedIn,
+    });
     setPool(drawSpreadPool());
     setSelectedSlots([]);
     setStatus("picking");
   };
 
   const handleSelectSlot = (index: number) => {
-    setSelectedSlots((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
-      }
-      if (prev.length >= 3) return prev;
-      return [...prev, index];
+    // Tính trạng thái mới ngoài updater: updater có thể chạy hai lần ở
+    // StrictMode, bắn event bên trong sẽ đếm trùng.
+    const isPicked = selectedSlots.includes(index);
+    if (!isPicked && selectedSlots.length >= 3) return;
+    const next = isPicked
+      ? selectedSlots.filter((i) => i !== index)
+      : [...selectedSlots, index];
+
+    trackEvent(isPicked ? "card_deselect" : "card_select", {
+      picked_count: next.length,
     });
+    setSelectedSlots(next);
   };
 
   const handleReveal = () => {
     if (selectedSlots.length !== 3) return;
     const cards = selectedSlots.map((i) => pool[i]);
+    trackEvent("reading_reveal", {
+      is_logged_in: isLoggedIn,
+      cards: cards.map((drawn) => drawn.card.id).join(","),
+      reversed_count: cards.filter((drawn) => drawn.orientation === "reversed").length,
+    });
     const storedCards = cards.map((drawn, i) => ({
       cardId: drawn.card.id,
       orientation: drawn.orientation,
@@ -155,6 +172,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
   };
 
   const handleReset = () => {
+    trackEvent("reading_reset", { from_status: status });
     setQuestion("");
     setPool([]);
     setSelectedSlots([]);

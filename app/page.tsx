@@ -6,6 +6,7 @@ import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { TarotExperience } from "@/components/tarot/TarotExperience";
 import { Disclaimer } from "@/components/tarot/Disclaimer";
+import { AuthSuccessTracker } from "@/components/analytics/AuthSuccessTracker";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -37,12 +38,20 @@ const structuredData = {
   ],
 };
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth?: string }>;
+}) {
   const session = await auth();
+  const { auth: authResult } = await searchParams;
 
   return (
     <div className="flex flex-1 flex-col">
       <JsonLd data={structuredData} />
+      {authResult === "login" || authResult === "signup" ? (
+        <AuthSuccessTracker method={authResult} />
+      ) : null}
       <Header />
       <main className="flex flex-1 flex-col">
         <Section>

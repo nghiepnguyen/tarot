@@ -62,7 +62,8 @@ export async function signupAction(
   });
 
   await signIn("credentials", { email, password, redirect: false });
-  redirect("/");
+  // ?auth=... để client bắn conversion GA4; AuthSuccessTracker xoá param ngay sau đó.
+  redirect("/?auth=signup");
 }
 
 export async function loginAction(
@@ -97,7 +98,7 @@ export async function loginAction(
     throw error;
   }
 
-  redirect("/");
+  redirect("/?auth=login");
 }
 
 export async function logoutAction() {

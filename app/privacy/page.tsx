@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Chính sách riêng tư" updatedAt="05/09/2026">
+    <LegalPage title="Chính sách riêng tư" updatedAt="12/09/2026">
       <section>
         <h2>1. Dữ liệu chúng tôi thu thập</h2>
         <p>
@@ -37,6 +37,8 @@ export default function PrivacyPage() {
           diễn giải chuyên sâu, cổng thanh toán, hoặc dịch vụ email khi bạn
           chủ động sử dụng các tính
           năng tương ứng, và chỉ ở mức tối thiểu để hoàn tất yêu cầu đó.
+          Ngoài ra, dữ liệu đo lường ẩn danh được gửi tới Google Analytics như
+          mô tả ở mục 6.
         </p>
       </section>
 
@@ -62,9 +64,20 @@ export default function PrivacyPage() {
       <section>
         <h2>6. Cookie và theo dõi</h2>
         <p>
-          Chúng tôi có thể dùng cookie hoặc lưu trữ cục bộ để duy trì phiên
-          đăng nhập và ghi nhớ tùy chọn hiển thị. Dữ liệu phân tích, khi được
-          bật, tuân theo cơ chế xin sự đồng ý và được ẩn danh khi có thể.
+          Chúng tôi dùng cookie và lưu trữ cục bộ để duy trì phiên đăng nhập
+          và ghi nhớ tùy chọn hiển thị; phần này cần thiết để dịch vụ hoạt động
+          nên không có lựa chọn tắt. Ngoài ra chúng tôi dùng Google Analytics
+          để đo lường cách dịch vụ được sử dụng: số liệu này ghi nhận hành động
+          như bốc bài, mở khóa diễn giải hay hoàn tất thanh toán, nhưng không
+          bao gồm nội dung câu hỏi, email hay tên của bạn.
+        </p>
+        <p>
+          Google Analytics chỉ được nạp sau khi bạn bấm “Đồng ý” ở thông báo
+          cookie. Nếu bạn từ chối hoặc chưa trả lời, script không được tải và
+          không có cookie phân tích nào được đặt. Bạn có thể đổi lựa chọn bất cứ
+          lúc nào qua liên kết “Tùy chọn cookie” ở chân trang; khi rút lại đồng
+          ý, chúng tôi ngừng gửi dữ liệu và xóa cookie phân tích đã đặt. Dịch vụ
+          hoạt động như nhau ở cả hai lựa chọn.
         </p>
       </section>
     </LegalPage>

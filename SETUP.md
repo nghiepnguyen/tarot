@@ -151,10 +151,12 @@ app/
   history/, login/, signup/, profile/
   terms/, privacy/, refund/
 components/
+  analytics/            # script GA4, tracker page_view / purchase / auth
   tarot/                # ArcDeck, QuestionForm, ReadingView, FlipCard, ...
   ui/                   # Button, Input, Header, Footer, Toast, Section
 lib/
   ai/                   # prompt, gọi Gemini, validate bằng Zod
+  analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit
   db/                   # Prisma client
   payments/             # PayOS
@@ -202,6 +204,7 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 - Theo dõi error rate, latency, AI cost, conversion và giao dịch thất bại.
 - SEO: `app/robots.ts`, `app/sitemap.ts` và `app/opengraph-image.tsx` sinh ra `/robots.txt`, `/sitemap.xml`, ảnh OG; canonical và Open Graph lấy origin từ `SITE_URL` trong `lib/seo/site.ts`. Nếu `NEXT_PUBLIC_APP_URL` sai thì canonical của toàn site sai theo.
 - Các alias `*.vercel.app` vẫn trả 200 và không có `x-robots-tag`, nên về lý thuyết Google index được cả hai host. Canonical trỏ về domain chính đã xử lý phần lớn rủi ro; muốn dứt điểm thì gỡ alias `tarot-indol-tau.vercel.app` trong Vercel.
+- Analytics: Google Analytics 4 (`G-YR3ZHD8JBV`) hardcode trong `lib/analytics/gtag.ts`, không cần biến môi trường. Sau khi deploy, mở DebugView của GA4 và xác nhận `page_view` bắn đúng một lần mỗi route — điều hướng client-side của App Router là chỗ dễ đếm thiếu hoặc đếm trùng nhất. Danh mục event ở `ANALYTICS.md`.
 - Kiểm tra accessibility: contrast, focus state, alt text, keyboard navigation và reduced motion.
 
 ## CI/CD tối thiểu

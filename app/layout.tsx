@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lora, Geist_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { ToastProvider } from "@/components/ui/Toast";
 import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ToastProvider>{children}</ToastProvider>
       </body>
+      <GoogleAnalytics />
     </html>
   );
 }

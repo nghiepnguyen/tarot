@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // Fixture của Playwright nhận callback tên `use`; rule react-hooks tưởng
+    // nhầm đó là hook và bắt lỗi. Không có React nào trong thư mục này.
+    files: ["e2e/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

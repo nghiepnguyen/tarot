@@ -38,6 +38,15 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - Xác nhận giao dịch bằng webhook server-side, không chỉ dựa vào redirect từ trình duyệt.
 - Giai đoạn đầu có thể dùng form đặt lịch và email notification; sau đó tích hợp Google Calendar hoặc hệ thống booking chuyên dụng.
 
+## Đo lường
+
+- Google Analytics 4 (`G-YR3ZHD8JBV`) nạp qua `next/script` trong root layout.
+- `page_view` tự bắn theo route vì App Router điều hướng ở client; `gtag('config')` chạy với `send_page_view: false`.
+- Event sản phẩm đi qua `trackEvent()` trong `lib/analytics/gtag.ts`, no-op khi gtag bị chặn để tracking không bao giờ làm hỏng luồng chính.
+- Không gửi câu hỏi, email hay tên người dùng vào event. Doanh thu đối soát bằng bảng `Order`, không bằng GA.
+- Consent: script GA chỉ được nạp sau khi người dùng đồng ý ở cookie banner; event phát sinh trước đó nằm trong hàng đợi ở bộ nhớ và bị xóa nếu người dùng từ chối.
+- Danh mục event đầy đủ và quy ước đặt tên: `ANALYTICS.md`.
+
 ## Kiểm thử và chất lượng
 
 - Vitest cho unit test.

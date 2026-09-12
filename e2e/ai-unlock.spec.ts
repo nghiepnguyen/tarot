@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 function uniqueEmail() {
   return `e2e-ai-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;

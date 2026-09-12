@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { topUpCreditsAction } from "@/app/actions/ai";
 import { createOrderAction } from "@/app/actions/payments";
+import { trackEvent } from "@/lib/analytics/gtag";
 import { COST_PER_INTERPRETATION, DEMO_TOPUP_AMOUNT } from "@/lib/ai/interpretation";
 
 interface CreditsPanelProps {
@@ -29,6 +30,24 @@ export function CreditsPanel({ credits, packages, showDemoTopup }: CreditsPanelP
   const handleBuy = (packageId: string) => {
     setError(null);
     setPendingPackageId(packageId);
+
+    const pkg = packages.find((p) => p.id === packageId);
+    // GA4 ecommerce: value tính bằng VND để báo cáo doanh thu khớp với giá bán.
+    trackEvent("begin_checkout", {
+      currency: "VND",
+      value: pkg?.priceVnd ?? 0,
+      items: pkg
+        ? [
+            {
+              item_id: pkg.id,
+              item_name: pkg.name,
+              price: pkg.priceVnd,
+              quantity: 1,
+            },
+          ]
+        : [],
+    });
+
     startOrderTransition(async () => {
       const result = await createOrderAction(packageId);
       if (result.ok) {
@@ -36,6 +55,7 @@ export function CreditsPanel({ credits, packages, showDemoTopup }: CreditsPanelP
       } else {
         setError(result.error);
         setPendingPackageId(null);
+        trackEvent("checkout_error", { item_id: packageId, error: result.error });
       }
     });
   };

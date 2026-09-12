@@ -50,4 +50,4 @@ pnpm install
 pnpm dev
 ```
 
-Mở [http://localhost:3000](http://localhost:3000), bản production ở [https://tarot.thanhnghiep.top](https://tarot.thanhnghiep.top/). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md).
+Mở [http://localhost:3000](http://localhost:3000), bản production ở [https://tarot.thanhnghiep.top](https://tarot.thanhnghiep.top/). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md), danh mục event đo lường tại [ANALYTICS.md](ANALYTICS.md).
