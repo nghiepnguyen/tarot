@@ -44,7 +44,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - Playwright cho flow nhập câu hỏi, bốc bài, unlock AI và booking.
 - ESLint và Prettier cho chất lượng mã nguồn.
 - Sentry hoặc công cụ tương đương cho error tracking.
-- Vercel cho deploy frontend/Next.js; PostgreSQL, Redis và storage dùng dịch vụ managed.
+- Vercel cho deploy Next.js; PostgreSQL dùng dịch vụ managed (đang là Neon). Migration production chạy tay, xem `SETUP.md`.
 
 ## Ngôn ngữ thiết kế
 

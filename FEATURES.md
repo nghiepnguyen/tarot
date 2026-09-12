@@ -17,7 +17,7 @@
 - Ô nhập câu hỏi có placeholder và giới hạn ký tự.
 - Gợi ý câu hỏi theo chủ đề: tình yêu, công việc, tài chính, phát triển bản thân.
 - Nút “Bốc 3 lá bài”.
-- Bộ bài hiển thị dạng vòng cung ở bên dưới màn hình.
+- Bộ bài hiển thị dạng vòng cung ở bên dưới màn hình, chỉ để trang trí. Bước bốc bài dùng lưới chia trang cuộn ngang có snap, vì vòng cung trải 78 lá rộng tới ~3600px, kéo mãi không tới hai đầu.
 - Hiệu ứng hover/focus nhẹ, hỗ trợ keyboard và reduced motion.
 
 ### Trải bài
@@ -88,7 +88,7 @@
 ## Tiêu chí MVP hoàn thành
 
 - Người dùng có thể nhập câu hỏi và bốc đúng ba lá không trùng.
-- Bộ bài vòng cung hiển thị tốt trên mobile và desktop.
+- Màn hình bốc bài dùng tốt trên cả mobile và desktop, không phải kéo ngang lê thê.
 - Kết quả có trạng thái loading, success và error rõ ràng.
 - Mỗi lá có tên, hình ảnh và diễn giải cơ bản.
 - Paywall AI hiển thị minh bạch; free trial và nạp credit qua thanh toán thật (PayOS) đã hoạt động.
