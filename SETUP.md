@@ -200,7 +200,8 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 - Không log câu hỏi hoặc dữ liệu nhạy cảm nếu không cần thiết.
 - Thiết lập backup database và chính sách retention.
 - Theo dõi error rate, latency, AI cost, conversion và giao dịch thất bại.
-- Kiểm tra SEO metadata, sitemap, robots và Open Graph.
+- SEO: `app/robots.ts`, `app/sitemap.ts` và `app/opengraph-image.tsx` sinh ra `/robots.txt`, `/sitemap.xml`, ảnh OG; canonical và Open Graph lấy origin từ `SITE_URL` trong `lib/seo/site.ts`. Nếu `NEXT_PUBLIC_APP_URL` sai thì canonical của toàn site sai theo.
+- Các alias `*.vercel.app` vẫn trả 200 và không có `x-robots-tag`, nên về lý thuyết Google index được cả hai host. Canonical trỏ về domain chính đã xử lý phần lớn rủi ro; muốn dứt điểm thì gỡ alias `tarot-indol-tau.vercel.app` trong Vercel.
 - Kiểm tra accessibility: contrast, focus state, alt text, keyboard navigation và reduced motion.
 
 ## CI/CD tối thiểu

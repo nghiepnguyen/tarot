@@ -5,7 +5,8 @@ import { Section } from "@/components/ui/Section";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập — Tarot Reading Web",
+  title: "Đăng nhập",
+  robots: { index: false, follow: true },
 };
 
 export default function LoginPage() {

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Chính sách hoàn tiền — Tarot Reading Web",
+  title: "Chính sách hoàn tiền",
+  alternates: { canonical: "/refund" },
   description: "Chính sách hoàn tiền cho credit, gói VIP và dịch vụ tư vấn.",
 };
 

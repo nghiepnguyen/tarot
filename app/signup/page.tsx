@@ -5,7 +5,8 @@ import { Section } from "@/components/ui/Section";
 import { SignupForm } from "@/components/auth/SignupForm";
 
 export const metadata: Metadata = {
-  title: "Đăng ký — Tarot Reading Web",
+  title: "Đăng ký",
+  robots: { index: false, follow: true },
 };
 
 export default function SignupPage() {

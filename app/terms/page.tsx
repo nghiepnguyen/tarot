@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Điều khoản sử dụng — Tarot Reading Web",
+  title: "Điều khoản sử dụng",
+  alternates: { canonical: "/terms" },
   description: "Điều khoản sử dụng dịch vụ Tarot Reading Web.",
 };
 

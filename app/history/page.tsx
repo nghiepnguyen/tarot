@@ -13,7 +13,8 @@ import type { StoredCard } from "@/app/actions/readings";
 import { toDisplayInterpretation } from "@/lib/ai/interpretation";
 
 export const metadata: Metadata = {
-  title: "Lịch sử trải bài — Tarot Reading Web",
+  title: "Lịch sử trải bài",
+  robots: { index: false, follow: false },
 };
 
 const PAGE_SIZE = 8;

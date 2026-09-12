@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Chính sách riêng tư — Tarot Reading Web",
+  title: "Chính sách riêng tư",
+  alternates: { canonical: "/privacy" },
   description: "Chính sách riêng tư và xử lý dữ liệu của Tarot Reading Web.",
 };
 

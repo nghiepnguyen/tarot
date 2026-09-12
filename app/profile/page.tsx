@@ -9,7 +9,8 @@ import { ProfileForm } from "@/components/tarot/ProfileForm";
 import { CreditsPanel } from "@/components/tarot/CreditsPanel";
 
 export const metadata: Metadata = {
-  title: "Hồ sơ — Tarot Reading Web",
+  title: "Hồ sơ",
+  robots: { index: false, follow: false },
 };
 
 export default async function ProfilePage() {
