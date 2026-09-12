@@ -109,10 +109,9 @@ export async function updateProfileAction(formData: FormData) {
   if (!session?.user) return;
 
   const name = String(formData.get("name") ?? "").trim().slice(0, 60);
-  const language = formData.get("language") === "en" ? "en" : "vi";
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: name || null, language },
+    data: { name: name || null },
   });
 }

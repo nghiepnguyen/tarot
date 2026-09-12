@@ -44,7 +44,7 @@
 - Lưu lịch sử các lần trải bài.
 - Xem lại câu hỏi, ba lá bài và diễn giải cơ bản.
 - Xóa một reading hoặc xóa toàn bộ lịch sử.
-- Hồ sơ người dùng và tùy chọn ngôn ngữ.
+- Hồ sơ người dùng. Sản phẩm chỉ phục vụ tiếng Việt, không làm đa ngôn ngữ.
 - Rate limit và chống spam theo tài khoản/IP.
 
 ## Phase 3 — VIP và AI

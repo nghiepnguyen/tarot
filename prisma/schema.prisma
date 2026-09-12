@@ -12,7 +12,6 @@ model User {
   email                String             @unique
   passwordHash         String
   name                 String?
-  language             String             @default("vi")
   credits              Int                @default(0)
   freeCreditsGrantedAt DateTime?
   createdAt            DateTime           @default(now())

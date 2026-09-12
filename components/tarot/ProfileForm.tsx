@@ -9,10 +9,9 @@ import { updateProfileAction } from "@/app/actions/auth";
 interface ProfileFormProps {
   email: string;
   name: string;
-  language: string;
 }
 
-export function ProfileForm({ email, name, language }: ProfileFormProps) {
+export function ProfileForm({ email, name }: ProfileFormProps) {
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
@@ -38,21 +37,6 @@ export function ProfileForm({ email, name, language }: ProfileFormProps) {
           Tên hiển thị
         </label>
         <Input id="name" name="name" defaultValue={name} maxLength={60} />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-muted" htmlFor="language">
-          Ngôn ngữ
-        </label>
-        <select
-          id="language"
-          name="language"
-          defaultValue={language}
-          className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-        >
-          <option value="vi">Tiếng Việt</option>
-          <option value="en">English</option>
-        </select>
       </div>
 
       <Button type="submit" disabled={isPending} className="mt-2 self-start">

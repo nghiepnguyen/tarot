@@ -32,7 +32,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           name: user.name,
           email: user.email,
-          language: user.language,
         };
       },
     }),
@@ -41,13 +40,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
-        token.language = (user as { language?: string }).language ?? "vi";
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
-      session.user.language = (token.language as string | undefined) ?? "vi";
       return session;
     },
   },

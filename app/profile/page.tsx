@@ -33,11 +33,7 @@ export default async function ProfilePage() {
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               Hồ sơ
             </h1>
-            <ProfileForm
-              email={user.email}
-              name={user.name ?? ""}
-              language={user.language}
-            />
+            <ProfileForm email={user.email} name={user.name ?? ""} />
             <CreditsPanel
               credits={user.credits}
               packages={packages}
