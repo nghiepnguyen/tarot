@@ -16,7 +16,7 @@ test("signup logs the user in, and reveals a reading saves it to history", async
   await page.getByRole("button", { name: "Đăng ký" }).click();
 
   await expect(page).toHaveURL("/");
-  await page.getByRole("button", { name: "Người Dùng Thử" }).hover();
+  await page.getByRole("button", { name: "Người Dùng Thử" }).click();
   await expect(page.getByRole("button", { name: "Đăng xuất" })).toBeVisible();
 
   await page.getByLabel("Câu hỏi của bạn").fill("Tôi nên tập trung vào điều gì?");
@@ -50,9 +50,11 @@ test("wrong password on login shows an error", async ({ page }) => {
   await page.getByRole("button", { name: "Đăng ký" }).click();
   await expect(page).toHaveURL("/");
 
-  await page.getByRole("button", { name: "Người Dùng Thử 2" }).hover();
+  await page.getByRole("button", { name: "Người Dùng Thử 2" }).click();
   await page.getByRole("button", { name: "Đăng xuất" }).click();
-  await expect(page.getByRole("link", { name: "Đăng nhập" })).toBeVisible();
+  await expect(
+    page.locator("header").getByRole("link", { name: "Đăng nhập" }),
+  ).toBeVisible();
 
   await page.goto("/login");
   await page.getByPlaceholder("Email").fill(email);
