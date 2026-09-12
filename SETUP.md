@@ -5,7 +5,7 @@
 - Node.js bản LTS tương thích với Next.js.
 - npm, pnpm hoặc yarn. Khuyến nghị pnpm để cài đặt nhanh và quản lý workspace tốt.
 - PostgreSQL nếu bật tính năng tài khoản và lịch sử.
-- Redis và object storage khi triển khai production có cache, audio hoặc job bất đồng bộ.
+- Object storage khi triển khai production cần lưu file lớn. Hiện chưa dùng: rate limit nằm trong Postgres, ảnh card nằm trong `public/`.
 - API key Google Gemini (`GEMINI_API_KEY`) nếu bật diễn giải AI. Không có key, nút mở khóa AI vẫn hoạt động và hiển thị lỗi rõ ràng thay vì crash.
 
 ## Tạo project

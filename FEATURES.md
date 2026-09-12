@@ -55,7 +55,6 @@
 - Ghi sổ giao dịch credit (free grant, mua, chi tiêu, hoàn tiền) để đo tỷ lệ free-to-paid.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
 - Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh.
-- Cho phép nghe audio bằng text-to-speech.
 - Hiển thị trạng thái đang tạo, retry và lỗi tạm thời.
 - Lưu kết quả AI theo reading ID để không tạo trùng.
 - Không cho AI trình bày nội dung như lời khuyên chuyên môn hoặc lời tiên tri chắc chắn.
@@ -75,10 +74,16 @@
 - CRUD bộ bài, hình ảnh, từ khóa và diễn giải cơ bản.
 - Quản lý người dùng, credit, giao dịch và booking.
 - Quản lý prompt template và phiên bản model AI.
-- Dashboard conversion: nhập câu hỏi, bốc bài, unlock AI, nghe audio, đặt lịch.
+- Dashboard conversion: nhập câu hỏi, bốc bài, unlock AI, đặt lịch.
 - A/B testing CTA, giá và nội dung paywall.
 - SEO landing pages theo chủ đề câu hỏi.
 - Analytics với cơ chế consent và ẩn danh dữ liệu.
+
+## Lưu trữ — không nằm trong kế hoạch
+
+Ý tưởng đã cân nhắc rồi gác lại. Không làm cho đến khi có quyết định mới.
+
+- Nghe diễn giải AI bằng text-to-speech. Ba hướng đã cân nhắc: Web Speech API của trình duyệt (miễn phí, không cần lưu trữ, nhưng giọng phụ thuộc thiết bị và nhiều trình duyệt không có giọng tiếng Việt); Gemini TTS rồi lưu file lên object storage theo reading ID (giọng đồng nhất, tốn phí API và cần thêm dịch vụ lưu trữ, file WAV của bài diễn giải dài lên tới vài MB); Gemini TTS stream trực tiếp không lưu (tốn phí mỗi lần nghe và chờ lâu mỗi lần phát).
 
 ## Tiêu chí MVP hoàn thành
 

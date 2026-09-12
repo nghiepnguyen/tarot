@@ -22,7 +22,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 | Next.js Route Handlers / Server Actions | Theo Next.js | API nội bộ, mutation và bảo vệ secret ở server. |
 | PostgreSQL | 16+ hoặc managed stable | Dữ liệu quan hệ cho người dùng, tarot card, readings, credit/giao dịch (order, ledger), rate limit và booking. Hiện chạy trên Neon. |
 | Prisma ORM | 6.x hoặc stable mới nhất | Schema rõ ràng, migration và type-safe query. |
-| Object Storage | S3-compatible | Lưu ảnh card, audio AI và tài liệu liên quan. |
+| Object Storage | S3-compatible | Lưu ảnh card và tài liệu liên quan. Chưa dùng: ảnh card hiện nằm trong `public/`. |
 
 ## AI
 
@@ -30,7 +30,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - Prompt nên nhận các biến: câu hỏi, tên lá, vị trí, xuôi/ngược, chủ đề và giọng văn.
 - Structured output nên được validate bằng Zod trước khi hiển thị.
 - Không gửi thông tin thanh toán hoặc dữ liệu không cần thiết vào prompt.
-- Audio có thể dùng dịch vụ text-to-speech riêng; lưu audio theo reading ID để tránh tạo lại không cần thiết.
+- Text-to-speech đã gác lại, xem mục "Lưu trữ — không nằm trong kế hoạch" trong `FEATURES.md`.
 
 ## Thanh toán và lịch hẹn
 
