@@ -20,7 +20,7 @@ export async function saveReadingAction(
   const session = await auth();
   if (!session?.user) return null;
 
-  if (!checkRateLimit(`save-reading:${session.user.id}`, 30, 60 * 60 * 1000)) {
+  if (!(await checkRateLimit(`save-reading:${session.user.id}`, 30, 60 * 60 * 1000))) {
     return null;
   }
 

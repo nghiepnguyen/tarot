@@ -13,7 +13,7 @@ export async function createOrderAction(packageId: string): Promise<CreateOrderR
   const session = await auth();
   if (!session?.user) return { ok: false, error: "Vui lòng đăng nhập để nạp credit." };
 
-  if (!checkRateLimit(`create-order:${session.user.id}`, 10, 60 * 60 * 1000)) {
+  if (!(await checkRateLimit(`create-order:${session.user.id}`, 10, 60 * 60 * 1000))) {
     return { ok: false, error: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." };
   }
 

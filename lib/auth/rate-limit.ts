@@ -1,31 +1,36 @@
 import { headers } from "next/headers";
-
-interface Bucket {
-  count: number;
-  resetAt: number;
-}
-
-const buckets = new Map<string, Bucket>();
+import { prisma } from "@/lib/db/prisma";
 
 /**
- * Fixed-window limiter, in-process only. Fine for a single instance;
- * swap for a Redis-backed limiter before scaling to multiple instances.
+ * Fixed-window limiter backed by Postgres, so the counters survive a
+ * deploy and stay shared across instances. The whole read-modify-write
+ * is one statement: two concurrent requests on the same key can't both
+ * read a stale count and let the caller through twice.
  */
-export function checkRateLimit(key: string, limit: number, windowMs: number): boolean {
-  const now = Date.now();
-  const bucket = buckets.get(key);
+export async function checkRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<boolean> {
+  const resetAt = new Date(Date.now() + windowMs);
 
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
+  const [{ count }] = await prisma.$queryRaw<[{ count: number }]>`
+    INSERT INTO "RateLimit" ("key", "count", "resetAt")
+    VALUES (${key}, 1, ${resetAt})
+    ON CONFLICT ("key") DO UPDATE SET
+      "count" = CASE WHEN "RateLimit"."resetAt" <= NOW() THEN 1 ELSE "RateLimit"."count" + 1 END,
+      "resetAt" = CASE WHEN "RateLimit"."resetAt" <= NOW() THEN ${resetAt} ELSE "RateLimit"."resetAt" END
+    RETURNING "count"
+  `;
+
+  // Expired rows are dead weight — IP-keyed ones in particular are never
+  // looked up again. Sweeping from a small share of calls keeps the table
+  // bounded without a scheduled job.
+  if (Math.random() < 0.02) {
+    await prisma.rateLimit.deleteMany({ where: { resetAt: { lte: new Date() } } });
   }
 
-  if (bucket.count >= limit) {
-    return false;
-  }
-
-  bucket.count += 1;
-  return true;
+  return count <= limit;
 }
 
 export async function getClientIp(): Promise<string> {

@@ -19,7 +19,7 @@ export async function signupAction(
   formData: FormData,
 ): Promise<SignupFormState> {
   const ip = await getClientIp();
-  if (!checkRateLimit(`signup:${ip}`, 5, 60 * 60 * 1000)) {
+  if (!(await checkRateLimit(`signup:${ip}`, 5, 60 * 60 * 1000))) {
     return { message: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." };
   }
 
@@ -71,7 +71,7 @@ export async function loginAction(
 ): Promise<LoginFormState> {
   const ip = await getClientIp();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!checkRateLimit(`login:${ip}:${email}`, 10, 15 * 60 * 1000)) {
+  if (!(await checkRateLimit(`login:${ip}:${email}`, 10, 15 * 60 * 1000))) {
     return { message: "Đăng nhập sai quá nhiều lần, vui lòng thử lại sau." };
   }
 

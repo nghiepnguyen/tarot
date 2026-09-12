@@ -35,7 +35,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     return { ok: true, data: toDisplayInterpretation(reading.aiInterpretation) };
   }
 
-  if (!checkRateLimit(`ai-unlock:${session.user.id}`, 20, 60 * 60 * 1000)) {
+  if (!(await checkRateLimit(`ai-unlock:${session.user.id}`, 20, 60 * 60 * 1000))) {
     return { ok: false, error: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." };
   }
 
@@ -144,7 +144,7 @@ export async function topUpCreditsAction() {
   const session = await auth();
   if (!session?.user) return;
 
-  if (!checkRateLimit(`topup:${session.user.id}`, 10, 60 * 60 * 1000)) return;
+  if (!(await checkRateLimit(`topup:${session.user.id}`, 10, 60 * 60 * 1000))) return;
 
   await prisma.user.update({
     where: { id: session.user.id },

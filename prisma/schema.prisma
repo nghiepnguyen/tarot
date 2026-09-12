@@ -20,6 +20,14 @@ model User {
   orders               Order[]
 }
 
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 enum CreditTransactionType {
   FREE_GRANT
   PURCHASE
