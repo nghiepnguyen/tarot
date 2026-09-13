@@ -72,7 +72,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   });
 
   try {
-    const result = await generateInterpretation(reading.question, cardInputs);
+    const { result, usage } = await generateInterpretation(reading.question, cardInputs);
 
     await prisma.aiInterpretation.create({
       data: {
@@ -89,6 +89,10 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
         reflectiveQuestion: result.reflectiveQuestion,
         closingNote: result.closingNote,
         model: GEMINI_MODEL,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        thinkingTokens: usage.thinkingTokens,
+        latencyMs: usage.latencyMs,
       },
     });
 

@@ -100,6 +100,26 @@ export const InterpretationResultSchema = z.object({
 export type InterpretationResult = z.infer<typeof InterpretationResultSchema>;
 
 /**
+ * Chi phí của một lượt sinh, đọc từ `usageMetadata`.
+ *
+ * Mọi trường đều optional: Gemini không đảm bảo trả về usageMetadata, và một
+ * lượt sinh thiếu số đo vẫn là một lượt sinh hợp lệ — không đáng để ném lỗi và
+ * hoàn credit chỉ vì không đếm được token.
+ */
+export interface InterpretationUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+  thinkingTokens?: number;
+  latencyMs?: number;
+}
+
+/** Kết quả sinh kèm chi phí của chính lượt sinh đó. */
+export interface GeneratedInterpretation {
+  result: InterpretationResult;
+  usage: InterpretationUsage;
+}
+
+/**
  * Shape used for rendering. Readings generated before summary/themes/
  * closingNote existed have those columns as null in the database, so the
  * UI treats them as optional and simply omits those sections rather than

@@ -369,7 +369,11 @@ Mình không thể dùng Tarot để khẳng định một kết quả chắc ch
 
 Mỗi request cần lưu `prompt_version`, model, thời gian phản hồi, token usage và trạng thái kiểm duyệt; không lưu API key và không ghi câu hỏi nguyên văn vào log mặc định. Nên giới hạn độ dài câu hỏi ở tầng API và giới hạn số lượt tạo AI theo quyền VIP.
 
-Thực tế hiện tại: `AiInterpretation` mới lưu `model` và `createdAt`, chưa có cột token usage hay thời gian phản hồi. Vì vậy mọi con số dưới đây là đo tay một lần, không phải số liệu gom từ production.
+Thực tế hiện tại: `AiInterpretation` lưu `model`, `inputTokens`, `outputTokens`, `thinkingTokens` và `latencyMs` cho mỗi lượt sinh. Các cột này nullable — row viết trước ngày 13/09/2026 không có số, và Gemini không đảm bảo luôn trả `usageMetadata`, nên một lượt sinh thiếu số đo vẫn được lưu bình thường thay vì bị ném lỗi và hoàn credit.
+
+`thinkingTokens` tách riêng khỏi `outputTokens` dù cả hai tính cùng một giá: phần thinking phình nhanh hơn phần chữ mỗi khi prompt siết thêm ràng buộc, và gộp lại thì không còn nhìn ra điều đó.
+
+Chưa lưu `prompt_version` và trạng thái kiểm duyệt. Bảng số dưới đây là đo tay trước khi có các cột trên, giữ lại làm mốc so sánh; từ nay số thật nằm trong database.
 
 ### Thời gian và token, đo ngày 13/09/2026
 
@@ -400,6 +404,19 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 COGS đi từ khoảng 4% lên khoảng 11% doanh thu. Giá 10 credit mỗi lượt không cần chỉnh.
 
 Tier **Flex** của cùng model rẻ đúng một nửa ($0,25 / $1,50, tức ~182đ mỗi lượt), đổi lại là độ trễ không cam kết. Với một thao tác người dùng đã phải ngồi chờ 28 giây thì khoản tiết kiệm đó nhiều khả năng không đáng, nhưng nó có tồn tại nếu về sau chi phí thành vấn đề.
+
+Truy vấn chi phí thực tế theo ngày, nay khi số đã nằm trong database:
+
+```sql
+SELECT date_trunc('day', "createdAt") AS ngay,
+       count(*) AS luot,
+       round(avg("latencyMs")) AS tre_tb_ms,
+       sum("inputTokens") AS input,
+       sum("outputTokens" + "thinkingTokens") AS output_tinh_tien
+FROM "AiInterpretation"
+WHERE "inputTokens" IS NOT NULL
+GROUP BY 1 ORDER BY 1 DESC;
+```
 
 Chỗ tốn tiền đáng để mắt không phải biên lợi nhuận mà là free trial: mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ, không thu lại gì, và không có gì chặn việc đăng ký email mới để lấy tiếp.
 

@@ -6,8 +6,8 @@ import {
   InterpretationResultSchema,
   SYSTEM_INSTRUCTION,
   buildInterpretationPrompt,
+  type GeneratedInterpretation,
   type InterpretationCardInput,
-  type InterpretationResult,
 } from "@/lib/ai/interpretation";
 
 export class MissingApiKeyError extends Error {
@@ -29,9 +29,10 @@ function getClient(): GoogleGenAI {
 export async function generateInterpretation(
   question: string,
   cards: InterpretationCardInput[],
-): Promise<InterpretationResult> {
+): Promise<GeneratedInterpretation> {
   const ai = getClient();
 
+  const startedAt = Date.now();
   const response = await ai.models.generateContent({
     model: GEMINI_MODEL,
     contents: buildInterpretationPrompt(question, cards),
@@ -41,9 +42,20 @@ export async function generateInterpretation(
       responseSchema: INTERPRETATION_RESPONSE_SCHEMA,
     },
   });
+  const latencyMs = Date.now() - startedAt;
 
   const text = response.text;
   if (!text) throw new Error("Gemini không trả về nội dung.");
 
-  return InterpretationResultSchema.parse(JSON.parse(text));
+  const usage = response.usageMetadata;
+
+  return {
+    result: InterpretationResultSchema.parse(JSON.parse(text)),
+    usage: {
+      inputTokens: usage?.promptTokenCount,
+      outputTokens: usage?.candidatesTokenCount,
+      thinkingTokens: usage?.thoughtsTokenCount,
+      latencyMs,
+    },
+  };
 }

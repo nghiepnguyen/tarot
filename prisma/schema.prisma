@@ -121,5 +121,14 @@ model AiInterpretation {
   reflectiveQuestion    String
   closingNote           String?
   model                 String
+  // Chi phí mỗi lượt sinh. Nullable vì những row viết trước khi có các cột
+  // này không có số, và vì Gemini không đảm bảo luôn trả usageMetadata.
+  // thinkingTokens tách riêng khỏi outputTokens dù cả hai tính cùng một giá:
+  // phần thinking phình nhanh hơn phần chữ mỗi khi prompt siết thêm ràng
+  // buộc, và gộp lại thì không còn nhìn ra điều đó.
+  inputTokens           Int?
+  outputTokens          Int?
+  thinkingTokens        Int?
+  latencyMs             Int?
   createdAt             DateTime @default(now())
 }
