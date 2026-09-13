@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
+import { seedCreditPackages } from "../prisma/credit-packages";
 
 /**
  * Playwright chạy trong tiến trình node của chính nó, không đi qua Next nên
@@ -44,11 +45,15 @@ export default async function globalSetup() {
     );
   }
 
-  // Suite tiêu 4 trong số 5 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
-  // nên nếu không dọn thì lần chạy thứ hai trong cùng giờ sẽ tự chặn chính nó.
   const prisma = new PrismaClient();
   try {
+    // Suite tiêu 4 trong số 5 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
+    // nên nếu không dọn thì lần chạy thứ hai trong cùng giờ sẽ tự chặn chính nó.
     await prisma.rateLimit.deleteMany({});
+
+    // CI chỉ chạy `migrate deploy`, không chạy seed, nên bảng gói credit rỗng
+    // và trang nạp tiền hiện nhánh "chưa có gói nào đang mở bán".
+    await seedCreditPackages(prisma);
   } finally {
     await prisma.$disconnect();
   }

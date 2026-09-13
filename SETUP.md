@@ -284,6 +284,8 @@ Playwright tự dựng server (`pnpm build && pnpm start`), nên không cần `p
 - **Chặn chạy nhầm lên production.** Bộ test đăng ký tài khoản và ghi reading thật. `DATABASE_URL` không trỏ tới host local (và không phải CI) thì nó dừng ngay thay vì đổ rác vào dữ liệu người dùng.
 - **Dọn bảng `RateLimit`.** Suite tiêu 4 trong số 5 lượt đăng ký mỗi giờ mà `signupAction` cho phép trên mỗi IP. Không dọn thì lần chạy thứ hai trong cùng một giờ sẽ tự chặn chính nó, và lỗi hiện ra là "đăng ký thất bại" chứ không nói gì về rate limit. CI không gặp vì database dựng mới mỗi lần.
 
+- **Seed danh mục gói credit.** CI chỉ chạy `prisma migrate deploy`, không chạy seed, nên bảng `CreditPackage` rỗng và trang nạp tiền hiện nhánh "chưa có gói nào đang mở bán". Danh mục nằm ở `prisma/credit-packages.ts`, dùng chung với `pnpm db:seed`.
+
 Nó cũng tự đọc `.env.local` — tiến trình Playwright không đi qua Next nên không được nạp sẵn biến môi trường.
 
 Test `ai-unlock` kiểm tra nhánh thiếu `GEMINI_API_KEY`, nên nó tự skip khi máy bạn có key thật. Ở CI không cấu hình key nên test chạy bình thường.

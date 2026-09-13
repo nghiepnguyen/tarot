@@ -1,27 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+import { seedCreditPackages } from "./credit-packages";
 
 const prisma = new PrismaClient();
-
-// `isActive` khai báo tường minh: trang hồ sơ chỉ hiện gói đang active, nên một
-// dòng bị tắt tay sẽ làm cả khu vực nạp tiền trống trơn. Không có cột này thì
-// lệnh update bỏ qua nó và chạy lại seed cũng không cứu được.
-const CREDIT_PACKAGES = [
-  { name: "Khởi động", credits: 50, priceVnd: 19_000, sortOrder: 1, isActive: true },
-  { name: "Phổ biến", credits: 100, priceVnd: 35_000, sortOrder: 2, isActive: true },
-  { name: "Tiết kiệm", credits: 200, priceVnd: 65_000, sortOrder: 3, isActive: true },
-  { name: "Sâu sắc", credits: 500, priceVnd: 149_000, sortOrder: 4, isActive: true },
-];
-
-async function main() {
-  for (const pkg of CREDIT_PACKAGES) {
-    const existing = await prisma.creditPackage.findFirst({ where: { name: pkg.name } });
-    if (existing) {
-      await prisma.creditPackage.update({ where: { id: existing.id }, data: pkg });
-    } else {
-      await prisma.creditPackage.create({ data: pkg });
-    }
-  }
-}
 
 main()
   .then(() => prisma.$disconnect())
@@ -30,3 +10,7 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+async function main() {
+  await seedCreditPackages(prisma);
+}
