@@ -7,14 +7,31 @@ import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { ProfileForm } from "@/components/tarot/ProfileForm";
 import { CreditsPanel } from "@/components/tarot/CreditsPanel";
+import { RECONCILE_GRACE_MS } from "@/lib/payments/orders";
 import { PurchaseTracker } from "@/components/analytics/PurchaseTracker";
 import { CheckoutCancelledTracker } from "@/components/analytics/CheckoutCancelledTracker";
 import { OrderStatusWatcher } from "@/components/tarot/OrderStatusWatcher";
+import { PendingOrdersReconciler } from "@/components/tarot/PendingOrdersReconciler";
 
 export const metadata: Metadata = {
   title: "Hồ sơ",
   robots: { index: false, follow: false },
 };
+
+/**
+ * Chỉ kiểm tra sự tồn tại. Đối soát thật nằm trong server action — đọc đồng hồ
+ * và gọi PayOS trong lúc render là hai việc không thuộc về đó.
+ */
+async function hasStalePendingOrder(userId: string): Promise<boolean> {
+  const count = await prisma.order.count({
+    where: {
+      userId,
+      status: "PENDING",
+      createdAt: { lte: new Date(Date.now() - RECONCILE_GRACE_MS) },
+    },
+  });
+  return count > 0;
+}
 
 export default async function ProfilePage({
   searchParams,
@@ -49,6 +66,14 @@ export default async function ProfilePage({
   const settlingOrder =
     params.status === "success" && returnedOrder?.status === "PENDING" ? returnedOrder : null;
 
+  // Đơn treo từ lần trước: webhook trượt và người dùng đã đóng tab, nên không
+  // đường nào chốt được nó ngoài cron — mỗi ngày một lần trên gói Hobby. Hỏi
+  // ở đây thì họ không phải đợi tới đó.
+  //
+  // `settlingOrder` đã có người theo dõi riêng rồi, không cần đường thứ hai.
+  const hasStale =
+    settlingOrder === null && (await hasStalePendingOrder(session.user.id));
+
   return (
     <div className="flex flex-1 flex-col">
       <Header />
@@ -65,6 +90,7 @@ export default async function ProfilePage({
         <CheckoutCancelledTracker orderId={returnedOrder.id} />
       ) : null}
       {settlingOrder ? <OrderStatusWatcher orderId={settlingOrder.id} /> : null}
+      {hasStale ? <PendingOrdersReconciler /> : null}
       <main className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-8">

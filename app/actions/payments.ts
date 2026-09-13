@@ -5,7 +5,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit } from "@/lib/auth/rate-limit";
 import { createPaymentLink } from "@/lib/payments/payos";
-import { ORDER_TTL_MS, reconcileOrder } from "@/lib/payments/orders";
+import {
+  ORDER_TTL_MS,
+  reconcileOrder,
+  reconcileUserPendingOrders,
+} from "@/lib/payments/orders";
 import { SITE_URL } from "@/lib/seo/site";
 
 export type CreateOrderResult =
@@ -100,4 +104,30 @@ export async function getOrderStatusAction(orderId: string): Promise<OrderStatus
   });
 
   return { ok: true, status, credits: user?.credits ?? 0 };
+}
+
+/** Nhiều hơn số này thì để cron dọn, một lần mở trang không nên gọi PayOS cả chục lượt. */
+const MAX_SELF_RECONCILE = 3;
+
+export type ReconcileMyOrdersResult = { settled: number };
+
+/**
+ * Đối soát các đơn còn `PENDING` của chính người đang đăng nhập.
+ *
+ * Bịt khe hở còn lại sau khi cron phải hạ xuống mỗi ngày trên gói Hobby:
+ * webhook trượt **và** người dùng đóng tab trước khi trang trả về kịp đối
+ * soát. Người quay lại `/profile` hỏi "credit đâu" chính là người cần nó nhất.
+ *
+ * Không trả lỗi ra ngoài: đây là việc chạy ngầm, hỏng thì im lặng và để lần
+ * sau thử lại, không có gì để người dùng làm với một thông báo lỗi ở đây.
+ */
+export async function reconcileMyPendingOrdersAction(): Promise<ReconcileMyOrdersResult> {
+  const session = await auth();
+  if (!session?.user) return { settled: 0 };
+
+  if (!(await checkRateLimit(`reconcile-mine:${session.user.id}`, 20, 10 * 60 * 1000))) {
+    return { settled: 0 };
+  }
+
+  return { settled: await reconcileUserPendingOrders(session.user.id, MAX_SELF_RECONCILE) };
 }

@@ -84,6 +84,8 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 
 `purchase_pending` gần như luôn bắn trước `purchase`: PayOS đẩy người dùng về trang ngay, thường trước khi webhook kịp tới. Chênh lệch `purchase_pending − purchase` là số đơn không chốt được trong ~1 phút; `purchase_unsettled` kèm `order_status` cho biết vì sao (`PENDING` là webhook lẫn đối soát đều chưa xong, các giá trị khác là đơn đã đóng).
 
+Đơn được cứu ở đường thứ ba — đối soát khi người dùng mở lại `/profile` — **không** bắn `purchase`. Đó là những đơn mà người dùng đã rời trang trả về từ trước, nên chưa từng có `purchase` nào để bắn trùng; hệ quả là GA4 đếm thiếu đúng bằng số đơn hiếm hoi đó. Ledger `CreditTransaction` mới là con số doanh thu đúng.
+
 `purchase` **không** tin vào query param. `app/profile/page.tsx` đọc đơn từ database và chỉ render `PurchaseTracker` khi đơn đó có `status === "PAID"` và thuộc về người đang đăng nhập — webhook mới là nguồn sự thật. Người dùng tải lại trang trả về nhiều lần cũng chỉ bắn một lần, nhờ khóa `tarot:purchaseTracked:<orderId>` trong `sessionStorage`.
 
 ### Tài khoản

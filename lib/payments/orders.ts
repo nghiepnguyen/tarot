@@ -12,6 +12,13 @@ export type { RefundOutcome } from "./refund";
  */
 export const ORDER_TTL_MS = 30 * 60 * 1000;
 
+/**
+ * Đơn mới tạo trong khoảng này thì bỏ qua, để không đua với webhook đang trên
+ * đường tới. Chỉ áp cho các đường quét nền; trang trả về sau thanh toán đối
+ * soát ngay vì ở đó người dùng đang ngồi đợi.
+ */
+export const RECONCILE_GRACE_MS = 5 * 60 * 1000;
+
 export type SettleOutcome =
   | "credited"
   | "already_paid"
@@ -166,7 +173,7 @@ export interface ReconcileSweepResult {
  */
 export async function reconcileStaleOrders(
   limit = 50,
-  graceMs = 5 * 60 * 1000,
+  graceMs = RECONCILE_GRACE_MS,
 ): Promise<ReconcileSweepResult> {
   const orders = await prisma.order.findMany({
     where: { status: "PENDING", createdAt: { lte: new Date(Date.now() - graceMs) } },
@@ -183,6 +190,35 @@ export async function reconcileStaleOrders(
     else result.closed += 1;
   }
   return result;
+}
+
+/**
+ * Đối soát các đơn còn `PENDING` của một người dùng cụ thể, trả về số đơn đã
+ * chốt được.
+ *
+ * Dùng khi chính người đó mở lại `/profile`: rẻ hơn quét toàn hệ thống, và
+ * nhắm đúng người đang thắc mắc credit của mình đâu.
+ */
+export async function reconcileUserPendingOrders(
+  userId: string,
+  limit = 3,
+  graceMs = RECONCILE_GRACE_MS,
+): Promise<number> {
+  const orders = await prisma.order.findMany({
+    where: {
+      userId,
+      status: "PENDING",
+      createdAt: { lte: new Date(Date.now() - graceMs) },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+  let settled = 0;
+  for (const order of orders) {
+    if ((await reconcileOrder(order)) !== "PENDING") settled += 1;
+  }
+  return settled;
 }
 
 /** Xem `lib/payments/refund.ts`. Bọc lại với client dùng chung của app. */

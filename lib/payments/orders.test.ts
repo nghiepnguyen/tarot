@@ -11,9 +11,13 @@ vi.mock("@/lib/db/prisma", () => ({
   },
 }));
 
-const { closeUnpaidOrder, creditPaidOrder, reconcileOrder, reconcileStaleOrders } = await import(
-  "./orders"
-);
+const {
+  closeUnpaidOrder,
+  creditPaidOrder,
+  reconcileOrder,
+  reconcileStaleOrders,
+  reconcileUserPendingOrders,
+} = await import("./orders");
 
 const MINUTE = 60 * 1000;
 
@@ -262,5 +266,82 @@ describe("reconcileStaleOrders", () => {
       stillPending: 0,
     });
     expect(fake.user("user_1")?.credits).toBe(50);
+  });
+});
+
+describe("reconcileUserPendingOrders", () => {
+  const PAID_INFO = {
+    orderCode: 1700000000001,
+    status: "PAID" as const,
+    amount: 19_000,
+    amountPaid: 19_000,
+  };
+
+  it("only touches the caller's own orders", async () => {
+    const mine = makeOrder({
+      ...BASE,
+      id: "order_mine",
+      createdAt: new Date(Date.now() - 30 * MINUTE),
+    });
+    const theirs = makeOrder({
+      ...BASE,
+      id: "order_theirs",
+      userId: "user_2",
+      providerOrderId: "1700000000002",
+      createdAt: new Date(Date.now() - 30 * MINUTE),
+    });
+    const fake = createFakePrisma(
+      [mine, theirs],
+      [
+        { id: "user_1", credits: 0 },
+        { id: "user_2", credits: 0 },
+      ],
+    );
+    prismaRef.current = fake.db;
+    getPaymentLink.mockResolvedValue(PAID_INFO);
+
+    await expect(reconcileUserPendingOrders("user_1")).resolves.toBe(1);
+
+    expect(fake.order("order_mine")?.status).toBe("PAID");
+    expect(fake.order("order_theirs")?.status).toBe("PENDING");
+    expect(fake.user("user_1")?.credits).toBe(50);
+    expect(fake.user("user_2")?.credits).toBe(0);
+  });
+
+  it("skips orders still inside the grace window", async () => {
+    const { fake } = setup({ ...BASE, createdAt: new Date() }, 0);
+    getPaymentLink.mockResolvedValue(PAID_INFO);
+
+    await expect(reconcileUserPendingOrders("user_1")).resolves.toBe(0);
+    expect(getPaymentLink).not.toHaveBeenCalled();
+    expect(fake.order("order_1")?.status).toBe("PENDING");
+  });
+
+  it("checks at most `limit` orders, leaving the rest to the cron sweep", async () => {
+    const orders = [1, 2, 3, 4, 5].map((n) =>
+      makeOrder({
+        ...BASE,
+        id: `order_${n}`,
+        providerOrderId: `170000000000${n}`,
+        createdAt: new Date(Date.now() - n * MINUTE - 30 * MINUTE),
+      }),
+    );
+    const fake = createFakePrisma(orders, [{ id: "user_1", credits: 0 }]);
+    prismaRef.current = fake.db;
+    getPaymentLink.mockResolvedValue({ ...PAID_INFO, status: "CANCELLED", amountPaid: 0 });
+
+    await expect(reconcileUserPendingOrders("user_1", 2)).resolves.toBe(2);
+    expect(getPaymentLink).toHaveBeenCalledTimes(2);
+  });
+
+  it("reports nothing settled when PayOS leaves the order pending", async () => {
+    const { fake } = setup(
+      { ...BASE, createdAt: new Date(Date.now() - 10 * MINUTE), expiresAt: new Date(Date.now() + MINUTE) },
+      0,
+    );
+    getPaymentLink.mockResolvedValue({ ...PAID_INFO, status: "PENDING", amountPaid: 0 });
+
+    await expect(reconcileUserPendingOrders("user_1")).resolves.toBe(0);
+    expect(fake.order("order_1")?.status).toBe("PENDING");
   });
 });
