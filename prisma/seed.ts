@@ -2,11 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// `isActive` khai báo tường minh: trang hồ sơ chỉ hiện gói đang active, nên một
+// dòng bị tắt tay sẽ làm cả khu vực nạp tiền trống trơn. Không có cột này thì
+// lệnh update bỏ qua nó và chạy lại seed cũng không cứu được.
 const CREDIT_PACKAGES = [
-  { name: "Khởi động", credits: 50, priceVnd: 19_000, sortOrder: 1 },
-  { name: "Phổ biến", credits: 100, priceVnd: 35_000, sortOrder: 2 },
-  { name: "Tiết kiệm", credits: 200, priceVnd: 65_000, sortOrder: 3 },
-  { name: "Sâu sắc", credits: 500, priceVnd: 149_000, sortOrder: 4 },
+  { name: "Khởi động", credits: 50, priceVnd: 19_000, sortOrder: 1, isActive: true },
+  { name: "Phổ biến", credits: 100, priceVnd: 35_000, sortOrder: 2, isActive: true },
+  { name: "Tiết kiệm", credits: 200, priceVnd: 65_000, sortOrder: 3, isActive: true },
+  { name: "Sâu sắc", credits: 500, priceVnd: 149_000, sortOrder: 4, isActive: true },
 ];
 
 async function main() {
