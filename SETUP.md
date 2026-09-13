@@ -196,7 +196,7 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 6. Deploy preview trước để kiểm tra flow bốc bài, paywall và responsive.
 7. Cấu hình domain, HTTPS, webhook thanh toán và redirect URL. Domain production là `tarot.thanhnghiep.top`; sau khi trỏ DNS xong phải cập nhật `NEXT_PUBLIC_APP_URL=https://tarot.thanhnghiep.top` cho môi trường Production rồi redeploy, vì biến `NEXT_PUBLIC_` được nướng vào bundle lúc build chứ không đọc lại lúc chạy.
 8. Khai báo webhook PayOS trỏ về `https://tarot.thanhnghiep.top/api/webhooks/payos` và kiểm tra lại một giao dịch thật.
-9. Đặt `CRON_SECRET` cho Production. `vercel.json` khai báo cron chạy mỗi giờ; gói Hobby chỉ kích hoạt cron một lần mỗi ngày, muốn đúng nhịp một giờ thì cần Pro. Nhịp chậm không làm hỏng gì — trang trả về sau thanh toán đã tự đối soát ngay, cron chỉ là lưới dưới.
+9. Đặt `CRON_SECRET` cho Production. `vercel.json` khai báo cron chạy mỗi ngày lúc `0 20 * * *` UTC, tức 3 giờ sáng giờ Việt Nam. Lịch phải là mỗi ngày: gói Hobby **từ chối deploy** nếu biểu thức chạy hơn một lần một ngày (`0 * * * *` sẽ hỏng deploy với lỗi "Hobby accounts are limited to daily cron jobs"). Hobby cũng không bảo đảm đúng giờ, lệch trong vòng một tiếng là bình thường. Lên Pro thì hạ xuống `0 * * * *` được.
 
 ### Checklist production
 
@@ -224,11 +224,13 @@ Có ba đường cùng gọi vào `lib/payments/orders.ts`, nên mọi đường
 | --- | --- | --- |
 | Webhook | PayOS gọi ngay sau khi trả tiền | `app/api/webhooks/payos/route.ts` |
 | Trang trả về | Người dùng quay lại `/profile?order=...&status=success`; hỏi lại trạng thái mỗi 3 giây trong ~1 phút | `components/tarot/OrderStatusWatcher.tsx` |
-| Cron | Mỗi giờ, quét đơn `PENDING` cũ hơn 5 phút | `app/api/cron/reconcile-orders/route.ts` |
+| Cron | Mỗi ngày, quét đơn `PENDING` cũ hơn 5 phút | `app/api/cron/reconcile-orders/route.ts` |
 
 Hai đường sau hỏi trực tiếp PayOS bằng `GET /v2/payment-requests/{id}`, dùng `Order.providerPaymentLinkId` lưu lúc tạo đơn. Đơn quá `expiresAt` (30 phút) mà vẫn chưa trả tiền sẽ được đóng thành `EXPIRED`.
 
 Số tiền PayOS báo phải khớp đúng `Order.amountVnd`. Lệch thì không cộng credit, ghi `console.error` và để đơn nguyên `PENDING` cho người thật xử lý.
+
+Trên gói Hobby cron chỉ chạy một lần mỗi ngày, nên còn một khe hở: khách trả tiền, webhook trượt, **và** khách đóng tab trước khi trang trả về kịp đối soát. Credit vẫn về, nhưng có thể chậm tới một ngày. Trường hợp này hiếm — trang trả về phủ gần hết — nhưng muốn khép hẳn thì hoặc lên Pro để chạy mỗi giờ, hoặc đối soát đơn `PENDING` của chính người dùng khi họ mở lại `/profile`.
 
 ## Hoàn tiền
 
