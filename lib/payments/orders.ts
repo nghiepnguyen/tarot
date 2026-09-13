@@ -2,6 +2,7 @@ import "server-only";
 import type { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { getPaymentLink } from "./payos";
+import { alertAmountMismatch } from "./alerts";
 import { refundOrder as refundOrderWith } from "./refund";
 
 export type { RefundOutcome } from "./refund";
@@ -48,6 +49,14 @@ export async function creditPaidOrder(
       `[payos] Số tiền lệch cho đơn ${order.id} (orderCode ${providerOrderId}): ` +
         `nhận ${paidAmountVnd}, chờ ${order.amountVnd}. Không cộng credit.`,
     );
+    // Không ai đọc Runtime Logs. Đây là tình huống duy nhất trong cả luồng
+    // thanh toán mà không đường tự động nào gỡ được, nên phải chủ động báo.
+    await alertAmountMismatch({
+      orderId: order.id,
+      providerOrderId,
+      expectedVnd: order.amountVnd,
+      paidVnd: paidAmountVnd,
+    });
     return "amount_mismatch";
   }
 

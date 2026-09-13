@@ -4,7 +4,12 @@ import { createFakePrisma, makeOrder } from "@/test/fake-prisma";
 const getPaymentLink = vi.hoisted(() => vi.fn());
 const prismaRef = vi.hoisted(() => ({ current: null as unknown }));
 
+const alertAmountMismatch = vi.hoisted(() => vi.fn());
+
 vi.mock("./payos", () => ({ getPaymentLink }));
+// alerts.ts kéo theo next/headers qua rate-limit; ngoài Next thì không nạp được,
+// và các test ở đây quan tâm tới sổ credit chứ không phải email.
+vi.mock("./alerts", () => ({ alertAmountMismatch, alertStuckOrders: vi.fn() }));
 vi.mock("@/lib/db/prisma", () => ({
   get prisma() {
     return prismaRef.current;
@@ -38,6 +43,7 @@ const BASE = {
 
 beforeEach(() => {
   getPaymentLink.mockReset();
+  alertAmountMismatch.mockReset();
 });
 
 describe("creditPaidOrder", () => {
@@ -79,7 +85,20 @@ describe("creditPaidOrder", () => {
     expect(fake.user("user_1")?.credits).toBe(0);
     expect(fake.order("order_1")?.status).toBe("PENDING");
     expect(fake.creditTransactions).toHaveLength(0);
+    // Không đường tự động nào gỡ được tình huống này, nên phải có người biết.
+    expect(alertAmountMismatch).toHaveBeenCalledWith({
+      orderId: "order_1",
+      providerOrderId: BASE.providerOrderId,
+      expectedVnd: 19_000,
+      paidVnd: 1_000,
+    });
     consoleError.mockRestore();
+  });
+
+  it("does not alert when the amount matches", async () => {
+    setup(BASE, 0);
+    await creditPaidOrder(BASE.providerOrderId, 19_000);
+    expect(alertAmountMismatch).not.toHaveBeenCalled();
   });
 
   it("does not resurrect an order that was already closed", async () => {

@@ -45,6 +45,10 @@ PAYOS_CHECKSUM_KEY=your_payos_checksum_key
 
 # Generate with: openssl rand -base64 32
 CRON_SECRET=
+
+# Resend — chỉ dùng cho cảnh báo vận hành
+RESEND_API_KEY=
+ALERT_EMAIL_FROM=alert@thanhnghiep.top
 ```
 
 `NEXT_PUBLIC_APP_URL` là origin dùng để dựng `returnUrl`/`cancelUrl` của PayOS trong `app/actions/payments.ts`. Sai giá trị thì sau khi thanh toán người dùng bị đẩy về nhầm domain. Giá trị theo môi trường:
@@ -56,6 +60,8 @@ CRON_SECRET=
 | Preview (Vercel) | không set biến; code tự lấy `https://$VERCEL_URL` của deployment đó |
 
 `CRON_SECRET` bảo vệ `/api/cron/reconcile-orders`. Vercel Cron gửi nó trong header `Authorization: Bearer ...`. Không set thì endpoint trả 503 và đơn hàng mất đường phục hồi khi webhook trượt — xem "Đối soát đơn hàng" ở dưới.
+
+`RESEND_API_KEY` và `ALERT_EMAIL_FROM` chỉ phục vụ cảnh báo vận hành (xem "Cảnh báo" ở dưới). Thiếu cả hai thì cảnh báo bị bỏ qua kèm một dòng log, không có gì khác hỏng — local và preview không cần cấu hình email.
 
 Đây là toàn bộ biến code đang đọc. Redis, object storage và email provider chưa có trong dự án nên không có biến tương ứng.
 
@@ -162,6 +168,7 @@ components/
   ui/                   # Button, Input, Header, Footer, Toast, Section
 lib/
   ai/                   # prompt, gọi Gemini, validate bằng Zod
+  email/                # Resend, chỉ dùng cho cảnh báo vận hành
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit
   db/                   # Prisma client
@@ -236,6 +243,21 @@ Số tiền PayOS báo phải khớp đúng `Order.amountVnd`. Lệch thì khôn
 Trên gói Hobby cron chỉ chạy một lần mỗi ngày, nên đường thứ ba tồn tại để bịt khe hở đó: khách trả tiền, webhook trượt, **và** khách đóng tab trước khi trang trả về kịp đối soát. Lần sau họ mở `/profile` — thường là để xem credit đã về chưa — đơn được hỏi lại ngay tại đó thay vì đợi tới lượt quét kế tiếp.
 
 Trang `/profile` chỉ đếm xem có đơn treo hay không; việc gọi PayOS nằm trong server action, không phải trong lúc render. Lần mở hồ sơ bình thường vì thế không tốn lượt gọi nào.
+
+## Cảnh báo
+
+Hai tình huống trong luồng thanh toán không có đường tự động nào gỡ được, nên chúng gửi email về `SUPPORT_EMAIL` (`lib/seo/site.ts`) qua Resend:
+
+| Cảnh báo | Nghĩa là gì | Chống lặp |
+| --- | --- | --- |
+| Số tiền lệch | PayOS báo số tiền khác giá gói đã chốt. Credit **không** được cộng, đơn nằm nguyên `PENDING` | 1 email mỗi đơn mỗi 24 giờ |
+| Đơn còn treo | Sau khi đối soát vẫn còn đơn `PENDING` — PayOS cũng chưa chốt, hoặc không gọi được sang PayOS | 1 email mỗi 12 giờ |
+
+Chống lặp dùng chính bảng `RateLimit` ở Postgres, nên khoá sống sót qua deploy. Không có nó thì mỗi lần PayOS gửi lại webhook là một email giống hệt, và cảnh báo nhanh chóng thành thứ bị bỏ qua.
+
+`sendEmail()` trong `lib/email/resend.ts` **không bao giờ ném lỗi**. Nó chạy xen giữa việc cộng credit cho khách; Resend chết mà kéo đổ cả giao dịch thì thuốc độc hơn bệnh. Hỏng thì ghi log và trả `false`.
+
+Trước khi bật: verify domain trong dashboard Resend, rồi đặt `ALERT_EMAIL_FROM` bằng một địa chỉ thuộc domain đó. Gửi từ domain chưa verify sẽ bị Resend trả 422.
 
 ## Hoàn tiền
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { reconcileStaleOrders } from "@/lib/payments/orders";
+import { alertStuckOrders } from "@/lib/payments/alerts";
 
 // Mỗi đơn là một lượt gọi sang PayOS, nên cho phép chạy lâu hơn mặc định.
 export const maxDuration = 60;
@@ -26,5 +27,8 @@ export async function GET(request: Request) {
   }
 
   const result = await reconcileStaleOrders(25);
+  // Đơn vẫn PENDING sau khi đã hỏi PayOS là tiền có thể đang treo. Báo ra
+  // ngoài thay vì để nó nằm im trong log.
+  await alertStuckOrders(result.stillPending);
   return NextResponse.json({ ok: true, ...result });
 }
