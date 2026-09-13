@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { ContactLine } from "@/components/ui/ContactLine";
 
 export const metadata: Metadata = {
   title: "Điều khoản sử dụng",
@@ -67,6 +68,22 @@ export default function TermsPage() {
         <p>
           Điều khoản này có thể được cập nhật theo thời gian. Phiên bản mới
           nhất luôn được công bố tại trang này kèm ngày cập nhật lần cuối.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Liên hệ</h2>
+        <p>
+          Thắc mắc về điều khoản, tài khoản hay giao dịch, gửi tới{" "}
+          <ContactLine subject="Hỗ trợ Tarot Reading Web" />. Riêng sự cố thanh
+          toán và yêu cầu hoàn tiền, xem thêm{" "}
+          <a
+            href="/refund"
+            className="font-medium text-accent underline underline-offset-4"
+          >
+            chính sách hoàn tiền
+          </a>
+          .
         </p>
       </section>
     </LegalPage>

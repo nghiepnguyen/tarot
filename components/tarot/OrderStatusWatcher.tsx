@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { OrderStatus } from "@prisma/client";
 import { getOrderStatusAction } from "@/app/actions/payments";
 import { trackEvent } from "@/lib/analytics/gtag";
+import { SUPPORT_EMAIL } from "@/lib/seo/site";
 
 const POLL_INTERVAL_MS = 3_000;
 const MAX_ATTEMPTS = 20; // ~1 phút
@@ -16,9 +17,12 @@ const STATUS_MESSAGE: Partial<Record<OrderStatus, string>> = {
   REFUNDED: "Đơn hàng này đã được hoàn tiền.",
 };
 
+// Đây là lúc người dùng lo nhất: đã trả tiền, chưa thấy credit. Nói rõ việc gì
+// đang tự chạy, và cho họ một chỗ để kêu nếu nó không chạy.
 const GIVE_UP_MESSAGE =
   "Chúng tôi chưa nhận được xác nhận từ cổng thanh toán. Nếu bạn đã bị trừ tiền, " +
-  "credit sẽ được cộng tự động trong ít phút tới — tải lại trang để kiểm tra.";
+  "credit sẽ được cộng tự động khi xác nhận về — tải lại trang này để kiểm tra. " +
+  `Quá lâu mà vẫn chưa thấy, gửi email tới ${SUPPORT_EMAIL} kèm mã đơn ở địa chỉ trang.`;
 
 /**
  * PayOS đẩy người dùng về `/profile` ngay sau khi họ trả tiền, thường trước

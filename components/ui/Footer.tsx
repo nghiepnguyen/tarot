@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CookieSettingsButton } from "@/components/analytics/CookieSettingsButton";
+import { supportMailto } from "@/lib/seo/site";
 
 const LEGAL_LINKS = [
   { href: "/terms", label: "Điều khoản sử dụng" },
@@ -22,6 +23,14 @@ export function Footer() {
               {link.label}
             </Link>
           ))}
+          {/* Kênh hỗ trợ phải có mặt ở mọi trang: người gặp sự cố thanh toán
+              không nhất thiết đang đứng ở trang chính sách. */}
+          <a
+            href={supportMailto("Hỗ trợ Tarot Reading Web")}
+            className="inline-flex min-h-11 items-center px-2 transition-colors duration-300 hover:text-accent"
+          >
+            Liên hệ
+          </a>
           <CookieSettingsButton />
         </nav>
       </div>

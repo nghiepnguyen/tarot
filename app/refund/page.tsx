@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { ContactLine } from "@/components/ui/ContactLine";
 
 export const metadata: Metadata = {
   title: "Chính sách hoàn tiền",
@@ -25,9 +26,15 @@ export default function RefundPage() {
         <h2>2. Lỗi thanh toán</h2>
         <p>
           Nếu bạn bị trừ tiền nhiều lần cho cùng một giao dịch, hoặc giao dịch
-          thất bại nhưng vẫn bị trừ tiền, vui lòng liên hệ trong vòng 7 ngày
-          kể từ ngày giao dịch kèm mã giao dịch để được kiểm tra và hoàn tiền
-          nếu xác nhận là lỗi hệ thống.
+          thất bại nhưng vẫn bị trừ tiền, vui lòng liên hệ{" "}
+          <ContactLine subject="Sự cố thanh toán" /> trong vòng 7 ngày kể từ
+          ngày giao dịch, kèm mã giao dịch, để được kiểm tra và hoàn tiền nếu
+          xác nhận là lỗi hệ thống.
+        </p>
+        <p>
+          Mã giao dịch nằm ở địa chỉ trang sau khi thanh toán
+          (<code>/profile?order=...</code>). Không còn giữ thì cứ gửi email đã
+          đăng ký cùng thời điểm giao dịch, chúng tôi tra được.
         </p>
       </section>
 
@@ -47,6 +54,15 @@ export default function RefundPage() {
           Yêu cầu hoàn tiền hợp lệ được xử lý trong vòng 5–10 ngày làm việc,
           tùy thời gian xử lý của cổng thanh toán hoặc ngân hàng phát hành
           thẻ của bạn.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Liên hệ</h2>
+        <p>
+          Mọi yêu cầu hoàn tiền hoặc thắc mắc về giao dịch, gửi tới{" "}
+          <ContactLine subject="Yêu cầu hoàn tiền" />. Chúng tôi phản hồi trong
+          vòng 3 ngày làm việc.
         </p>
       </section>
     </LegalPage>

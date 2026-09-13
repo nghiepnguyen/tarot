@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/LegalPage";
+import { ContactLine } from "@/components/ui/ContactLine";
 
 export const metadata: Metadata = {
   title: "Chính sách riêng tư",
@@ -58,6 +59,12 @@ export default function PrivacyPage() {
           Bạn có thể xem lại, xóa một reading, hoặc xóa toàn bộ lịch sử và
           tài khoản của mình. Yêu cầu xóa dữ liệu được xử lý trong thời gian
           hợp lý kể từ khi chúng tôi xác nhận yêu cầu.
+        </p>
+        <p>
+          Muốn truy xuất, chỉnh sửa hay xóa dữ liệu mà không tự làm được trong
+          tài khoản, gửi yêu cầu tới{" "}
+          <ContactLine subject="Yêu cầu về dữ liệu cá nhân" /> từ chính email
+          bạn đã đăng ký.
         </p>
       </section>
 
