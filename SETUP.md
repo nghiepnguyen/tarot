@@ -136,6 +136,7 @@ Nháy đơn là bắt buộc, mật khẩu Neon hay có ký tự đặc biệt. 
 
 ### Ba cái bẫy đã dính
 
+- **Prisma CLI không đọc `.env.local`.** Nó chỉ đọc `.env`, mà dự án không có file đó. Từ khi có `prisma.config.ts` thì nó không đọc file env nào cả (`Prisma config detected, skipping environment variable loading`). Mọi lệnh Prisma vì thế phải được truyền `DATABASE_URL` tường minh — `DATABASE_URL='...' npx prisma ...` cho production, hoặc `set -a && . ./.env.local && set +a` cho local. Không ảnh hưởng runtime của Next.js: Next tự nạp `.env.local`.
 - **`vercel env pull` trả về `DATABASE_URL` rỗng.** Biến bị đánh dấu Sensitive nên Vercel không trả giá trị, dù runtime vẫn chạy đúng. Đừng parse `.env.vercel.production` để lấy connection string, nó rỗng.
 - **Export biến rỗng làm chết dev local.** Nếu `export DATABASE_URL="$(...)"` mà vế phải rỗng, shell đó có biến rỗng, và Next.js **không** cho `.env.local` ghi đè biến đã tồn tại trong process. Kết quả là `pnpm dev` chết với `PrismaClientInitializationError: ... resolved to an empty string`. Sửa bằng `unset DATABASE_URL` hoặc mở terminal mới.
 - **Build của Vercel không thấy biến Sensitive.** Từng nhét `prisma migrate deploy` vào build script, mọi deploy hỏng ngay với `Environment variable not found: DATABASE_URL`, phải revert (commit `f2073a4`). Ngược lại `prisma generate` chạy được vì nó chỉ đọc schema, không cần URL — nên build script hiện là `prisma generate && next build`, đảm bảo client luôn khớp schema kể cả khi Vercel dùng lại cache và bỏ qua `postinstall`.
@@ -167,6 +168,7 @@ lib/
   payments/             # PayOS: client, vòng đời đơn hàng, hoàn tiền
   tarot/                # dữ liệu 78 lá, logic rút bài
   validation/
+prisma.config.ts        # nơi khai báo schema và lệnh seed
 prisma/
   schema.prisma
   migrations/
