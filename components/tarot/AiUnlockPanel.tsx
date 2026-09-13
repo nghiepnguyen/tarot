@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Link2, ListChecks, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
@@ -166,6 +167,16 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
     );
   }
 
+  // The generation takes tens of seconds, so the whole panel switches to the
+  // loader rather than leaving the CTA sitting there with disabled button text.
+  if (isPending) {
+    return (
+      <Card className="text-center">
+        <InterpretationLoader />
+      </Card>
+    );
+  }
+
   return (
     <Card className="flex flex-col items-center gap-4 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-tint">
@@ -203,20 +214,13 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
       ) : (
         <Button
           variant="primary"
-          disabled={isPending}
           onClick={handleUnlock}
-          className="cursor-pointer shadow-md shadow-accent/25 transition-shadow duration-300 hover:shadow-lg hover:shadow-accent/35 disabled:cursor-not-allowed disabled:shadow-none"
+          className="cursor-pointer shadow-md shadow-accent/25 transition-shadow duration-300 hover:shadow-lg hover:shadow-accent/35"
         >
-          {isPending ? (
-            "Đang tạo diễn giải..."
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {isOnFreeTrial
-                ? "Mở khóa diễn giải chuyên sâu"
-                : `Mở khóa diễn giải chuyên sâu (${COST_PER_INTERPRETATION} credit)`}
-            </>
-          )}
+          <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {isOnFreeTrial
+            ? "Mở khóa diễn giải chuyên sâu"
+            : `Mở khóa diễn giải chuyên sâu (${COST_PER_INTERPRETATION} credit)`}
         </Button>
       )}
 
