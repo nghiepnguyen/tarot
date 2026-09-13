@@ -55,8 +55,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ToastProvider>{children}</ToastProvider>
+        {/* Phải nằm trong <body>: ngoài thẻ Script, component này còn render
+            banner đồng ý cookie, và <div> không hợp lệ khi là con của <html>. */}
+        <GoogleAnalytics />
       </body>
-      <GoogleAnalytics />
     </html>
   );
 }
