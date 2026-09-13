@@ -75,12 +75,15 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 
 | Event | Bắn khi | Tham số |
 |---|---|---|
-| `begin_checkout` | Bấm mua một gói credit | `currency`, `value`, `items[]` |
+| `select_credit_package` | Chọn một gói trong danh sách | `item_id`, `item_name`, `price` |
+| `begin_checkout` | Bấm nút thanh toán, ngay trước khi rời sang PayOS | `currency`, `value`, `items[]` |
 | `checkout_error` | Không tạo được link thanh toán | `item_id`, `error` |
 | `purchase` | PayOS trả về `/profile` và đơn đã `PAID` | `transaction_id`, `currency`, `value`, `items[]`, `credits_granted` |
 | `checkout_cancelled` | PayOS trả về với `status=cancelled` | `transaction_id` |
 | `purchase_pending` | PayOS trả về `status=success` nhưng đơn còn `PENDING`, bắt đầu đối soát | `transaction_id` |
 | `purchase_unsettled` | Đối soát kết thúc mà đơn vẫn chưa `PAID` | `transaction_id`, `order_status` |
+
+Chọn gói và bấm thanh toán là hai bước tách biệt, nên `select_credit_package` / `begin_checkout` đo được số người xem giá rồi đổi ý — trước đây một cú bấm làm cả hai việc nên không có chỗ nào để thấy điều đó.
 
 `purchase_pending` gần như luôn bắn trước `purchase`: PayOS đẩy người dùng về trang ngay, thường trước khi webhook kịp tới. Chênh lệch `purchase_pending − purchase` là số đơn không chốt được trong ~1 phút; `purchase_unsettled` kèm `order_status` cho biết vì sao (`PENDING` là webhook lẫn đối soát đều chưa xong, các giá trị khác là đơn đã đóng).
 
