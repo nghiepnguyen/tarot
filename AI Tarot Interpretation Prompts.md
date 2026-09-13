@@ -367,7 +367,41 @@ Mình không thể dùng Tarot để khẳng định một kết quả chắc ch
 
 ## 9. Kiểm soát chất lượng và chi phí
 
-Mỗi request cần lưu `prompt_version`, model, thời gian phản hồi, token usage và trạng thái kiểm duyệt; không lưu API key và không ghi câu hỏi nguyên văn vào log mặc định. Nên giới hạn độ dài câu hỏi ở tầng API, giới hạn số lượt tạo AI theo quyền VIP và dùng timeout khoảng 20–30 giây tùy nhà cung cấp.
+Mỗi request cần lưu `prompt_version`, model, thời gian phản hồi, token usage và trạng thái kiểm duyệt; không lưu API key và không ghi câu hỏi nguyên văn vào log mặc định. Nên giới hạn độ dài câu hỏi ở tầng API và giới hạn số lượt tạo AI theo quyền VIP.
+
+Thực tế hiện tại: `AiInterpretation` mới lưu `model` và `createdAt`, chưa có cột token usage hay thời gian phản hồi. Vì vậy mọi con số dưới đây là đo tay một lần, không phải số liệu gom từ production.
+
+### Thời gian và token, đo ngày 13/09/2026
+
+Ba lượt sinh mỗi cấu hình, cùng một câu hỏi và cùng ba lá, chạy trên bản build production với `gemini-3-flash-preview`.
+
+| | input | output + thinking | thời gian |
+|---|---|---|---|
+| Prompt ngắn (trước 13/09/2026) | 587 | 1.781 | 11,2s |
+| Prompt hiện tại | 1.233 | 4.494 | 28,3s |
+
+Thinking token phình nhanh hơn phần chữ trả về (884 → 2.286): prompt càng nhiều ràng buộc thì model càng cân nhắc lâu. Đó là lý do chi phí tăng 2,5 lần chứ không phải đúng 2 lần như độ dài chữ.
+
+Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/history` — đều khai báo `export const maxDuration = 60`. Bỏ nó đi thì server action bị cắt giữa chừng.
+
+### Chi phí mỗi lượt
+
+`gemini-3-flash-preview`, tier Standard, bảng giá trả phí: **$0,50 / 1M token input** và **$3,00 / 1M token output**. Thinking token tính theo giá output. Model này được Google đánh dấu là *legacy*, nhưng vẫn nằm trong bảng giá và không có lịch tăng giá nào treo phía trước — khác với 3.6/3.7/3.8 Flash, vốn sẽ tăng gấp đôi từ 01/01/2027.
+
+Ở tỷ giá 25.876đ/USD, một lượt mở khóa tốn khoảng **365đ** (trước khi prompt dài ra là 146đ).
+
+| Gói | Doanh thu mỗi lượt | Biên |
+|---|---|---|
+| Khởi động — 50 credit / 19.000đ | 3.800đ | 90,4% |
+| Phổ biến — 100 credit / 35.000đ | 3.500đ | 89,6% |
+| Tiết kiệm — 200 credit / 65.000đ | 3.250đ | 88,8% |
+| Sâu sắc — 500 credit / 149.000đ | 2.980đ | 87,8% |
+
+COGS đi từ khoảng 4% lên khoảng 11% doanh thu. Giá 10 credit mỗi lượt không cần chỉnh.
+
+Tier **Flex** của cùng model rẻ đúng một nửa ($0,25 / $1,50, tức ~182đ mỗi lượt), đổi lại là độ trễ không cam kết. Với một thao tác người dùng đã phải ngồi chờ 28 giây thì khoản tiết kiệm đó nhiều khả năng không đáng, nhưng nó có tồn tại nếu về sau chi phí thành vấn đề.
+
+Chỗ tốn tiền đáng để mắt không phải biên lợi nhuận mà là free trial: mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ, không thu lại gì, và không có gì chặn việc đăng ký email mới để lấy tiếp.
 
 Nội dung hiển thị nên được kiểm thử với các trường hợp: câu hỏi ngắn, câu hỏi dài, lá ngược, ba lá có ý nghĩa căng thẳng, câu hỏi về người thứ ba, câu hỏi yêu cầu dự đoán chắc chắn, câu hỏi tài chính rủi ro và câu hỏi có dấu hiệu khủng hoảng.
 
@@ -377,3 +411,4 @@ Nội dung hiển thị nên được kiểm thử với các trường hợp: c
 [2]: https://platform.openai.com/docs/guides/safety-best-practices "OpenAI Safety Best Practices"
 [3]: https://platform.openai.com/docs/guides/structured-outputs "OpenAI Structured Outputs Guide"
 [4]: https://json-schema.org/learn/getting-started-step-by-step "JSON Schema Getting Started Guide"
+[5]: https://ai.google.dev/gemini-api/docs/pricing#gemini-3-flash-preview "Gemini API Pricing — Gemini 3 Flash Preview"

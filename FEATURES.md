@@ -59,8 +59,9 @@
 - Số tiền PayOS báo phải khớp giá gói đã chốt lúc tạo đơn. Lệch thì không cộng credit và gửi email cảnh báo qua Resend, vì không đường tự động nào gỡ được tình huống đó.
 - Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng `pnpm refund-order <orderId>`. Chưa có trang quản trị.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
-- Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh.
-- Hiển thị trạng thái đang tạo, retry và lỗi tạm thời.
+- Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh. Prompt yêu cầu giọng huyền bí và đặt mốc số từ cho từng phần, nên bản đọc dài gấp khoảng hai lần so với trước 13/09/2026.
+- Một lượt sinh mất khoảng 28 giây, nên `/` và `/history` đều khai báo `maxDuration = 60`; thiếu nó thì server action bị cắt giữa chừng. Chi phí khoảng 365đ mỗi lượt, biên vẫn trên 87% ở mọi gói — số đo và cách tính ở mục 9 của `AI Tarot Interpretation Prompts.md`.
+- Hiển thị trạng thái đang tạo, retry và lỗi tạm thời. Vì 28 giây là quá lâu để nhìn một nút xám, panel đổi hẳn sang màn chờ có ba lưng bài thở lệch nhịp và năm dòng trạng thái xoay vòng; thanh tiến trình cố tình không hiện phần trăm vì model không trả tín hiệu tiến độ.
 - Lưu kết quả AI theo reading ID để không tạo trùng.
 - Không cho AI trình bày nội dung như lời khuyên chuyên môn hoặc lời tiên tri chắc chắn.
 
@@ -108,6 +109,9 @@ Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ 
 - **Cron mỗi ngày trên Hobby.** Nếu lên Pro thì đổi `vercel.json` về `0 * * * *`, khe hở còn lại thu từ một ngày xuống một giờ.
 - **Migration và deploy là hai việc rời nhau.** Luôn có cửa sổ production chạy code mới trên schema cũ. Cách khép hẳn đã ghi ở cuối mục "Cơ sở dữ liệu" trong `SETUP.md`.
 - **`purchase` đếm thiếu.** Đơn cứu được ở đường đối soát thứ ba không bắn event. Sổ `CreditTransaction` mới là con số doanh thu đúng.
+- **Free trial không có trần.** Mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ tiền API và không thu lại gì. Không có gì chặn một người đăng ký email mới để lấy tiếp.
+- **Không đo được chi phí AI.** `AiInterpretation` chỉ lưu `model` và `createdAt`, không lưu token usage hay thời gian phản hồi. Mọi con số chi phí hiện có đều là đo tay một lần, nên không ai biết chi phí thật đang trôi về đâu giữa các lần đổi prompt.
+- **Model đang pin là bản legacy.** `GEMINI_MODEL` trỏ `gemini-3-flash-preview`, được Google đánh dấu legacy. Vẫn còn trong bảng giá và vẫn chạy, nhưng các bản 3.6/3.7/3.8 Flash đã ra sau nó và chưa ai đo thử xem đổi sang thì chất lượng, tốc độ và chi phí khác thế nào.
 
 ## Lưu trữ — không nằm trong kế hoạch
 
