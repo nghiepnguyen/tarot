@@ -11,6 +11,7 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `components/analytics/AuthSuccessTracker.tsx` | Bắn `login` / `sign_up` sau khi server redirect về `/?auth=...`. |
 | `components/analytics/PurchaseTracker.tsx` | Bắn `purchase` khi PayOS trả về `/profile`. |
 | `components/analytics/CheckoutCancelledTracker.tsx` | Bắn `checkout_cancelled`. |
+| `components/tarot/OrderStatusWatcher.tsx` | Đối soát đơn còn `PENDING` sau khi PayOS trả về; bắn `purchase_pending` / `purchase_unsettled`. |
 | `components/analytics/LoginPromptLink.tsx` | Link "Đăng nhập" có tracking, dùng trong server component. |
 | `components/analytics/ConsentBanner.tsx` | Banner xin đồng ý, neo ở đáy màn hình. |
 | `components/analytics/CookieSettingsButton.tsx` | Link "Tùy chọn cookie" ở footer để mở lại banner. |
@@ -78,6 +79,10 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 | `checkout_error` | Không tạo được link thanh toán | `item_id`, `error` |
 | `purchase` | PayOS trả về `/profile` và đơn đã `PAID` | `transaction_id`, `currency`, `value`, `items[]`, `credits_granted` |
 | `checkout_cancelled` | PayOS trả về với `status=cancelled` | `transaction_id` |
+| `purchase_pending` | PayOS trả về `status=success` nhưng đơn còn `PENDING`, bắt đầu đối soát | `transaction_id` |
+| `purchase_unsettled` | Đối soát kết thúc mà đơn vẫn chưa `PAID` | `transaction_id`, `order_status` |
+
+`purchase_pending` gần như luôn bắn trước `purchase`: PayOS đẩy người dùng về trang ngay, thường trước khi webhook kịp tới. Chênh lệch `purchase_pending − purchase` là số đơn không chốt được trong ~1 phút; `purchase_unsettled` kèm `order_status` cho biết vì sao (`PENDING` là webhook lẫn đối soát đều chưa xong, các giá trị khác là đơn đã đóng).
 
 `purchase` **không** tin vào query param. `app/profile/page.tsx` đọc đơn từ database và chỉ render `PurchaseTracker` khi đơn đó có `status === "PAID"` và thuộc về người đang đăng nhập — webhook mới là nguồn sự thật. Người dùng tải lại trang trả về nhiều lần cũng chỉ bắn một lần, nhờ khóa `tarot:purchaseTracked:<orderId>` trong `sessionStorage`.
 

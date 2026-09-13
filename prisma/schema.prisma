@@ -66,23 +66,31 @@ enum OrderStatus {
   PAID
   FAILED
   EXPIRED
+  CANCELLED
+  REFUNDED
 }
 
 model Order {
-  id              String        @id @default(cuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId       String
-  package         CreditPackage @relation(fields: [packageId], references: [id])
-  provider        String
-  providerOrderId String        @unique
-  amountVnd       Int
-  creditsGranted  Int
-  status          OrderStatus   @default(PENDING)
-  createdAt       DateTime      @default(now())
-  paidAt          DateTime?
+  id                    String        @id @default(cuid())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId             String
+  package               CreditPackage @relation(fields: [packageId], references: [id])
+  provider              String
+  providerOrderId       String        @unique
+  // Link id PayOS trả về lúc tạo payment request. Cần để đối soát lại trạng
+  // thái đơn khi webhook không tới.
+  providerPaymentLinkId String?
+  amountVnd             Int
+  creditsGranted        Int
+  status                OrderStatus   @default(PENDING)
+  createdAt             DateTime      @default(now())
+  expiresAt             DateTime?
+  paidAt                DateTime?
+  reconciledAt          DateTime?
 
   @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Reading {

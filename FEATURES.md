@@ -53,6 +53,8 @@
 - Mô tả rõ quyền lợi và giá trước khi thanh toán.
 - Tặng 2 lượt xem miễn phí khi đăng ký (one-time), sau đó nạp credit theo gói (5/10/20/50 lượt) qua PayOS — chưa có gói VIP theo tháng ở giai đoạn này.
 - Ghi sổ giao dịch credit (free grant, mua, chi tiêu, hoàn tiền) để đo tỷ lệ free-to-paid.
+- Đơn hàng được đối soát lại với PayOS ở ba đường (webhook, trang trả về, cron mỗi giờ) nên webhook trượt không làm mất credit của người đã trả tiền; chi tiết ở `SETUP.md`.
+- Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng `pnpm refund-order <orderId>`. Chưa có trang quản trị.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
 - Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh.
 - Hiển thị trạng thái đang tạo, retry và lỗi tạm thời.

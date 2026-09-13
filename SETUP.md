@@ -42,6 +42,9 @@ GEMINI_API_KEY=your_gemini_api_key
 PAYOS_CLIENT_ID=your_payos_client_id
 PAYOS_API_KEY=your_payos_api_key
 PAYOS_CHECKSUM_KEY=your_payos_checksum_key
+
+# Generate with: openssl rand -base64 32
+CRON_SECRET=
 ```
 
 `NEXT_PUBLIC_APP_URL` là origin dùng để dựng `returnUrl`/`cancelUrl` của PayOS trong `app/actions/payments.ts`. Sai giá trị thì sau khi thanh toán người dùng bị đẩy về nhầm domain. Giá trị theo môi trường:
@@ -51,6 +54,8 @@ PAYOS_CHECKSUM_KEY=your_payos_checksum_key
 | Local | `http://localhost:3000` |
 | Production (Vercel) | `https://tarot.thanhnghiep.top` |
 | Preview (Vercel) | không set biến; code tự lấy `https://$VERCEL_URL` của deployment đó |
+
+`CRON_SECRET` bảo vệ `/api/cron/reconcile-orders`. Vercel Cron gửi nó trong header `Authorization: Bearer ...`. Không set thì endpoint trả 503 và đơn hàng mất đường phục hồi khi webhook trượt — xem "Đối soát đơn hàng" ở dưới.
 
 Đây là toàn bộ biến code đang đọc. Redis, object storage và email provider chưa có trong dự án nên không có biến tương ứng.
 
@@ -147,7 +152,7 @@ Cách xử lý hiện tại là áp migration ngay sát lúc deploy và ưu tiê
 app/
   page.tsx              # trang bốc bài
   actions/              # server action: ai, auth, payments, readings
-  api/auth, api/webhooks
+  api/auth, api/webhooks, api/cron
   history/, login/, signup/, profile/
   terms/, privacy/, refund/
 components/
@@ -159,7 +164,7 @@ lib/
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit
   db/                   # Prisma client
-  payments/             # PayOS
+  payments/             # PayOS: client, vòng đời đơn hàng, hoàn tiền
   tarot/                # dữ liệu 78 lá, logic rút bài
   validation/
 prisma/
@@ -191,12 +196,14 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 6. Deploy preview trước để kiểm tra flow bốc bài, paywall và responsive.
 7. Cấu hình domain, HTTPS, webhook thanh toán và redirect URL. Domain production là `tarot.thanhnghiep.top`; sau khi trỏ DNS xong phải cập nhật `NEXT_PUBLIC_APP_URL=https://tarot.thanhnghiep.top` cho môi trường Production rồi redeploy, vì biến `NEXT_PUBLIC_` được nướng vào bundle lúc build chứ không đọc lại lúc chạy.
 8. Khai báo webhook PayOS trỏ về `https://tarot.thanhnghiep.top/api/webhooks/payos` và kiểm tra lại một giao dịch thật.
+9. Đặt `CRON_SECRET` cho Production. `vercel.json` khai báo cron chạy mỗi giờ; gói Hobby chỉ kích hoạt cron một lần mỗi ngày, muốn đúng nhịp một giờ thì cần Pro. Nhịp chậm không làm hỏng gì — trang trả về sau thanh toán đã tự đối soát ngay, cron chỉ là lưới dưới.
 
 ### Checklist production
 
 - Sau khi thêm/sửa biến môi trường trên Vercel, xác nhận nó thực sự có giá trị (không chỉ tạo key rồi để trống). Biến đánh dấu "Sensitive" không xem lại được giá trị qua dashboard lẫn `vercel env pull` — kể cả khi đang hoạt động đúng ở runtime, lệnh pull vẫn trả về rỗng cho biến đó, đây là hành vi bình thường chứ không phải dấu hiệu lỗi.
 - `next build` không tự chạy migration. Mỗi lần thêm migration phải áp lên production bằng tay, xem mục "Cơ sở dữ liệu: local và production" ở trên.
 - Kiểm tra webhook thanh toán có verify chữ ký và idempotency.
+- Sau khi set `CRON_SECRET`, gọi thử `curl -H "Authorization: Bearer $CRON_SECRET" https://tarot.thanhnghiep.top/api/cron/reconcile-orders` và xác nhận trả về `{"ok":true,...}` chứ không phải 401/503.
 - Bật rate limit cho API bốc bài và AI.
 - Giới hạn kích thước input, sanitize nội dung và validate response AI bằng schema.
 - Không log câu hỏi hoặc dữ liệu nhạy cảm nếu không cần thiết.
@@ -206,6 +213,33 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 - Các alias `*.vercel.app` vẫn trả 200 và không có `x-robots-tag`, nên về lý thuyết Google index được cả hai host. Canonical trỏ về domain chính đã xử lý phần lớn rủi ro; muốn dứt điểm thì gỡ alias `tarot-indol-tau.vercel.app` trong Vercel.
 - Analytics: Google Analytics 4 (`G-YR3ZHD8JBV`) hardcode trong `lib/analytics/gtag.ts`, không cần biến môi trường. Sau khi deploy, mở DebugView của GA4 và xác nhận `page_view` bắn đúng một lần mỗi route — điều hướng client-side của App Router là chỗ dễ đếm thiếu hoặc đếm trùng nhất. Danh mục event ở `ANALYTICS.md`.
 - Kiểm tra accessibility: contrast, focus state, alt text, keyboard navigation và reduced motion.
+
+## Đối soát đơn hàng
+
+Webhook PayOS là nguồn sự thật cho việc cộng credit, nhưng nó có thể không bao giờ tới: PayOS lỗi, deploy rơi đúng lúc callback, mạng đứt. Không có gì bù lại thì người dùng trả tiền mà đơn nằm `PENDING` vĩnh viễn.
+
+Có ba đường cùng gọi vào `lib/payments/orders.ts`, nên mọi đường đều idempotent và đều đối chiếu số tiền:
+
+| Đường | Khi nào chạy | File |
+| --- | --- | --- |
+| Webhook | PayOS gọi ngay sau khi trả tiền | `app/api/webhooks/payos/route.ts` |
+| Trang trả về | Người dùng quay lại `/profile?order=...&status=success`; hỏi lại trạng thái mỗi 3 giây trong ~1 phút | `components/tarot/OrderStatusWatcher.tsx` |
+| Cron | Mỗi giờ, quét đơn `PENDING` cũ hơn 5 phút | `app/api/cron/reconcile-orders/route.ts` |
+
+Hai đường sau hỏi trực tiếp PayOS bằng `GET /v2/payment-requests/{id}`, dùng `Order.providerPaymentLinkId` lưu lúc tạo đơn. Đơn quá `expiresAt` (30 phút) mà vẫn chưa trả tiền sẽ được đóng thành `EXPIRED`.
+
+Số tiền PayOS báo phải khớp đúng `Order.amountVnd`. Lệch thì không cộng credit, ghi `console.error` và để đơn nguyên `PENDING` cho người thật xử lý.
+
+## Hoàn tiền
+
+PayOS không mở API hoàn tiền cho merchant, nên tiền phải hoàn thủ công trên dashboard PayOS. Sau đó đóng nốt sổ sách phía mình:
+
+```bash
+pnpm refund-order <orderId> --dry-run   # xem đơn trước
+pnpm refund-order <orderId>             # đổi sang REFUNDED, trừ lại credit
+```
+
+Script cho phép số dư credit xuống âm nếu khách đã tiêu trước khi yêu cầu hoàn — ghi âm vào sổ đúng hơn là bỏ qua, và chặn họ mở khóa tiếp cho tới khi nạp bù.
 
 ## CI/CD tối thiểu
 

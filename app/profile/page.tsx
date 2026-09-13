@@ -9,6 +9,7 @@ import { ProfileForm } from "@/components/tarot/ProfileForm";
 import { CreditsPanel } from "@/components/tarot/CreditsPanel";
 import { PurchaseTracker } from "@/components/analytics/PurchaseTracker";
 import { CheckoutCancelledTracker } from "@/components/analytics/CheckoutCancelledTracker";
+import { OrderStatusWatcher } from "@/components/tarot/OrderStatusWatcher";
 
 export const metadata: Metadata = {
   title: "Hồ sơ",
@@ -42,6 +43,11 @@ export default async function ProfilePage({
       })
     : null;
   const paidOrder = returnedOrder?.status === "PAID" ? returnedOrder : null;
+  // PayOS trả người dùng về đây gần như ngay lập tức, thường trước webhook.
+  // Đơn còn PENDING nghĩa là chưa chốt được, không phải thất bại — theo dõi
+  // tiếp thay vì để người dùng nhìn số credit cũ.
+  const settlingOrder =
+    params.status === "success" && returnedOrder?.status === "PENDING" ? returnedOrder : null;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -58,6 +64,7 @@ export default async function ProfilePage({
       {params.status === "cancelled" && returnedOrder ? (
         <CheckoutCancelledTracker orderId={returnedOrder.id} />
       ) : null}
+      {settlingOrder ? <OrderStatusWatcher orderId={settlingOrder.id} /> : null}
       <main className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-8">
