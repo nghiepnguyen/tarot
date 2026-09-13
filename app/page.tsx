@@ -8,6 +8,12 @@ import { TarotExperience } from "@/components/tarot/TarotExperience";
 import { Disclaimer } from "@/components/tarot/Disclaimer";
 import { AuthSuccessTracker } from "@/components/analytics/AuthSuccessTracker";
 
+// Mở khóa diễn giải gọi Gemini sinh một bản đọc dài; đo trên bản build
+// production mất khoảng 28 giây. Mặc định của nền tảng thấp hơn con số đó,
+// nên không khai báo ở đây thì server action bị cắt giữa chừng. maxDuration
+// đặt ở tầng page áp cho mọi server action dùng trong page.
+export const maxDuration = 60;
+
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [

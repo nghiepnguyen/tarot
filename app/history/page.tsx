@@ -12,6 +12,12 @@ import { HistoryList } from "@/components/tarot/HistoryList";
 import type { StoredCard } from "@/app/actions/readings";
 import { toDisplayInterpretation } from "@/lib/ai/interpretation";
 
+// Mở khóa diễn giải gọi Gemini sinh một bản đọc dài; đo trên bản build
+// production mất khoảng 28 giây. Mặc định của nền tảng thấp hơn con số đó,
+// nên không khai báo ở đây thì server action bị cắt giữa chừng. maxDuration
+// đặt ở tầng page áp cho mọi server action dùng trong page.
+export const maxDuration = 60;
+
 export const metadata: Metadata = {
   title: "Lịch sử trải bài",
   robots: { index: false, follow: false },

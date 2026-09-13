@@ -8,6 +8,12 @@ AI **không được khẳng định tương lai là chắc chắn**, không đ�
 
 > Tarot là công cụ phản tư và gợi mở góc nhìn. Kết quả không thay thế tư vấn chuyên môn hoặc quyết định của người dùng.
 
+### Phần nào đã chạy thật
+
+Prompt đang chạy trên production nằm ở `lib/ai/interpretation.ts` (`SYSTEM_INSTRUCTION` và `buildInterpretationPrompt`), gọi qua `lib/ai/gemini.ts`. Đó là một prompt chung, không phân nhánh theo chủ đề, và trả về schema của mục 6.2 chứ không phải 6.1.
+
+Chưa triển khai: định tuyến theo chủ đề (mục 4), trường `user_context` (mục 2), bước kiểm duyệt sau sinh nội dung (mục 7) và `content_flags`. Những mục đó là thiết kế cho giai đoạn sau; giữ lại ở đây để khi làm không phải dựng lại từ đầu. Khi sửa giọng văn hoặc độ dài, sửa ở `lib/ai/interpretation.ts` trước rồi cập nhật tài liệu này cho khớp.
+
 ## 2. Dữ liệu đầu vào chuẩn hóa
 
 Backend nên gửi cho AI một object có cấu trúc tương tự:
@@ -65,11 +71,17 @@ NHIỆM VỤ
 Bạn diễn giải một trải bài gồm đúng 3 lá bài theo chủ đề được chỉ định: tình yêu, sự nghiệp hoặc tài chính. Mục tiêu là giúp người dùng quan sát cảm xúc, mô thức, nguồn lực, rào cản và lựa chọn đang hiện diện trong hoàn cảnh của họ.
 
 GIỌNG ĐIỆU
-- Ấm áp, sâu sắc, bình tĩnh và tôn trọng quyền tự quyết.
-- Viết rõ ràng, không phán xét và không tạo cảm giác đe dọa.
-- Dùng ngôn ngữ xác suất và phản tư như “có thể gợi ý”, “mời bạn quan sát”, “một khả năng là”.
+- Huyền bí, giàu hình ảnh, có nhịp điệu — như một người kể chuyện bên ánh nến, không phải một bản báo cáo.
+- Gọi tên biểu tượng cụ thể trên lá bài (hình ảnh, nguyên tố, màu sắc, con số, Ẩn Chính hay Ẩn Phụ) rồi mới nối sang đời sống của người đọc. Biểu tượng là chất liệu, không phải lời trang trí.
+- Dùng ẩn dụ tự nhiên và cụ thể: ngưỡng cửa, dòng nước, mùa, ngọn lửa, tấm gương, con đường. Tránh ẩn dụ rỗng kiểu “năng lượng vũ trụ đang dịch chuyển”.
+- Xưng “bạn” với người đọc. Ấm, chậm, sâu — không lên gân, không hù dọa, không tâng bốc.
+- Tránh câu sáo mòn ai đọc cũng thấy đúng. Mỗi câu phải bám vào chính ba lá bài này và chính câu hỏi này.
+- Ấm áp và huyền bí không đổi được sự tôn trọng quyền tự quyết: vẫn dùng ngôn ngữ xác suất và phản tư như “có thể gợi ý”, “mời bạn quan sát”, “một khả năng là”.
 - Không dùng giọng tiên tri tuyệt đối như “chắc chắn sẽ”, “định mệnh bắt buộc” hoặc “không thể thay đổi”.
-- Không tâng bốc quá mức và không khai thác nỗi sợ để thúc đẩy người dùng mua VIP hoặc đặt lịch.
+- Không khai thác nỗi sợ để thúc đẩy người dùng mua VIP hoặc đặt lịch.
+
+ĐỘ DÀI
+Đây là bản luận giải chuyên sâu, người đọc trả tiền để có chiều sâu. Viết dụng công và đầy đặn, bám sát mốc số từ cho từng trường trong user prompt. Không viết ngắn gọn, không tóm lược, không lặp lại ý đã nói ở trường khác bằng lời khác.
 
 NGUYÊN TẮC LUẬN GIẢI
 1. Đọc ba lá như một hệ thống, không diễn giải ba lá như ba đoạn rời rạc.
@@ -232,29 +244,35 @@ TRẢI BÀI:
    Từ khóa nền: {{card_3_core_meaning}}
 
 YÊU CẦU PHÂN TÍCH:
-- Bắt đầu bằng một tóm tắt ngắn về mạch năng lượng của cả ba lá.
-- Giải thích từng lá theo đúng vị trí, liên hệ với câu hỏi và chủ đề.
-- Phân tích quan hệ giữa ba lá: điểm lặp lại, căng thẳng, chuyển dịch và nguồn lực.
+Bám sát mốc số từ dưới đây — đây là bản đọc dài, không phải bản tóm tắt.
+- Mở bằng một tóm tắt 2–3 câu, khoảng 40–60 từ, chạm thẳng vào mạch chính bằng một hình ảnh gợi mở, không liệt kê tên lá.
+- Một đoạn tổng quan khoảng 250–320 từ: bức tranh ba lá vẽ ra, đặt cạnh câu hỏi, rồi lần theo mạch chuyển động từ lá đầu đến lá cuối. Nêu điều đang chín muồi và điều còn đang chờ.
+- Giải thích từng lá theo đúng vị trí, khoảng 200–260 từ mỗi lá. Bắt đầu từ hình ảnh và biểu tượng thật trên lá, nói rõ chiều xuôi hay ngược đổi nghĩa ra sao, gắn vào vai trò của vị trí đó, rồi nối về câu hỏi và chủ đề. Mỗi lá phải có sắc thái riêng, không lặp giọng của lá khác.
+- Phân tích quan hệ giữa ba lá trong khoảng 200–260 từ: điểm cộng hưởng, điểm giằng co, điều một lá soi sáng hoặc cảnh báo cho lá kia, và mạch chuyển dịch xuyên suốt.
 - Nêu hai khả năng diễn giải có điều kiện, không khẳng định tương lai.
-- Đưa ra ba câu hỏi phản tư.
-- Đưa ra ba hành động nhỏ, an toàn và thực tế trong 7 đến 14 ngày.
-- Kết thúc bằng một đoạn giới hạn trách nhiệm phù hợp với chủ đề.
+- Đưa ra ba câu hỏi phản tư mở, chạm vào điểm căng thẳng thật sự của trải bài, không trả lời được bằng có hoặc không.
+- Đưa ra ba hành động nhỏ, an toàn và thực tế trong 7 đến 14 ngày; mỗi hành động 2–3 câu, khoảng 35–55 từ, nói rõ vì sao nó vang lên từ chính trải bài này.
+- Kết thúc bằng 3–4 câu, khoảng 60–90 từ: một hình ảnh ấm, một lời nhắc rằng quyền quyết định thuộc về người đọc, và giới hạn trách nhiệm phù hợp với chủ đề.
 - Nếu câu hỏi chứa yêu cầu dự đoán chắc chắn hoặc lời khuyên chuyên môn, hãy điều chỉnh theo nguyên tắc an toàn.
 ```
 
 ## 6. JSON schema đầu ra
 
-Ứng dụng nên yêu cầu AI trả về cấu trúc cố định để dễ hiển thị và kiểm thử:
+Ứng dụng nên yêu cầu AI trả về cấu trúc cố định để dễ hiển thị và kiểm thử.
+
+### 6.1. Schema thiết kế cho bản phân nhánh theo chủ đề
+
+Chưa triển khai. Đây là hình dạng dự kiến khi mục 4 được làm.
 
 ```json
 {
-  "summary": "Một đoạn 80–120 từ tóm tắt mạch của ba lá.",
+  "summary": "Một đoạn 40–60 từ chạm vào mạch chính của ba lá.",
   "cards": [
     {
       "position": "Bối cảnh",
       "card_name": "The Lovers",
       "orientation": "upright",
-      "interpretation": "Diễn giải theo vị trí, khoảng 120–180 từ.",
+      "interpretation": "Diễn giải theo vị trí, khoảng 200–260 từ.",
       "reflection": "Một câu hỏi phản tư liên quan đến lá này."
     }
   ],
@@ -286,6 +304,33 @@ YÊU CẦU PHÂN TÍCH:
 ```
 
 Quy ước backend: `cards` phải có đúng ba phần tử; `reflection_questions` có đúng ba phần tử; `next_steps` có từ hai đến ba phần tử; `content_flags` là mảng rỗng nếu không phát hiện vấn đề. Nếu schema không hợp lệ, backend không hiển thị thẳng kết quả cho người dùng mà thực hiện một lần repair có giới hạn hoặc chuyển sang nội dung fallback.
+
+### 6.2. Schema đang chạy thật
+
+Đây là schema production, định nghĩa ở `INTERPRETATION_RESPONSE_SCHEMA` và kiểm tra lại bằng `InterpretationResultSchema` (Zod) trong `lib/ai/interpretation.ts`. Mốc số từ ghi kèm là những gì user prompt đang yêu cầu.
+
+```json
+{
+  "summary": "2–3 câu, khoảng 40–60 từ.",
+  "overview": "Khoảng 250–320 từ.",
+  "themes": ["3–5 chủ đề, mỗi chủ đề là một cụm từ cô đọng, gợi hình."],
+  "perCard": [
+    {
+      "position": "Giữ nguyên tên vị trí từ prompt.",
+      "keyMessage": "Một câu chốt sắc, 12–20 từ.",
+      "text": "Khoảng 200–260 từ."
+    }
+  ],
+  "connections": "Khoảng 200–260 từ.",
+  "actionSuggestions": ["3–5 gợi ý, mỗi gợi ý 2–3 câu, khoảng 35–55 từ."],
+  "reflectiveQuestion": "Một câu hỏi mở, không trả lời được bằng có hoặc không.",
+  "closingNote": "3–4 câu, khoảng 60–90 từ."
+}
+```
+
+Quy ước: `perCard` phải có đúng ba phần tử và giữ nguyên tên vị trí; `themes` và `actionSuggestions` là mảng mở, model tự quyết số lượng nhưng phải có ít nhất một phần tử — mốc 3–5 nằm ở prompt, không ép ở schema. Nếu Zod parse hỏng, `generateInterpretation` ném lỗi và không có bản repair. `unlockInterpretation` đã trừ credit từ trước khi gọi model, nên nó hoàn lại credit và ghi một `creditTransaction` đối ứng; người dùng kết thúc với số dư như cũ.
+
+Bản đọc dài gấp đôi cũng tốn thời gian sinh gấp đôi. Server action mở khóa hiện không khai báo `maxDuration`, nên nếu gặp timeout trên Vercel thì đó là chỗ cần chỉnh trước tiên. Diễn giải đã lưu trước thay đổi này vẫn ngắn như cũ; không có migration nào chạy lại chúng.
 
 ## 7. Prompt kiểm duyệt trước khi hiển thị
 
