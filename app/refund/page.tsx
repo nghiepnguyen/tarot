@@ -33,7 +33,7 @@ export default function RefundPage() {
         </p>
         <p>
           Mã giao dịch nằm ở địa chỉ trang sau khi thanh toán
-          (<code>/profile?order=...</code>). Không còn giữ thì cứ gửi email đã
+          (<code>/credits?order=...</code>). Không còn giữ thì cứ gửi email đã
           đăng ký cùng thời điểm giao dịch, chúng tôi tra được.
         </p>
       </section>

@@ -52,8 +52,8 @@ export async function createOrderAction(packageId: string): Promise<CreateOrderR
       orderCode,
       amountVnd: creditPackage.priceVnd,
       description: `Nạp ${creditPackage.credits} credit`,
-      returnUrl: `${SITE_URL}/profile?order=${order.id}&status=success`,
-      cancelUrl: `${SITE_URL}/profile?order=${order.id}&status=cancelled`,
+      returnUrl: `${SITE_URL}/credits?order=${order.id}&status=success`,
+      cancelUrl: `${SITE_URL}/credits?order=${order.id}&status=cancelled`,
       expiredAt: Math.floor(expiresAt.getTime() / 1000),
     });
 
@@ -116,7 +116,7 @@ export type ReconcileMyOrdersResult = { settled: number };
  *
  * Bịt khe hở còn lại sau khi cron phải hạ xuống mỗi ngày trên gói Hobby:
  * webhook trượt **và** người dùng đóng tab trước khi trang trả về kịp đối
- * soát. Người quay lại `/profile` hỏi "credit đâu" chính là người cần nó nhất.
+ * soát. Người quay lại `/credits` hỏi "credit đâu" chính là người cần nó nhất.
  *
  * Không trả lỗi ra ngoài: đây là việc chạy ngầm, hỏng thì im lặng và để lần
  * sau thử lại, không có gì để người dùng làm với một thông báo lỗi ở đây.

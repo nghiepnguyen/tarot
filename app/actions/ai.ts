@@ -151,5 +151,5 @@ export async function topUpCreditsAction() {
     data: { credits: { increment: DEMO_TOPUP_AMOUNT } },
   });
 
-  revalidatePath("/profile");
+  revalidatePath("/credits");
 }

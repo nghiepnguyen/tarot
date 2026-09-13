@@ -187,7 +187,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
 
       {outOfCredits ? (
         <Link
-          href="/profile"
+          href="/credits"
           onClick={() =>
             trackEvent("topup_prompt_click", {
               reading_id: readingId,

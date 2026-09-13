@@ -56,6 +56,16 @@ export function UserMenu({ label }: { label: string }) {
         <div className="absolute right-0 top-full z-20 w-40 pt-2">
           <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-[0_8px_24px_-16px_rgba(51,41,31,0.25)]">
             <Link
+              href="/credits"
+              className={itemClass}
+              onClick={() => {
+                trackEvent("nav_click", { destination: "/credits", source: "user_menu" });
+                setOpen(false);
+              }}
+            >
+              Nạp credit
+            </Link>
+            <Link
               href="/history"
               className={itemClass}
               onClick={() => {

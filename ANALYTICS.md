@@ -9,7 +9,7 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `lib/analytics/gtag.ts` | Measurement ID, `trackEvent()`, `trackPageView()`. Mọi hàm no-op khi `window.gtag` chưa có. |
 | `components/analytics/GoogleAnalytics.tsx` | Nạp script gtag (`next/script`, `strategy="afterInteractive"`) và bắn `page_view` theo route. Render trong `app/layout.tsx`. |
 | `components/analytics/AuthSuccessTracker.tsx` | Bắn `login` / `sign_up` sau khi server redirect về `/?auth=...`. |
-| `components/analytics/PurchaseTracker.tsx` | Bắn `purchase` khi PayOS trả về `/profile`. |
+| `components/analytics/PurchaseTracker.tsx` | Bắn `purchase` khi PayOS trả về `/credits`. |
 | `components/analytics/CheckoutCancelledTracker.tsx` | Bắn `checkout_cancelled`. |
 | `components/tarot/OrderStatusWatcher.tsx` | Đối soát đơn còn `PENDING` sau khi PayOS trả về; bắn `purchase_pending` / `purchase_unsettled`. |
 | `components/analytics/LoginPromptLink.tsx` | Link "Đăng nhập" có tracking, dùng trong server component. |
@@ -66,6 +66,7 @@ Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner ne
 | `ai_unlock_error` | Server action trả lỗi | `reading_id`, `error` |
 | `ai_unlock_retry` | Bấm "Thử lại" sau lỗi | `reading_id` |
 | `topup_prompt_click` | Bấm link nạp thêm khi hết credit | `reading_id`, `has_purchased` |
+| `nav_click` | Vào trang nạp credit từ header hoặc menu | `destination`, `source` (`credit_badge` hoặc `user_menu`) |
 
 `ai_unlock_view` là mẫu số để tính tỉ lệ chuyển đổi: `ai_unlock_success / ai_unlock_view`.
 
@@ -78,7 +79,7 @@ Theo chuẩn ecommerce của GA4, `currency: "VND"`, `value` là giá gói tính
 | `select_credit_package` | Chọn một gói trong danh sách | `item_id`, `item_name`, `price` |
 | `begin_checkout` | Bấm nút thanh toán, ngay trước khi rời sang PayOS | `currency`, `value`, `items[]` |
 | `checkout_error` | Không tạo được link thanh toán | `item_id`, `error` |
-| `purchase` | PayOS trả về `/profile` và đơn đã `PAID` | `transaction_id`, `currency`, `value`, `items[]`, `credits_granted` |
+| `purchase` | PayOS trả về `/credits` và đơn đã `PAID` | `transaction_id`, `currency`, `value`, `items[]`, `credits_granted` |
 | `checkout_cancelled` | PayOS trả về với `status=cancelled` | `transaction_id` |
 | `purchase_pending` | PayOS trả về `status=success` nhưng đơn còn `PENDING`, bắt đầu đối soát | `transaction_id` |
 | `purchase_unsettled` | Đối soát kết thúc mà đơn vẫn chưa `PAID` | `transaction_id`, `order_status` |
@@ -87,9 +88,9 @@ Chọn gói và bấm thanh toán là hai bước tách biệt, nên `select_cre
 
 `purchase_pending` gần như luôn bắn trước `purchase`: PayOS đẩy người dùng về trang ngay, thường trước khi webhook kịp tới. Chênh lệch `purchase_pending − purchase` là số đơn không chốt được trong ~1 phút; `purchase_unsettled` kèm `order_status` cho biết vì sao (`PENDING` là webhook lẫn đối soát đều chưa xong, các giá trị khác là đơn đã đóng).
 
-Đơn được cứu ở đường thứ ba — đối soát khi người dùng mở lại `/profile` — **không** bắn `purchase`. Đó là những đơn mà người dùng đã rời trang trả về từ trước, nên chưa từng có `purchase` nào để bắn trùng; hệ quả là GA4 đếm thiếu đúng bằng số đơn hiếm hoi đó. Ledger `CreditTransaction` mới là con số doanh thu đúng.
+Đơn được cứu ở đường thứ ba — đối soát khi người dùng mở lại trang nạp credit — **không** bắn `purchase`. Đó là những đơn mà người dùng đã rời trang trả về từ trước, nên chưa từng có `purchase` nào để bắn trùng; hệ quả là GA4 đếm thiếu đúng bằng số đơn hiếm hoi đó. Ledger `CreditTransaction` mới là con số doanh thu đúng.
 
-`purchase` **không** tin vào query param. `app/profile/page.tsx` đọc đơn từ database và chỉ render `PurchaseTracker` khi đơn đó có `status === "PAID"` và thuộc về người đang đăng nhập — webhook mới là nguồn sự thật. Người dùng tải lại trang trả về nhiều lần cũng chỉ bắn một lần, nhờ khóa `tarot:purchaseTracked:<orderId>` trong `sessionStorage`.
+`purchase` **không** tin vào query param. `components/tarot/OrderReturn.tsx` đọc đơn từ database và chỉ render `PurchaseTracker` khi đơn đó có `status === "PAID"` và thuộc về người đang đăng nhập — webhook mới là nguồn sự thật. Người dùng tải lại trang trả về nhiều lần cũng chỉ bắn một lần, nhờ khóa `tarot:purchaseTracked:<orderId>` trong `sessionStorage`.
 
 ### Tài khoản
 

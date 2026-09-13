@@ -25,7 +25,7 @@ const GIVE_UP_MESSAGE =
   `Quá lâu mà vẫn chưa thấy, gửi email tới ${SUPPORT_EMAIL} kèm mã đơn ở địa chỉ trang.`;
 
 /**
- * PayOS đẩy người dùng về `/profile` ngay sau khi họ trả tiền, thường trước
+ * PayOS đẩy người dùng về `/credits` ngay sau khi họ trả tiền, thường trước
  * khi webhook kịp tới. Không có gì ở đây thì người dùng nhìn thấy số credit cũ
  * và tưởng mất tiền.
  *

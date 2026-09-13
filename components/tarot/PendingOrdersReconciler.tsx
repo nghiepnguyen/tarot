@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { reconcileMyPendingOrdersAction } from "@/app/actions/payments";
 
 /**
- * Người dùng có đơn treo mở lại `/profile` — thường là để xem credit đã về
+ * Người dùng có đơn treo mở lại trang nạp credit — thường là để xem credit đã về
  * chưa. Hỏi lại PayOS ngay tại đó thay vì bắt họ đợi lượt quét cron kế tiếp,
  * vốn chỉ chạy mỗi ngày một lần trên gói Hobby.
  *
  * Trang cha chỉ render component này khi thật sự có đơn treo, nên lần mở
- * `/profile` bình thường không tốn lượt gọi nào sang PayOS.
+ * trang bình thường không tốn lượt gọi nào sang PayOS.
  */
 export function PendingOrdersReconciler() {
   const router = useRouter();

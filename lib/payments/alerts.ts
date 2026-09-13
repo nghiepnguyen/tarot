@@ -52,8 +52,6 @@ export async function alertAmountMismatch(alert: AmountMismatchAlert): Promise<v
       "1. Đối chiếu giao dịch trên dashboard PayOS.",
       "2. Khách trả đúng mà hệ thống hiểu sai thì cộng credit tay và ghi sổ.",
       "3. Khách trả thiếu thì hoàn tiền trên PayOS rồi đóng đơn.",
-      "",
-      `Trang hồ sơ khách: ${SITE_URL}/profile`,
     ].join("\n"),
   });
 }

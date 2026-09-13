@@ -205,7 +205,7 @@ export async function reconcileStaleOrders(
  * Đối soát các đơn còn `PENDING` của một người dùng cụ thể, trả về số đơn đã
  * chốt được.
  *
- * Dùng khi chính người đó mở lại `/profile`: rẻ hơn quét toàn hệ thống, và
+ * Dùng khi chính người đó mở lại trang nạp credit: rẻ hơn quét toàn hệ thống, và
  * nhắm đúng người đang thắc mắc credit của mình đâu.
  */
 export async function reconcileUserPendingOrders(

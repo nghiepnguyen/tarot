@@ -1,37 +1,20 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
+import { Card } from "@/components/ui/Card";
 import { ProfileForm } from "@/components/tarot/ProfileForm";
-import { CreditsPanel } from "@/components/tarot/CreditsPanel";
-import { RECONCILE_GRACE_MS } from "@/lib/payments/orders";
-import { PurchaseTracker } from "@/components/analytics/PurchaseTracker";
-import { CheckoutCancelledTracker } from "@/components/analytics/CheckoutCancelledTracker";
-import { OrderStatusWatcher } from "@/components/tarot/OrderStatusWatcher";
-import { PendingOrdersReconciler } from "@/components/tarot/PendingOrdersReconciler";
+import { CreditBalance } from "@/components/tarot/CreditBalance";
+import { OrderReturn } from "@/components/tarot/OrderReturn";
 
 export const metadata: Metadata = {
   title: "Hồ sơ",
   robots: { index: false, follow: false },
 };
-
-/**
- * Chỉ kiểm tra sự tồn tại. Đối soát thật nằm trong server action — đọc đồng hồ
- * và gọi PayOS trong lúc render là hai việc không thuộc về đó.
- */
-async function hasStalePendingOrder(userId: string): Promise<boolean> {
-  const count = await prisma.order.count({
-    where: {
-      userId,
-      status: "PENDING",
-      createdAt: { lte: new Date(Date.now() - RECONCILE_GRACE_MS) },
-    },
-  });
-  return count > 0;
-}
 
 export default async function ProfilePage({
   searchParams,
@@ -44,53 +27,13 @@ export default async function ProfilePage({
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user) redirect("/login");
 
-  const packages = await prisma.creditPackage.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  // PayOS trả về đây sau khi thanh toán. Chỉ bắn `purchase` khi đơn thật sự đã
-  // PAID (webhook mới là nguồn sự thật), và đơn đó thuộc về người đang đăng
-  // nhập — query param tự nó không chứng minh được gì.
   const params = await searchParams;
-  const returnedOrder = params.order
-    ? await prisma.order.findFirst({
-        where: { id: params.order, userId: session.user.id },
-        include: { package: true },
-      })
-    : null;
-  const paidOrder = returnedOrder?.status === "PAID" ? returnedOrder : null;
-  // PayOS trả người dùng về đây gần như ngay lập tức, thường trước webhook.
-  // Đơn còn PENDING nghĩa là chưa chốt được, không phải thất bại — theo dõi
-  // tiếp thay vì để người dùng nhìn số credit cũ.
-  const settlingOrder =
-    params.status === "success" && returnedOrder?.status === "PENDING" ? returnedOrder : null;
-
-  // Đơn treo từ lần trước: webhook trượt và người dùng đã đóng tab, nên không
-  // đường nào chốt được nó ngoài cron — mỗi ngày một lần trên gói Hobby. Hỏi
-  // ở đây thì họ không phải đợi tới đó.
-  //
-  // `settlingOrder` đã có người theo dõi riêng rồi, không cần đường thứ hai.
-  const hasStale =
-    settlingOrder === null && (await hasStalePendingOrder(session.user.id));
 
   return (
     <div className="flex flex-1 flex-col">
       <Header />
-      {paidOrder ? (
-        <PurchaseTracker
-          transactionId={paidOrder.id}
-          value={paidOrder.amountVnd}
-          itemId={paidOrder.packageId}
-          itemName={paidOrder.package.name}
-          credits={paidOrder.creditsGranted}
-        />
-      ) : null}
-      {params.status === "cancelled" && returnedOrder ? (
-        <CheckoutCancelledTracker orderId={returnedOrder.id} />
-      ) : null}
-      {settlingOrder ? <OrderStatusWatcher orderId={settlingOrder.id} /> : null}
-      {hasStale ? <PendingOrdersReconciler /> : null}
+      {/* Đơn tạo trước khi tách trang nạp tiền vẫn mang returnUrl trỏ về đây. */}
+      <OrderReturn userId={user.id} orderId={params.order} status={params.status} />
       <main className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-8">
@@ -98,11 +41,15 @@ export default async function ProfilePage({
               Hồ sơ
             </h1>
             <ProfileForm email={user.email} name={user.name ?? ""} />
-            <CreditsPanel
-              credits={user.credits}
-              packages={packages}
-              showDemoTopup={process.env.NODE_ENV !== "production"}
-            />
+            <Card className="flex max-w-lg flex-col gap-5">
+              <CreditBalance credits={user.credits} />
+              <Link
+                href="/credits"
+                className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 self-start rounded-full border border-accent bg-accent px-6 text-sm font-medium tracking-wide text-accent-foreground shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:opacity-95 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0"
+              >
+                Nạp thêm credit
+              </Link>
+            </Card>
           </div>
         </Section>
       </main>

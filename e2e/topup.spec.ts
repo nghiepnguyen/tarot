@@ -32,7 +32,7 @@ test.afterAll(async () => {
 });
 
 test.beforeEach(async () => {
-  await page.goto("/profile");
+  await page.goto("/credits");
 });
 
 /**
@@ -50,8 +50,9 @@ function packageCard(name: string) {
  * thì render ra một khoảng trống im lặng. Test này giữ cho nó không quay lại
  * như cũ.
  */
-test("the profile page explains how topping up works before asking for money", async () => {
-  await expect(page.getByRole("heading", { name: "Nạp thêm credit" })).toBeVisible();
+test("the credits page explains how topping up works before asking for money", async () => {
+  await expect(page.getByRole("heading", { name: "Nạp credit", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Chọn gói" })).toBeVisible();
   await expect(page.getByText("Mỗi lượt diễn giải chuyên sâu tốn 10 credit")).toBeVisible();
 
   // Ba bước phải có mặt: người dùng cần biết mình sắp bị đưa sang PayOS.
@@ -89,7 +90,7 @@ test("picking a package does not immediately send you to the payment gateway", a
 
   await packageCard("Khởi động").click();
 
-  await expect(page).toHaveURL("/profile");
+  await expect(page).toHaveURL("/credits");
   await expect(page.getByRole("radio", { name: /Khởi động/ })).toBeChecked();
   // Nút thanh toán giờ nói rõ sắp trừ bao nhiêu tiền.
   await expect(page.getByRole("button", { name: "Thanh toán 19.000đ" })).toBeEnabled();
@@ -115,4 +116,38 @@ test("the package group is reachable and operable by keyboard alone", async () =
 test("an account that has spent nothing still shows its free trial credits", async () => {
   await expect(page.getByText("2 lượt diễn giải chuyên sâu")).toBeVisible();
   await expect(page.getByText("(20 credit)")).toBeVisible();
+});
+
+/**
+ * Trang nạp tiền không nằm trong luồng nào cả nếu không có lối vào. Badge credit
+ * ở header là lối ngắn nhất: người đang nhìn số dư chính là người sắp nghĩ tới
+ * chuyện nạp thêm.
+ */
+test("the credit badge in the header opens the credits page", async () => {
+  await page.goto("/");
+  await page.getByRole("link", { name: /Nạp credit\. Bạn đang có \d+ credit/ }).click();
+  await expect(page).toHaveURL("/credits");
+  await expect(page.getByRole("heading", { name: "Nạp credit", level: 1 })).toBeVisible();
+});
+
+test("the user menu also reaches the credits page", async () => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Người Mua Thử" }).click();
+  // `exact` là bắt buộc: badge ở header có nhãn "Nạp credit. Bạn đang có N
+  // credit.", và mặc định Playwright khớp kiểu chứa nên trúng cả hai.
+  await page.getByRole("link", { name: "Nạp credit", exact: true }).click();
+  await expect(page).toHaveURL("/credits");
+});
+
+/**
+ * Hồ sơ không còn khu vực chọn gói, nhưng vẫn phải cho người dùng đi tiếp —
+ * nếu không thì tách trang chỉ làm họ mất đường.
+ */
+test("the profile page keeps the balance and a way through to topping up", async () => {
+  await page.goto("/profile");
+  await expect(page.getByText("2 lượt diễn giải chuyên sâu")).toBeVisible();
+  await expect(page.getByRole("radio", { name: /Khởi động/ })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Nạp thêm credit" }).click();
+  await expect(page).toHaveURL("/credits");
 });

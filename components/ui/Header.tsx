@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { LeafSprig } from "@/components/ui/Botanical";
 import { UserMenu } from "@/components/ui/UserMenu";
+import { CreditBadge } from "@/components/ui/CreditBadge";
 
 export async function Header() {
   const session = await auth();
@@ -26,9 +27,7 @@ export async function Header() {
 
         {user ? (
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-            <span className="shrink-0 rounded-full bg-sage-tint px-2.5 py-1 text-sm font-medium text-accent">
-              {user.credits} credit
-            </span>
+            <CreditBadge credits={user.credits} />
 
             <UserMenu label={user.name || user.email.split("@")[0]} />
           </div>

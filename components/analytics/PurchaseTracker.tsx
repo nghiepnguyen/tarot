@@ -14,7 +14,7 @@ interface PurchaseTrackerProps {
 const SENT_KEY_PREFIX = "tarot:purchaseTracked:";
 
 /**
- * PayOS trả người dùng về /profile?order=...&status=success. Người dùng có thể
+ * PayOS trả người dùng về /credits?order=...&status=success. Người dùng có thể
  * tải lại trang đó nhiều lần, nên chốt lại bằng sessionStorage để mỗi đơn chỉ
  * bắn `purchase` một lần.
  */
