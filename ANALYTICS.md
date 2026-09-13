@@ -11,7 +11,10 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `components/analytics/AuthSuccessTracker.tsx` | Bắn `login` / `sign_up` sau khi server redirect về `/?auth=...`. |
 | `components/analytics/PurchaseTracker.tsx` | Bắn `purchase` khi PayOS trả về `/credits`. |
 | `components/analytics/CheckoutCancelledTracker.tsx` | Bắn `checkout_cancelled`. |
+| `components/tarot/OrderReturn.tsx` | Server component gom mọi việc khi PayOS trả người dùng về; dùng chung cho `/credits` và `/profile`. |
 | `components/tarot/OrderStatusWatcher.tsx` | Đối soát đơn còn `PENDING` sau khi PayOS trả về; bắn `purchase_pending` / `purchase_unsettled`. |
+| `components/tarot/PendingOrdersReconciler.tsx` | Đối soát đơn treo của chính người dùng khi họ mở lại trang nạp credit. Không bắn event. |
+| `components/ui/CreditBadge.tsx` | Badge credit ở header, đồng thời là lối vào `/credits`; bắn `nav_click`. |
 | `components/analytics/LoginPromptLink.tsx` | Link "Đăng nhập" có tracking, dùng trong server component. |
 | `components/analytics/ConsentBanner.tsx` | Banner xin đồng ý, neo ở đáy màn hình. |
 | `components/analytics/CookieSettingsButton.tsx` | Link "Tùy chọn cookie" ở footer để mở lại banner. |

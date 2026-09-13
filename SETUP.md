@@ -230,7 +230,7 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 
 Webhook PayOS là nguồn sự thật cho việc cộng credit, nhưng nó có thể không bao giờ tới: PayOS lỗi, deploy rơi đúng lúc callback, mạng đứt. Không có gì bù lại thì người dùng trả tiền mà đơn nằm `PENDING` vĩnh viễn.
 
-Có ba đường cùng gọi vào `lib/payments/orders.ts`, nên mọi đường đều idempotent và đều đối chiếu số tiền:
+Có bốn đường cùng gọi vào `lib/payments/orders.ts`, nên mọi đường đều idempotent và đều đối chiếu số tiền:
 
 | Đường | Khi nào chạy | File |
 | --- | --- | --- |
@@ -239,13 +239,13 @@ Có ba đường cùng gọi vào `lib/payments/orders.ts`, nên mọi đường
 | Mở lại trang nạp | Người dùng mở `/credits` (hoặc `/profile`) và đang có đơn `PENDING` cũ hơn 5 phút; chỉ quét đơn của chính họ | `components/tarot/PendingOrdersReconciler.tsx` |
 | Cron | Mỗi ngày, quét đơn `PENDING` cũ hơn 5 phút của mọi người | `app/api/cron/reconcile-orders/route.ts` |
 
-Hai đường sau hỏi trực tiếp PayOS bằng `GET /v2/payment-requests/{id}`, dùng `Order.providerPaymentLinkId` lưu lúc tạo đơn. Đơn quá `expiresAt` (30 phút) mà vẫn chưa trả tiền sẽ được đóng thành `EXPIRED`.
+Ba đường sau hỏi trực tiếp PayOS bằng `GET /v2/payment-requests/{id}`, dùng `Order.providerPaymentLinkId` lưu lúc tạo đơn. Đơn quá `expiresAt` (30 phút) mà vẫn chưa trả tiền sẽ được đóng thành `EXPIRED`.
 
-Số tiền PayOS báo phải khớp đúng `Order.amountVnd`. Lệch thì không cộng credit, ghi `console.error` và để đơn nguyên `PENDING` cho người thật xử lý.
+Số tiền PayOS báo phải khớp đúng `Order.amountVnd`. Lệch thì không cộng credit, để đơn nguyên `PENDING`, và gửi email cảnh báo — xem "Cảnh báo" ngay dưới.
 
 Trên gói Hobby cron chỉ chạy một lần mỗi ngày, nên đường thứ ba tồn tại để bịt khe hở đó: khách trả tiền, webhook trượt, **và** khách đóng tab trước khi trang trả về kịp đối soát. Lần sau họ mở `/credits` — thường là để xem credit đã về chưa — đơn được hỏi lại ngay tại đó thay vì đợi tới lượt quét kế tiếp.
 
-Trang chỉ đếm xem có đơn treo hay không; việc gọi PayOS nằm trong server action, không phải trong lúc render. Lần mở hồ sơ bình thường vì thế không tốn lượt gọi nào.
+Trang chỉ đếm xem có đơn treo hay không; việc gọi PayOS nằm trong server action, không phải trong lúc render. Lần mở trang bình thường vì thế không tốn lượt gọi nào.
 
 ## Cảnh báo
 

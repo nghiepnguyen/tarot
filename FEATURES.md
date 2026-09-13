@@ -8,6 +8,7 @@
 - Thiết lập bộ component cơ bản: Button, Input, Card, Modal, Toast, Section và Header.
 - Thiết lập logging, error state, loading state và empty state.
 - Chuẩn bị nội dung pháp lý: disclaimer tarot, điều khoản, riêng tư và chính sách hoàn tiền.
+- Kênh liên hệ hỗ trợ (`SUPPORT_EMAIL` trong `lib/seo/site.ts`): hiện ở footer, ba trang chính sách, và màn hình khi đơn thanh toán chưa chốt.
 
 ## Phase 1 — MVP trải nghiệm bốc bài
 
@@ -53,7 +54,9 @@
 - Mô tả rõ quyền lợi và giá trước khi thanh toán.
 - Tặng 2 lượt xem miễn phí khi đăng ký (one-time), sau đó nạp credit theo gói (5/10/20/50 lượt) qua PayOS — chưa có gói VIP theo tháng ở giai đoạn này.
 - Ghi sổ giao dịch credit (free grant, mua, chi tiêu, hoàn tiền) để đo tỷ lệ free-to-paid.
-- Đơn hàng được đối soát lại với PayOS ở ba đường (webhook, trang trả về, cron mỗi giờ) nên webhook trượt không làm mất credit của người đã trả tiền; chi tiết ở `SETUP.md`.
+- Nạp credit có trang riêng `/credits`: vào từ badge số credit trên header, menu người dùng, nút ở hồ sơ, và CTA khi hết credit ở panel mở khóa AI.
+- Đơn hàng được đối soát lại với PayOS ở bốn đường (webhook, trang trả về, lúc người dùng mở lại trang nạp, và cron mỗi ngày) nên webhook trượt không làm mất credit của người đã trả tiền; chi tiết ở `SETUP.md`. Cron chạy mỗi ngày vì gói Vercel Hobby từ chối deploy nếu lịch dày hơn.
+- Số tiền PayOS báo phải khớp giá gói đã chốt lúc tạo đơn. Lệch thì không cộng credit và gửi email cảnh báo qua Resend, vì không đường tự động nào gỡ được tình huống đó.
 - Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng `pnpm refund-order <orderId>`. Chưa có trang quản trị.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
 - Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh.
@@ -80,6 +83,31 @@
 - A/B testing CTA, giá và nội dung paywall.
 - SEO landing pages theo chủ đề câu hỏi.
 - Analytics: GA4 đã gắn, phủ toàn bộ phễu bốc bài, mở khóa AI, thanh toán và tài khoản — xem `ANALYTICS.md`. Event không chứa câu hỏi, email hay tên người dùng. Có banner xin đồng ý chạy theo Consent Mode v2: chưa đồng ý thì không cookie phân tích nào được đặt và số liệu chỉ ở dạng ẩn danh; đổi lựa chọn qua “Tùy chọn cookie” ở chân trang.
+
+## Việc tiếp theo
+
+Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ thú vị.
+
+### 1. Không ai biết khi có chuyện
+
+- **Error tracking.** Chưa có Sentry hay tương đương. Lỗi runtime trên Vercel nằm trong log và không ai đọc. Cảnh báo qua Resend hiện chỉ phủ hai tình huống thanh toán, không phủ lỗi chung.
+- **Theo dõi cảnh báo thanh toán.** Email cảnh báo gửi về hộp thư hỗ trợ. Chưa có gì đảm bảo hộp thư đó được đọc trong ngày.
+
+### 2. Vận hành đang phải làm tay
+
+- **Trang quản trị.** Hoàn tiền chạy bằng CLI (`pnpm refund-order`), không có chỗ xem đơn, tra giao dịch hay chỉnh credit. `User` cũng chưa có cột phân quyền, nên bước đầu là thêm role rồi mới dựng trang.
+- **Biên nhận cho khách.** Mua xong không nhận được email nào. Resend đã tích hợp sẵn, phần thiếu là template và quyết định về hóa đơn.
+
+### 3. Vùng chưa được test
+
+- **E2E chưa chạm PayOS.** Test dừng ở nút thanh toán; toàn bộ phần sau — redirect, webhook, cộng credit — chỉ có unit test với PayOS giả. Cần môi trường sandbox của PayOS mới đi tiếp được.
+- **Component chưa có test.** Vitest chỉ quét `lib/`. Panel chọn gói, banner đồng ý và các tracker chỉ được phủ gián tiếp qua e2e.
+
+### 4. Nợ đã biết
+
+- **Cron mỗi ngày trên Hobby.** Nếu lên Pro thì đổi `vercel.json` về `0 * * * *`, khe hở còn lại thu từ một ngày xuống một giờ.
+- **Migration và deploy là hai việc rời nhau.** Luôn có cửa sổ production chạy code mới trên schema cũ. Cách khép hẳn đã ghi ở cuối mục "Cơ sở dữ liệu" trong `SETUP.md`.
+- **`purchase` đếm thiếu.** Đơn cứu được ở đường đối soát thứ ba không bắn event. Sổ `CreditTransaction` mới là con số doanh thu đúng.
 
 ## Lưu trữ — không nằm trong kế hoạch
 

@@ -29,7 +29,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 1. Nhập một câu hỏi về tình cảm, công việc, tài chính hoặc định hướng cá nhân.
 2. Bốc ba lá bài từ bộ 78 lá chia thành từng trang, vuốt ngang để xem hết.
 3. Xem tên, hình ảnh và ý nghĩa cơ bản của từng lá.
-4. Dùng 2 lượt miễn phí đầu tiên, sau đó nạp credit qua PayOS để xem phần diễn giải chuyên sâu bằng AI.
+4. Dùng 2 lượt miễn phí đầu tiên, sau đó nạp credit qua PayOS ở trang `/credits` để xem phần diễn giải chuyên sâu bằng AI.
 5. Liên hệ hoặc đặt lịch với người tư vấn cho nhu cầu cao cấp hơn.
 
 ## Nguyên tắc sản phẩm
@@ -41,7 +41,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 
 ## Phạm vi phiên bản đầu
 
-MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, và khu vực khóa nội dung AI. Tài khoản, lịch sử, free trial và nạp credit thật qua PayOS đã có; CTA đặt lịch tư vấn và quản trị để triển khai ở các phase sau.
+MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, và khu vực khóa nội dung AI. Tài khoản, lịch sử, free trial và nạp credit thật qua PayOS đã có và đang chạy trên production. Đặt lịch tư vấn và trang quản trị chưa làm — việc còn lại xếp theo ưu tiên ở mục "Việc tiếp theo" trong [FEATURES.md](FEATURES.md).
 
 ## Phát triển
 
@@ -50,4 +50,4 @@ pnpm install
 pnpm dev
 ```
 
-Mở [http://localhost:3000](http://localhost:3000), bản production ở [https://tarot.thanhnghiep.top](https://tarot.thanhnghiep.top/). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md), danh mục event đo lường tại [ANALYTICS.md](ANALYTICS.md).
+Mở [http://localhost:3000](http://localhost:3000), bản production ở [https://tarot.thanhnghiep.top](https://tarot.thanhnghiep.top/). Xem chi tiết cấu hình, biến môi trường và deploy tại [SETUP.md](SETUP.md), roadmap và việc còn lại tại [FEATURES.md](FEATURES.md), stack tại [TECH_STACK.md](TECH_STACK.md), danh mục event đo lường tại [ANALYTICS.md](ANALYTICS.md).
