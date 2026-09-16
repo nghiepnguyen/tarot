@@ -15,6 +15,20 @@ interface AiUnlockPanelProps {
   initialData?: DisplayInterpretation | null;
 }
 
+// Cỡ chữ gốc của cả phần diễn giải; mọi dòng bên trong đo bằng `em` theo nó,
+// nên chỉnh toàn bộ tỉ lệ chỉ phải sửa đúng hằng số này. 20px cho thân bài
+// 17.5px — to hơn thang mặc định của trang (14px) vì đây là đoạn đọc lâu
+// nhất trong sản phẩm, nhưng không lấn át phần còn lại của màn hình.
+const INTERPRETATION_BASE_TEXT = "text-xl";
+// Câu chủ đề, dòng duy nhất được phép to nhất trong thẻ.
+const LEAD = "text-[1em]";
+// Toàn bộ văn xuôi.
+const BODY = "text-[0.875em]";
+// Nhãn phân mục: chữ nhỏ, viết hoa, giãn chữ. Tách bậc bằng kiểu chữ thay vì
+// bằng cỡ chữ lớn hơn, để mắt luôn phân biệt được đâu là nhãn và đâu là nội
+// dung khi lướt nhanh qua một thẻ dài.
+const LABEL = "text-[0.7em] font-medium uppercase tracking-[0.12em]";
+
 function SectionHeading({
   icon: Icon,
   children,
@@ -24,8 +38,8 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-      <h5 className="text-sm font-medium text-foreground">{children}</h5>
+      <Icon className="h-[1.4em] w-[1.4em] shrink-0 text-accent" aria-hidden="true" />
+      <h5 className={`${LABEL} text-muted`}>{children}</h5>
     </div>
   );
 }
@@ -88,61 +102,79 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
 
   if (data) {
     return (
-      <Card className="flex flex-col gap-6 text-left">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage-tint">
-              <Sparkles className="h-4 w-4 text-accent" aria-hidden="true" />
-            </div>
-            <h4 className="text-base font-medium text-foreground">Diễn giải chuyên sâu</h4>
+      // Chữ ở đây lớn hơn phần còn lại của trang, nên padding mặc định của
+      // Card làm dòng trên điện thoại ngắn tới mức khó đọc; thu padding ngang
+      // lại thay vì giảm cỡ chữ.
+      <Card
+        className={`flex flex-col gap-7 text-left max-sm:p-6 ${INTERPRETATION_BASE_TEXT}`}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Tên phần chạy như một nhãn nhỏ phía trên, nhường vai trò dòng
+              lớn nhất cho câu chủ đề — thứ người dùng thật sự đến để đọc. */}
+          <div className="flex items-center gap-2 border-b border-border pb-4">
+            <Sparkles className="h-[1.4em] w-[1.4em] shrink-0 text-accent" aria-hidden="true" />
+            <h4 className={`${LABEL} text-muted`}>Diễn giải chuyên sâu</h4>
           </div>
 
           {data.summary ? (
-            <p className="text-base font-medium leading-relaxed text-foreground">
+            <p className={`${LEAD} font-medium leading-snug text-foreground`}>
               {data.summary}
             </p>
           ) : null}
+
+          <p className={`${BODY} leading-relaxed text-muted`}>{data.overview}</p>
 
           {data.themes && data.themes.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {data.themes.map((theme) => (
                 <span
                   key={theme}
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted"
+                  // Sage trên nền sage-tint ở light mode chỉ đạt 3.9:1, dưới
+                  // ngưỡng 4.5:1 cho chữ nhỏ; chữ nền tối giữ được sắc thái
+                  // của chip mà vẫn đọc được.
+                  className={`rounded-full bg-sage-tint px-[0.9em] py-[0.35em] ${LABEL} text-foreground`}
                 >
                   {theme}
                 </span>
               ))}
             </div>
           ) : null}
-
-          <p className="text-sm leading-relaxed text-muted">{data.overview}</p>
         </div>
 
         <div className="flex flex-col divide-y divide-border border-y border-border">
           {data.perCard.map((entry) => (
-            <div key={entry.position} className="flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0">
-              <p className="text-sm font-medium text-accent">{entry.position}</p>
+            <div key={entry.position} className="flex flex-col gap-2 py-5 first:pt-0 last:pb-0">
+              {/* Cùng lý do tương phản như chip: accent trên nền surface chỉ
+                  đạt 4.28:1, nên bậc của nhãn do kiểu chữ gánh, không do màu. */}
+              <p className={`${LABEL} text-foreground`}>{entry.position}</p>
               {entry.keyMessage ? (
-                <p className="text-sm font-medium text-foreground">{entry.keyMessage}</p>
+                <p className={`${BODY} font-medium leading-snug text-foreground`}>
+                  {entry.keyMessage}
+                </p>
               ) : null}
-              <p className="text-sm leading-relaxed text-muted">{entry.text}</p>
+              <p className={`${BODY} leading-relaxed text-muted`}>{entry.text}</p>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <SectionHeading icon={Link2}>Mối liên hệ</SectionHeading>
-          <p className="text-sm leading-relaxed text-foreground">{data.connections}</p>
+          <p className={`${BODY} leading-relaxed text-foreground`}>{data.connections}</p>
         </div>
 
         {data.actionSuggestions.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             <SectionHeading icon={ListChecks}>Gợi ý hành động</SectionHeading>
-            <ul className="flex flex-col gap-1.5">
+            <ul className="flex flex-col gap-2">
               {data.actionSuggestions.map((suggestion) => (
-                <li key={suggestion} className="flex items-start gap-2 text-sm leading-relaxed text-foreground">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+                <li
+                  key={suggestion}
+                  className={`flex items-start gap-2.5 ${BODY} leading-relaxed text-foreground`}
+                >
+                  <span
+                    className="mt-[0.65em] h-[0.35em] w-[0.35em] shrink-0 rounded-full bg-accent"
+                    aria-hidden="true"
+                  />
                   {suggestion}
                 </li>
               ))}
@@ -150,17 +182,21 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           <SectionHeading icon={MessageCircleQuestion}>Câu hỏi tự phản tỉnh</SectionHeading>
-          <p className="border-l-2 border-accent/40 pl-3 text-sm italic leading-relaxed text-foreground">
+          {/* Câu hỏi là thứ người dùng mang đi sau khi đóng trang, nên nó
+              được nền riêng thay vì trôi lẫn vào các đoạn văn quanh nó. */}
+          <p
+            className={`rounded-xl border-l-2 border-accent bg-sage-tint px-[1.1em] py-[0.9em] ${BODY} italic leading-relaxed text-foreground`}
+          >
             {data.reflectiveQuestion}
           </p>
         </div>
 
         {data.closingNote ? (
-          <div className="flex items-start gap-2 border-t border-border pt-5">
-            <Quote className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-            <p className="text-sm italic leading-relaxed text-accent">{data.closingNote}</p>
+          <div className="flex items-start gap-2.5 border-t border-border pt-5">
+            <Quote className="mt-[0.2em] h-[1.2em] w-[1.2em] shrink-0 text-accent/70" aria-hidden="true" />
+            <p className={`${BODY} italic leading-relaxed text-muted`}>{data.closingNote}</p>
           </div>
         ) : null}
       </Card>
