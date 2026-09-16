@@ -27,6 +27,7 @@
 - Hiển thị ba vị trí theo cấu trúc: Bối cảnh, Hiện tại, Hướng đi.
 - Hỗ trợ trạng thái lá bài xuôi/ngược nếu sản phẩm quyết định dùng.
 - Animation lật bài theo từng bước.
+- Animation xáo bài (~3 giây, hai lượt riffle rồi cắt bài) sau khi bấm "Bốc 3 lá bài", có nút bỏ qua; tự bỏ qua khi người dùng bật `prefers-reduced-motion`.
 - Hiển thị tên, hình ảnh, từ khóa và ý nghĩa cơ bản.
 - Hiển thị lại câu hỏi để người dùng duy trì ngữ cảnh.
 - Nút thực hiện trải bài mới.

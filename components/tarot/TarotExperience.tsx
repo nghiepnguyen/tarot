@@ -1,7 +1,9 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { ArcDeck } from "@/components/tarot/ArcDeck";
+import { ShuffleDeck } from "@/components/tarot/ShuffleDeck";
 import { QuestionForm } from "@/components/tarot/QuestionForm";
 import { ReadingView } from "@/components/tarot/ReadingView";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +15,7 @@ import { trackEvent } from "@/lib/analytics/gtag";
 import { saveReadingAction } from "@/app/actions/readings";
 import type { StoredCard } from "@/app/actions/readings";
 
-type Status = "question" | "picking" | "revealed";
+type Status = "question" | "shuffling" | "picking" | "revealed";
 
 const PENDING_READING_KEY = "tarot:pendingReading";
 
@@ -73,6 +75,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
   const [pool, setPool] = useState<DrawnCard[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [readingId, setReadingId] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
   const { showToast } = useToast();
 
   // sessionStorage is a browser-only external store: it must not be read
@@ -118,8 +121,18 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
     });
     setPool(drawSpreadPool());
     setSelectedSlots([]);
-    setStatus("picking");
+    // The cards are already drawn at this point — the shuffle is a beat of
+    // theatre over a decision that's been made, not a step that can change
+    // it, so anyone who doesn't want the motion loses nothing by skipping.
+    setStatus(prefersReducedMotion ? "picking" : "shuffling");
   };
+
+  const handleShuffleDone = useCallback(() => setStatus("picking"), []);
+
+  const handleShuffleSkip = useCallback(() => {
+    trackEvent("shuffle_skip");
+    setStatus("picking");
+  }, []);
 
   const handleSelectSlot = (index: number) => {
     // Tính trạng thái mới ngoài updater: updater có thể chạy hai lần ở
@@ -189,6 +202,16 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
         cards={cards}
         readingId={readingId}
         onReset={handleReset}
+      />
+    );
+  }
+
+  if (status === "shuffling") {
+    return (
+      <ShuffleDeck
+        question={question}
+        onDone={handleShuffleDone}
+        onSkip={handleShuffleSkip}
       />
     );
   }

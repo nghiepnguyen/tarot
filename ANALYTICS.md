@@ -54,6 +54,7 @@ Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner ne
 | `question_suggestion_click` | Bấm chip chủ đề gợi ý | `topic` |
 | `draw_start` | Bấm "Bốc 3 lá bài" thành công | `question_length`, `is_logged_in` |
 | `draw_blocked` | Bấm khi chưa nhập câu hỏi | `reason` |
+| `shuffle_skip` | Bấm "Bỏ qua, trải bài luôn" trong lúc xáo bài | — |
 | `card_select` / `card_deselect` | Chọn/bỏ chọn một lá | `picked_count` |
 | `reading_reveal` | Bấm "Mở lá bài" | `cards` (ba `cardId`, phân tách bằng dấu phẩy), `reversed_count`, `is_logged_in` |
 | `reading_reset` | Bấm "Trải bài mới" hoặc "Chọn câu hỏi khác" | `from_status` |

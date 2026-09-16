@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { LeafSprig } from "@/components/ui/Botanical";
+import { CardBack, CardFace } from "@/components/tarot/CardBack";
 
 interface ArcDeckProps {
   size: number;
@@ -159,14 +159,13 @@ function CardCarousel({
                         isSelected ? "-translate-y-2 border-foreground" : "border-accent"
                       }`}
                     >
-                      <div className="relative m-1.5 flex h-[calc(100%-0.75rem)] items-start justify-center overflow-hidden rounded-md border border-accent-foreground/20 pt-1">
-                        <LeafSprig className="absolute inset-0 m-auto h-2/3 w-2/3 text-accent-foreground/25" />
+                      <CardFace>
                         {isSelected ? (
                           <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-accent-foreground text-[11px] font-semibold text-accent">
                             {order + 1}
                           </span>
                         ) : null}
-                      </div>
+                      </CardFace>
                     </button>
                   </motion.div>
                 );
@@ -301,11 +300,7 @@ function CardFan({ size, enlarged = false }: ArcDeckProps) {
                   ease: "easeOut",
                 }}
               >
-                <div className="h-full w-full rounded-lg border border-accent bg-accent">
-                  <div className="relative m-1.5 flex h-[calc(100%-0.75rem)] items-start justify-center overflow-hidden rounded-md border border-accent-foreground/20 pt-1">
-                    <LeafSprig className="absolute inset-0 m-auto h-2/3 w-2/3 text-accent-foreground/25" />
-                  </div>
-                </div>
+                <CardBack />
               </motion.div>
             );
           })}
