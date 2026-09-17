@@ -217,8 +217,15 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
   }
 
   if (status === "picking") {
+    const remaining = 3 - selectedSlots.length;
+    const isReady = remaining === 0;
+
     return (
-      <div className="flex w-full flex-col items-center gap-8">
+      // The deck is taller than a phone viewport, so actions placed after it
+      // in flow sit below the fold exactly when the user needs them. They
+      // live in a bar pinned to the viewport instead; the padding here
+      // reserves the room it would otherwise cover at the end of the page.
+      <div className="flex w-full flex-col items-center gap-8 pb-32">
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Chọn ba lá bài
@@ -226,7 +233,6 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
           <p className="max-w-md text-sm text-muted">
             Câu hỏi: <span className="text-foreground">“{question}”</span>
           </p>
-          <p className="text-sm text-muted">Đã chọn {selectedSlots.length}/3</p>
         </div>
 
         <ArcDeck
@@ -237,13 +243,36 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
           onSelectSlot={handleSelectSlot}
         />
 
-        <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={handleReset}>
-            Chọn câu hỏi khác
-          </Button>
-          {selectedSlots.length === 3 ? (
-            <Button onClick={handleReveal}>Mở lá bài</Button>
-          ) : null}
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-8">
+            {/* Trạng thái đọc lên cho screen reader khi số lá đổi: lá bài chỉ
+                báo trạng thái bằng vị trí và số thứ tự trên mặt lá. */}
+            <p aria-live="polite" className="text-center text-sm text-muted">
+              {isReady ? (
+                <span className="text-foreground">Đã chọn đủ 3 lá — mở bài để xem luận giải.</span>
+              ) : (
+                <>Đã chọn {selectedSlots.length}/3 — chọn thêm {remaining} lá.</>
+              )}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                variant="secondary"
+                className="flex-1 whitespace-nowrap px-4 sm:flex-none sm:px-6"
+                onClick={handleReset}
+              >
+                Chọn câu hỏi khác
+              </Button>
+              {/* Nút luôn hiện dù chưa đủ lá: ẩn rồi mới hiện làm người dùng
+                  không biết bước kế tiếp là gì, và bar nhảy chiều cao. */}
+              <Button
+                className="flex-1 whitespace-nowrap px-4 sm:flex-none sm:px-6"
+                onClick={handleReveal}
+                disabled={!isReady}
+              >
+                Mở lá bài
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
