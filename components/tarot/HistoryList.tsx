@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { deleteAllReadingsAction, deleteReadingAction } from "@/app/actions/readings";
@@ -24,6 +24,25 @@ interface HistoryListProps {
 
 function cardLookup(cardId: string) {
   return TAROT_CARDS.find((c) => c.id === cardId);
+}
+
+// Trạng thái diễn giải nằm ngay trên hàng tóm tắt: nếu chỉ hiện bên trong
+// phần mở rộng thì phải bung từng lần trải bài mới biết lần nào đã mở.
+// Nhãn chữ đi kèm icon, không dựa vào riêng màu để phân biệt.
+function InterpretationBadge({ isUnlocked }: { isUnlocked: boolean }) {
+  const Icon = isUnlocked ? Sparkles : Lock;
+  return (
+    <span
+      className={`inline-flex w-fit shrink-0 self-start items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm ${
+        isUnlocked
+          ? "border-accent bg-sage-tint text-foreground"
+          : "border-border bg-transparent text-muted"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      {isUnlocked ? "Đã mở diễn giải chuyên sâu" : "Chưa mở diễn giải chuyên sâu"}
+    </span>
+  );
 }
 
 export function HistoryList({ readings }: HistoryListProps) {
@@ -75,6 +94,7 @@ export function HistoryList({ readings }: HistoryListProps) {
                   {new Date(reading.createdAt).toLocaleString("vi-VN")}
                   {cardNames.length > 0 ? ` · ${cardNames.join(", ")}` : null}
                 </p>
+                <InterpretationBadge isUnlocked={reading.aiInterpretation !== null} />
               </div>
               <ChevronDown
                 className="h-4 w-4 shrink-0 text-muted transition-transform duration-300 group-open:rotate-180"
