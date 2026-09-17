@@ -65,6 +65,15 @@ export function LoginForm() {
 
         {state?.message ? <p className="text-sm text-red-600">{state.message}</p> : null}
 
+        {state?.needsVerification ? (
+          <Link
+            href="/verify-email/sent"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-accent underline underline-offset-4"
+          >
+            Gửi lại email xác nhận
+          </Link>
+        ) : null}
+
         <Button type="submit" disabled={pending} className="mt-2">
           {pending ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>

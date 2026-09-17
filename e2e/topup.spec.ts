@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
-import { test, expect } from "./fixtures";
+import { test, expect, signUpVerifyAndLogIn, uniqueEmail } from "./fixtures";
 
 /**
- * Cả file dùng chung một tài khoản. `signupAction` chặn 5 lượt mỗi IP mỗi giờ,
+ * Cả file dùng chung một tài khoản. `signupAction` chặn 10 lượt mỗi IP mỗi giờ,
  * và toàn bộ e2e chạy từ cùng một IP, nên mỗi test tự đăng ký một tài khoản là
  * cách chắc chắn làm suite tự chặn chính nó khi database không được dựng lại.
  */
@@ -18,13 +18,7 @@ test.beforeAll(async ({ browser }) => {
     window.localStorage.setItem("tarot:analyticsConsent", "denied");
   });
 
-  const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
-  await page.goto("/signup");
-  await page.getByPlaceholder("Tên hiển thị").fill("Người Mua Thử");
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Mật khẩu").fill("password123");
-  await page.getByRole("button", { name: "Đăng ký" }).click();
-  await expect(page).toHaveURL("/");
+  await signUpVerifyAndLogIn(page, { name: "Người Mua Thử", email: uniqueEmail() });
 });
 
 test.afterAll(async () => {

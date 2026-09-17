@@ -46,9 +46,10 @@ PAYOS_CHECKSUM_KEY=your_payos_checksum_key
 # Generate with: openssl rand -base64 32
 CRON_SECRET=
 
-# Resend — chỉ dùng cho cảnh báo vận hành
+# Resend — cảnh báo vận hành và email xác nhận đăng ký
 RESEND_API_KEY=
 ALERT_EMAIL_FROM=alert@thanhnghiep.top
+AUTH_EMAIL_FROM=no-reply@thanhnghiep.top
 ```
 
 `NEXT_PUBLIC_APP_URL` là origin dùng để dựng `returnUrl`/`cancelUrl` của PayOS trong `app/actions/payments.ts`. Sai giá trị thì sau khi thanh toán người dùng bị đẩy về nhầm domain. Giá trị theo môi trường:
@@ -61,9 +62,11 @@ ALERT_EMAIL_FROM=alert@thanhnghiep.top
 
 `CRON_SECRET` bảo vệ `/api/cron/reconcile-orders`. Vercel Cron gửi nó trong header `Authorization: Bearer ...`. Không set thì endpoint trả 503 và đơn hàng mất đường phục hồi khi webhook trượt — xem "Đối soát đơn hàng" ở dưới.
 
-`RESEND_API_KEY` và `ALERT_EMAIL_FROM` chỉ phục vụ cảnh báo vận hành (xem "Cảnh báo" ở dưới). Thiếu cả hai thì cảnh báo bị bỏ qua kèm một dòng log, không có gì khác hỏng — local và preview không cần cấu hình email.
+`RESEND_API_KEY` phục vụ hai việc: cảnh báo vận hành (xem "Cảnh báo" ở dưới) và email xác nhận đăng ký (xem "Xác nhận email" ở dưới). `ALERT_EMAIL_FROM` là địa chỉ gửi cảnh báo; `AUTH_EMAIL_FROM` là địa chỉ gửi thư cho khách, không set thì dùng chung `ALERT_EMAIL_FROM`.
 
-Đây là toàn bộ biến code đang đọc. Redis, object storage và email provider chưa có trong dự án nên không có biến tương ứng.
+Thiếu cấu hình Resend thì cảnh báo bị bỏ qua kèm một dòng log, còn đăng ký vẫn tạo được tài khoản nhưng link xác nhận chỉ in ra server log. Đủ để chạy local; **không** dùng được trên production.
+
+Đây là toàn bộ biến code đang đọc. Redis và object storage chưa có trong dự án nên không có biến tương ứng.
 
 Chỉ các biến bắt đầu bằng `NEXT_PUBLIC_` mới được đưa vào client bundle. API key, database URL, payment secret và webhook secret phải chỉ được đọc ở server.
 
@@ -262,6 +265,25 @@ Chống lặp dùng chính bảng `RateLimit` ở Postgres, nên khoá sống s�
 
 Trước khi bật: verify domain trong dashboard Resend, rồi đặt `ALERT_EMAIL_FROM` bằng một địa chỉ thuộc domain đó. Gửi từ domain chưa verify sẽ bị Resend trả 422.
 
+## Xác nhận email
+
+Đăng ký bằng email phải qua bước xác nhận: `signupAction` tạo tài khoản ở trạng thái chưa xác nhận (`User.emailVerifiedAt` null, **chưa có credit**), gửi link tới hộp thư, rồi đưa người dùng sang `/verify-email/sent`. Bấm link mở `/verify-email?token=...`, và chỉ ở bước đó tài khoản mới được đánh dấu đã xác nhận và được cộng credit dùng thử. Chưa xác nhận thì `authorize` trong `auth.ts` từ chối đăng nhập.
+
+| Điểm | Giá trị |
+| --- | --- |
+| Hạn của link | 24 giờ |
+| Lưu trong database | Chỉ SHA-256 của token (`EmailVerificationToken.tokenHash`) |
+| Cấp link mới | Huỷ mọi link chưa dùng trước đó của cùng tài khoản |
+| Gửi lại | 3 lần mỗi email mỗi giờ, 10 lần mỗi IP mỗi giờ |
+| Đăng ký | 10 lần mỗi IP mỗi giờ |
+
+Vài điểm dễ vướng:
+
+- **Link bấm lần hai không báo lỗi.** Trình quét thư của nhiều nhà cung cấp mở sẵn mọi link trước khi người dùng kịp bấm, nên lần bấm "thật" thường là lần thứ hai. Token đã dùng mà tài khoản đã xác nhận thì vẫn dẫn về trang đăng nhập kèm thông báo thành công.
+- **Gửi hỏng vẫn đi tiếp tới `/verify-email/sent?status=failed`.** Tài khoản đã tạo rồi nên đăng ký lại sẽ vướng "email đã đăng ký"; trang đó có nút gửi lại, đó mới là đường thoát.
+- **Form gửi lại luôn báo "đã gửi"** kể cả khi email không có tài khoản hoặc đã xác nhận rồi. Trả lời khác nhau là biến nó thành công cụ dò xem địa chỉ nào có tài khoản.
+- **Người dùng cũ** (tạo trước migration `add_email_verification`) được backfill `emailVerifiedAt = createdAt`. Không có bước đó thì cột NULL sẽ khoá đăng nhập của toàn bộ tài khoản hiện có.
+
 ## Hoàn tiền
 
 PayOS không mở API hoàn tiền cho merchant, nên tiền phải hoàn thủ công trên dashboard PayOS. Sau đó đóng nốt sổ sách phía mình:
@@ -282,7 +304,7 @@ pnpm test:e2e
 Playwright tự dựng server (`pnpm build && pnpm start`), nên không cần `pnpm dev` chạy sẵn. `e2e/global-setup.ts` lo hai việc trước khi test bắt đầu:
 
 - **Chặn chạy nhầm lên production.** Bộ test đăng ký tài khoản và ghi reading thật. `DATABASE_URL` không trỏ tới host local (và không phải CI) thì nó dừng ngay thay vì đổ rác vào dữ liệu người dùng.
-- **Dọn bảng `RateLimit`.** Suite tiêu 4 trong số 5 lượt đăng ký mỗi giờ mà `signupAction` cho phép trên mỗi IP. Không dọn thì lần chạy thứ hai trong cùng một giờ sẽ tự chặn chính nó, và lỗi hiện ra là "đăng ký thất bại" chứ không nói gì về rate limit. CI không gặp vì database dựng mới mỗi lần.
+- **Dọn bảng `RateLimit`.** Suite tiêu 6 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép trên mỗi IP. Không dọn thì lần chạy thứ hai trong cùng một giờ sẽ tự chặn chính nó, và lỗi hiện ra là "đăng ký thất bại" chứ không nói gì về rate limit. CI không gặp vì database dựng mới mỗi lần.
 
 - **Seed danh mục gói credit.** CI chỉ chạy `prisma migrate deploy`, không chạy seed, nên bảng `CreditPackage` rỗng và trang nạp tiền hiện nhánh "chưa có gói nào đang mở bán". Danh mục nằm ở `prisma/credit-packages.ts`, dùng chung với `pnpm db:seed`.
 

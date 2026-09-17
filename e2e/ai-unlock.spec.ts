@@ -1,8 +1,4 @@
-import { test, expect } from "./fixtures";
-
-function uniqueEmail() {
-  return `e2e-ai-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
-}
+import { test, expect, signUpVerifyAndLogIn, uniqueEmail } from "./fixtures";
 
 test("unlocking AI without a configured API key shows a clear error with retry", async ({
   page,
@@ -15,16 +11,9 @@ test("unlocking AI without a configured API key shows a clear error with retry",
     "GEMINI_API_KEY đang được cấu hình, nhánh thiếu key không xảy ra.",
   );
 
-  const email = uniqueEmail();
+  await signUpVerifyAndLogIn(page, { name: "Người Dùng AI", email: uniqueEmail("e2e-ai") });
 
-  await page.goto("/signup");
-  await page.getByPlaceholder("Tên hiển thị").fill("Người Dùng AI");
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Mật khẩu").fill("password123");
-  await page.getByRole("button", { name: "Đăng ký" }).click();
-  await expect(page).toHaveURL("/");
-
-  // New accounts get 2 free unlocks (20 credit), which already covers the
+  // Verified accounts get 2 free unlocks (20 credit), which already covers the
   // one unlock attempt below — no need to top up.
   await page.goto("/profile");
   await expect(page.getByText("2 lượt diễn giải chuyên sâu")).toBeVisible();

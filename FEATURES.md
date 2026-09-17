@@ -42,7 +42,7 @@
 
 ## Phase 2 — Tài khoản và lịch sử
 
-- Đăng ký, đăng nhập và đăng xuất.
+- Đăng ký, đăng nhập và đăng xuất. Đăng ký phải xác nhận email: tài khoản chưa bấm link trong thư thì chưa đăng nhập được và chưa có credit.
 - Lưu lịch sử các lần trải bài.
 - Xem lại câu hỏi, ba lá bài và diễn giải cơ bản.
 - Xóa một reading hoặc xóa toàn bộ lịch sử.
@@ -53,7 +53,7 @@
 
 - Hiển thị phần AI bị khóa sau phần diễn giải cơ bản.
 - Mô tả rõ quyền lợi và giá trước khi thanh toán.
-- Tặng 2 lượt xem miễn phí khi đăng ký (one-time), sau đó nạp credit theo gói (5/10/20/50 lượt) qua PayOS — chưa có gói VIP theo tháng ở giai đoạn này.
+- Tặng 2 lượt xem miễn phí khi xác nhận email (one-time), sau đó nạp credit theo gói (5/10/20/50 lượt) qua PayOS — chưa có gói VIP theo tháng ở giai đoạn này.
 - Ghi sổ giao dịch credit (free grant, mua, chi tiêu, hoàn tiền) để đo tỷ lệ free-to-paid.
 - Mỗi lượt sinh AI lưu lại token input, output, thinking và thời gian phản hồi, nên chi phí thật đo được bằng một câu SQL thay vì đoán. Cột nullable: row cũ và lượt sinh không có `usageMetadata` vẫn hợp lệ.
 - Nạp credit có trang riêng `/credits`: vào từ badge số credit trên header, menu người dùng, nút ở hồ sơ, và CTA khi hết credit ở panel mở khóa AI.
@@ -111,7 +111,7 @@ Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ 
 - **Cron mỗi ngày trên Hobby.** Nếu lên Pro thì đổi `vercel.json` về `0 * * * *`, khe hở còn lại thu từ một ngày xuống một giờ.
 - **Migration và deploy là hai việc rời nhau.** Luôn có cửa sổ production chạy code mới trên schema cũ. Cách khép hẳn đã ghi ở cuối mục "Cơ sở dữ liệu" trong `SETUP.md`.
 - **`purchase` đếm thiếu.** Đơn cứu được ở đường đối soát thứ ba không bắn event. Sổ `CreditTransaction` mới là con số doanh thu đúng.
-- **Free trial không có trần.** Mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ tiền API và không thu lại gì. Không có gì chặn một người đăng ký email mới để lấy tiếp.
+- **Free trial không có trần.** Mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ tiền API và không thu lại gì. Xác nhận email nâng giá của một lần lạm dụng lên một hộp thư thật, nhưng hộp thư thì miễn phí và vô hạn — không có gì chặn một người đăng ký email mới để lấy tiếp.
 - **Model đang pin là bản legacy.** `GEMINI_MODEL` trỏ `gemini-3-flash-preview`, được Google đánh dấu legacy. Vẫn còn trong bảng giá và vẫn chạy, nhưng các bản 3.6/3.7/3.8 Flash đã ra sau nó và chưa ai đo thử xem đổi sang thì chất lượng, tốc độ và chi phí khác thế nào.
 
 ## Lưu trữ — không nằm trong kế hoạch

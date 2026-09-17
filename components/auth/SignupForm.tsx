@@ -11,9 +11,9 @@ import { trackEvent } from "@/lib/analytics/gtag";
 export function SignupForm() {
   const [state, action, pending] = useActionState(signupAction, undefined);
 
-  // Thành công thì server redirect, state không bao giờ quay lại — nên ở đây
-  // chỉ có thể ghi nhận thất bại. Conversion thành công do AuthSuccessTracker
-  // bắn sau khi về trang chủ.
+  // Thành công thì server redirect sang /verify-email/sent, state không bao giờ
+  // quay lại — nên ở đây chỉ có thể ghi nhận thất bại. Conversion `sign_up` bắn
+  // muộn hơn, ở /login sau khi người dùng bấm link xác nhận.
   useEffect(() => {
     if (!state) return;
     const fieldErrors = Object.keys(state.errors ?? {});

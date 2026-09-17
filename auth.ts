@@ -28,6 +28,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const passwordsMatch = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!passwordsMatch) return null;
 
+        // Chưa bấm link xác nhận thì chưa có tài khoản dùng được. Chặn ở đây
+        // để mọi đường đăng nhập đều đi qua cùng một luật; `loginAction` chỉ
+        // lo phân biệt thông báo cho người dùng.
+        if (!user.emailVerifiedAt) return null;
+
         return {
           id: user.id,
           name: user.name,

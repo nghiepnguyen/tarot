@@ -12,12 +12,34 @@ model User {
   email                String             @unique
   passwordHash         String
   name                 String?
+  // Null nghĩa là chưa bấm link trong email xác nhận. Tài khoản tồn tại nhưng
+  // không đăng nhập được và chưa được tặng credit dùng thử.
+  emailVerifiedAt      DateTime?
   credits              Int                @default(0)
   freeCreditsGrantedAt DateTime?
   createdAt            DateTime           @default(now())
   readings             Reading[]
   creditTransactions   CreditTransaction[]
   orders               Order[]
+  verificationTokens   EmailVerificationToken[]
+}
+
+/// Link xác nhận email gửi lúc đăng ký (và lúc bấm "gửi lại").
+///
+/// Chỉ lưu SHA-256 của token, không lưu token thật: đọc được database cũng
+/// không kích hoạt được tài khoản của người khác. Token thật chỉ nằm trong
+/// email đã gửi đi.
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model RateLimit {

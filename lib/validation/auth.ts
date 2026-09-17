@@ -16,6 +16,10 @@ export const SignupSchema = z.object({
     .regex(/[0-9]/, "Mật khẩu cần ít nhất một chữ số."),
 });
 
+export const ResendVerificationSchema = z.object({
+  email: EmailField,
+});
+
 export const LoginSchema = z.object({
   email: EmailField,
   password: z.string().min(1, "Vui lòng nhập mật khẩu."),
@@ -39,5 +43,17 @@ export type LoginFormState =
         password?: string[];
       };
       message?: string;
+      /** Đúng mật khẩu nhưng tài khoản chưa xác nhận email — form hiện nút gửi lại. */
+      needsVerification?: boolean;
+    }
+  | undefined;
+
+export type ResendVerificationFormState =
+  | {
+      errors?: {
+        email?: string[];
+      };
+      message?: string;
+      sent?: boolean;
     }
   | undefined;

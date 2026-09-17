@@ -1,25 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { seedCreditPackages } from "../prisma/credit-packages";
-
-/**
- * Playwright chạy trong tiến trình node của chính nó, không đi qua Next nên
- * không tự nạp `.env.local`. Đọc tay đúng như Next làm, để `pnpm test:e2e`
- * chạy được mà không phải source gì trước.
- */
-function loadEnvFile(file: string) {
-  const fullPath = path.join(process.cwd(), file);
-  if (!fs.existsSync(fullPath)) return;
-
-  for (const line of fs.readFileSync(fullPath, "utf8").split("\n")) {
-    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
-    if (!match) continue;
-    const [, key, rawValue] = match;
-    if (process.env[key] !== undefined) continue; // biến có sẵn thắng file
-    process.env[key] = rawValue.trim().replace(/^["']|["']$/g, "");
-  }
-}
+import { loadTestEnv } from "./env";
 
 function isDisposableDatabase(url: string): boolean {
   // CI dựng một container Postgres tạm rồi vứt, host của nó không cố định.
@@ -28,8 +9,7 @@ function isDisposableDatabase(url: string): boolean {
 }
 
 export default async function globalSetup() {
-  loadEnvFile(".env.local");
-  loadEnvFile(".env");
+  loadTestEnv();
 
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -47,7 +27,7 @@ export default async function globalSetup() {
 
   const prisma = new PrismaClient();
   try {
-    // Suite tiêu 4 trong số 5 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
+    // Suite tiêu 6 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
     // nên nếu không dọn thì lần chạy thứ hai trong cùng giờ sẽ tự chặn chính nó.
     await prisma.rateLimit.deleteMany({});
 

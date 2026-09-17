@@ -6,14 +6,17 @@ export interface SendEmailInput {
   to: string;
   subject: string;
   text: string;
+  /** Mặc định `ALERT_EMAIL_FROM`. Thư gửi cho khách đặt địa chỉ riêng. */
+  from?: string;
 }
 
 /**
  * Gửi một email qua Resend.
  *
- * **Không bao giờ ném lỗi.** Mọi chỗ gọi hàm này đều là đường phụ — cảnh báo
- * vận hành — chạy xen giữa việc cộng credit cho khách. Resend chết mà kéo đổ
- * cả giao dịch thì thuốc độc hơn bệnh. Hỏng thì ghi log và trả `false`.
+ * **Không bao giờ ném lỗi.** Chỗ gọi tự quyết định hỏng thì làm gì: cảnh báo
+ * vận hành chạy xen giữa việc cộng credit cho khách, Resend chết mà kéo đổ cả
+ * giao dịch thì thuốc độc hơn bệnh; còn email xác nhận đăng ký đọc giá trị trả
+ * về để báo lại cho người dùng. Hỏng thì ghi log và trả `false`.
  *
  * Thiếu `RESEND_API_KEY` cũng trả `false` chứ không nổ: local và preview không
  * cần cấu hình email vẫn phải chạy được.
@@ -25,7 +28,7 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
     return false;
   }
 
-  const from = process.env.ALERT_EMAIL_FROM;
+  const from = input.from || process.env.ALERT_EMAIL_FROM;
   if (!from) {
     console.warn(`[email] Bỏ qua "${input.subject}": chưa cấu hình ALERT_EMAIL_FROM.`);
     return false;
