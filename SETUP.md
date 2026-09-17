@@ -284,6 +284,33 @@ Vài điểm dễ vướng:
 - **Form gửi lại luôn báo "đã gửi"** kể cả khi email không có tài khoản hoặc đã xác nhận rồi. Trả lời khác nhau là biến nó thành công cụ dò xem địa chỉ nào có tài khoản.
 - **Người dùng cũ** (tạo trước migration `add_email_verification`) được backfill `emailVerifiedAt = createdAt`. Không có bước đó thì cột NULL sẽ khoá đăng nhập của toàn bộ tài khoản hiện có.
 
+## Đặt lại mật khẩu
+
+`/forgot-password` nhận email, `/reset-password?token=...` là đích của link trong thư. Token cùng hình dạng với token xác nhận email — ngẫu nhiên 32 byte, database chỉ giữ SHA-256, cấp mới huỷ cái cũ — nhưng khác ở hai chỗ:
+
+| | Xác nhận email | Đặt lại mật khẩu |
+| --- | --- | --- |
+| Hạn của link | 24 giờ | **1 giờ** |
+| Token bị tiêu lúc | mở link (GET) | **submit form (POST)** |
+| Gửi lại | 3 mỗi email, 10 mỗi IP, mỗi giờ | 3 mỗi email, 10 mỗi IP, mỗi giờ |
+
+Hạn ngắn hơn vì token này đổi được mật khẩu người khác, không chỉ mở khoá một tài khoản vốn đã là của người đăng ký. Không tiêu lúc GET vì mở link chỉ là hiện form; tiêu ở đó thì trình quét thư của nhà cung cấp đốt sạch link trước khi người dùng kịp bấm. Trang vẫn kiểm tra token lúc render, để không bắt người ta gõ xong mật khẩu mới rồi mới báo link hỏng.
+
+Vài điểm dễ vướng:
+
+- **Form luôn trả lời giống nhau**, kể cả khi email không có tài khoản hoặc Resend từ chối gửi. Mọi khác biệt ở đây đều là một cách để người lạ dò xem địa chỉ nào có tài khoản.
+- **Đổi mật khẩu hạ mọi session cũ**, xem phần dưới.
+- **Đặt lại mật khẩu không thay cho xác nhận email.** Tài khoản chưa xác nhận đặt lại mật khẩu xong vẫn chưa đăng nhập được; trang đăng nhập sẽ chỉ sang đường gửi lại email xác nhận. Hai việc cố ý tách rời để mỗi đường chỉ làm đúng một chuyện.
+- **Luật mật khẩu dùng chung** `PasswordField` trong `lib/validation/auth.ts`. Để hai chỗ lệch nhau là mở cửa sau đặt một mật khẩu mà đường đăng ký đã từ chối.
+
+### Hạ session sau khi đổi mật khẩu
+
+Session là JWT, không tra database ở mỗi request, nên không có chỗ nào để "thu hồi" một phiên đã phát. `User.passwordChangedAt` là cách vòng qua chuyện đó: mốc này được nhét vào token lúc đăng nhập, và callback `jwt` trong `auth.ts` đối chiếu lại với database — lệch thì trả `null`, Auth.js xoá cookie và request coi như chưa đăng nhập.
+
+Đối chiếu ở **mọi** lần `auth()` thì mất đúng cái nhanh của JWT: `auth()` được gọi vài lần mỗi request, và Header đã có một truy vấn riêng rồi. Nên việc đối chiếu chỉ chạy lại mỗi 5 phút cho mỗi token (`PASSWORD_CHECK_INTERVAL_MS`). Đánh đổi: phiên cũ sống thêm tối đa 5 phút sau khi mật khẩu đổi, và mỗi người tốn thêm một truy vấn khoá chính mỗi 5 phút. Muốn hạ ngay lập tức thì phải bỏ JWT, chuyển session sang database.
+
+Token phát trước khi có `pwdAt` được đọc là 0 — đúng bằng giá trị của tài khoản chưa từng đổi mật khẩu — nên lần deploy đầu tiên không đá mọi người đang đăng nhập ra ngoài.
+
 ## Hoàn tiền
 
 PayOS không mở API hoàn tiền cho merchant, nên tiền phải hoàn thủ công trên dashboard PayOS. Sau đó đóng nốt sổ sách phía mình:
@@ -304,7 +331,7 @@ pnpm test:e2e
 Playwright tự dựng server (`pnpm build && pnpm start`), nên không cần `pnpm dev` chạy sẵn. `e2e/global-setup.ts` lo hai việc trước khi test bắt đầu:
 
 - **Chặn chạy nhầm lên production.** Bộ test đăng ký tài khoản và ghi reading thật. `DATABASE_URL` không trỏ tới host local (và không phải CI) thì nó dừng ngay thay vì đổ rác vào dữ liệu người dùng.
-- **Dọn bảng `RateLimit`.** Suite tiêu 6 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép trên mỗi IP. Không dọn thì lần chạy thứ hai trong cùng một giờ sẽ tự chặn chính nó, và lỗi hiện ra là "đăng ký thất bại" chứ không nói gì về rate limit. CI không gặp vì database dựng mới mỗi lần.
+- **Dọn bảng `RateLimit`.** Suite tiêu 7 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép trên mỗi IP. Không dọn thì lần chạy thứ hai trong cùng một giờ sẽ tự chặn chính nó, và lỗi hiện ra là "đăng ký thất bại" chứ không nói gì về rate limit. CI không gặp vì database dựng mới mỗi lần.
 
 - **Seed danh mục gói credit.** CI chỉ chạy `prisma migrate deploy`, không chạy seed, nên bảng `CreditPackage` rỗng và trang nạp tiền hiện nhánh "chưa có gói nào đang mở bán". Danh mục nằm ở `prisma/credit-packages.ts`, dùng chung với `pnpm db:seed`.
 

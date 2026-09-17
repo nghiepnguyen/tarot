@@ -27,7 +27,7 @@ export default async function globalSetup() {
 
   const prisma = new PrismaClient();
   try {
-    // Suite tiêu 6 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
+    // Suite tiêu 7 trong số 10 lượt đăng ký mỗi giờ mà `signupAction` cho phép,
     // nên nếu không dọn thì lần chạy thứ hai trong cùng giờ sẽ tự chặn chính nó.
     await prisma.rateLimit.deleteMany({});
 

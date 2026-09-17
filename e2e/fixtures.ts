@@ -57,6 +57,32 @@ export async function verificationLinkFor(email: string): Promise<string> {
   }
 }
 
+/**
+ * Cấp một link đặt lại mật khẩu dùng được, đi thẳng vào database. Cùng lý do
+ * với `verificationLinkFor`: bảng chỉ lưu bản băm nên không đọc ngược ra được,
+ * test tự phát token rồi ghi băm của nó vào.
+ */
+export async function passwordResetLinkFor(email: string): Promise<string> {
+  const prisma = new PrismaClient();
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error(`e2e: chưa có tài khoản ${email} để đặt lại mật khẩu.`);
+
+    const token = randomBytes(32).toString("hex");
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: createHash("sha256").update(token).digest("hex"),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+    return `/reset-password?token=${token}`;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 export interface SignUpInput {
   name: string;
   email: string;

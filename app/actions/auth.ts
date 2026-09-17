@@ -11,11 +11,20 @@ import {
   sendVerificationEmail,
 } from "@/lib/auth/verification";
 import {
+  consumePasswordResetToken,
+  issuePasswordResetToken,
+  sendPasswordResetEmail,
+} from "@/lib/auth/password-reset";
+import {
+  ForgotPasswordSchema,
   LoginSchema,
   ResendVerificationSchema,
+  ResetPasswordSchema,
   SignupSchema,
+  type ForgotPasswordFormState,
   type LoginFormState,
   type ResendVerificationFormState,
+  type ResetPasswordFormState,
   type SignupFormState,
 } from "@/lib/validation/auth";
 
@@ -103,6 +112,80 @@ export async function resendVerificationAction(
   }
 
   return { sent: true };
+}
+
+export async function requestPasswordResetAction(
+  _state: ForgotPasswordFormState,
+  formData: FormData,
+): Promise<ForgotPasswordFormState> {
+  const ip = await getClientIp();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  // Hai lưới: một chặn người bấm liên tục, một chặn việc mượn form này để dội
+  // mail vào hộp thư người khác.
+  const withinLimits =
+    (await checkRateLimit(`reset-request:ip:${ip}`, 10, 60 * 60 * 1000)) &&
+    (await checkRateLimit(`reset-request:email:${email}`, 3, 60 * 60 * 1000));
+  if (!withinLimits) {
+    return { message: "Bạn đã yêu cầu quá nhiều lần, vui lòng thử lại sau một giờ." };
+  }
+
+  const validatedFields = ForgotPasswordSchema.safeParse({ email });
+  if (!validatedFields.success) {
+    return { errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: validatedFields.data.email },
+  });
+
+  // Không có tài khoản thì vẫn báo "đã gửi", và cũng không báo lỗi khi Resend
+  // từ chối. Mọi khác biệt trong câu trả lời ở đây đều là một cách để người lạ
+  // dò xem địa chỉ nào có tài khoản trên site.
+  if (user) {
+    const token = await issuePasswordResetToken(user.id);
+    await sendPasswordResetEmail({ to: user.email, name: user.name, token });
+  }
+
+  return { sent: true };
+}
+
+export async function resetPasswordAction(
+  _state: ResetPasswordFormState,
+  formData: FormData,
+): Promise<ResetPasswordFormState> {
+  const ip = await getClientIp();
+  if (!(await checkRateLimit(`reset-submit:${ip}`, 20, 60 * 60 * 1000))) {
+    return { message: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." };
+  }
+
+  const validatedFields = ResetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!validatedFields.success) {
+    return { errors: validatedFields.error.flatten().fieldErrors };
+  }
+
+  // Token đi theo form chứ không đọc lại từ URL: action chạy ở server, không
+  // thấy thanh địa chỉ của trình duyệt.
+  const token = String(formData.get("token") ?? "");
+  const result = await consumePasswordResetToken(token, validatedFields.data.password);
+
+  if (result !== "reset") {
+    return {
+      message:
+        result === "expired"
+          ? "Link đã hết hạn. Hãy yêu cầu một link mới."
+          : "Link không còn dùng được. Hãy yêu cầu một link mới.",
+      tokenDead: true,
+    };
+  }
+
+  // Không tự đăng nhập: người vừa đổi mật khẩu nên gõ lại nó một lần: đó là
+  // lúc phát hiện mình nhớ nhầm, chứ không phải ba ngày sau.
+  redirect("/login?reset=1");
 }
 
 export async function loginAction(

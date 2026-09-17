@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LoginSchema, SignupSchema } from "./auth";
+import { LoginSchema, ResetPasswordSchema, SignupSchema } from "./auth";
 
 describe("SignupSchema", () => {
   const valid = { name: "Người Dùng", email: "user@example.com", password: "password123" };
@@ -58,5 +58,34 @@ describe("LoginSchema", () => {
 
   it("rejects an empty password", () => {
     expect(LoginSchema.safeParse({ email: "user@example.com", password: "" }).success).toBe(false);
+  });
+});
+
+describe("ResetPasswordSchema", () => {
+  const valid = { password: "password123", confirmPassword: "password123" };
+
+  it("accepts a well-formed pair", () => {
+    expect(ResetPasswordSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects a confirmation that does not match", () => {
+    const result = ResetPasswordSchema.safeParse({ ...valid, confirmPassword: "password124" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.confirmPassword).toBeDefined();
+    }
+  });
+
+  it("holds the new password to the same rules as signup", () => {
+    // Nếu hai chỗ lệch nhau thì đường đặt lại thành cửa sau để đặt một mật khẩu
+    // mà đường đăng ký đã từ chối.
+    for (const weak of ["short1", "alphabetsonly", "12345678"]) {
+      expect(SignupSchema.safeParse({ name: "Tên", email: "a@b.com", password: weak }).success).toBe(
+        false,
+      );
+      expect(
+        ResetPasswordSchema.safeParse({ password: weak, confirmPassword: weak }).success,
+      ).toBe(false);
+    }
   });
 });

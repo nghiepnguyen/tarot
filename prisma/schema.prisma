@@ -15,6 +15,9 @@ model User {
   // Null nghĩa là chưa bấm link trong email xác nhận. Tài khoản tồn tại nhưng
   // không đăng nhập được và chưa được tặng credit dùng thử.
   emailVerifiedAt      DateTime?
+  // Mốc đổi mật khẩu gần nhất. Session là JWT không tra database, nên đây là
+  // thứ duy nhất cho phép hạ những phiên đã phát trước lần đổi đó.
+  passwordChangedAt    DateTime?
   credits              Int                @default(0)
   freeCreditsGrantedAt DateTime?
   createdAt            DateTime           @default(now())
@@ -22,6 +25,7 @@ model User {
   creditTransactions   CreditTransaction[]
   orders               Order[]
   verificationTokens   EmailVerificationToken[]
+  passwordResetTokens  PasswordResetToken[]
 }
 
 /// Link xác nhận email gửi lúc đăng ký (và lúc bấm "gửi lại").
@@ -30,6 +34,24 @@ model User {
 /// không kích hoạt được tài khoản của người khác. Token thật chỉ nằm trong
 /// email đã gửi đi.
 model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Link đặt lại mật khẩu.
+///
+/// Cùng cách lưu như [EmailVerificationToken]: chỉ có SHA-256 vào database.
+/// Khác ở chỗ hạn ngắn hơn nhiều — token này đổi được mật khẩu, còn token xác
+/// nhận chỉ mở khoá một tài khoản vốn đã là của người đăng ký.
+model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

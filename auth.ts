@@ -4,6 +4,18 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
 import { LoginSchema } from "@/lib/validation/auth";
 
+/**
+ * Khoảng giữa hai lần đối chiếu `passwordChangedAt` với database.
+ *
+ * Session là JWT, không tra database ở mỗi request — nhanh, nhưng nghĩa là
+ * không có chỗ nào để "thu hồi" một phiên. Đối chiếu ở mọi lần `auth()` thì
+ * mất đúng cái nhanh đó (Header đã tra một lần rồi, và `auth()` được gọi vài
+ * lần mỗi request). Năm phút là chỗ đứng giữa: đổi mật khẩu hạ được phiên cũ
+ * trong vòng năm phút, mà mỗi người chỉ tốn thêm một truy vấn khoá chính mỗi
+ * năm phút.
+ */
+const PASSWORD_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
@@ -37,6 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           name: user.name,
           email: user.email,
+          passwordChangedAt: user.passwordChangedAt,
         };
       },
     }),
@@ -45,7 +58,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
+        token.pwdAt = user.passwordChangedAt?.getTime() ?? 0;
+        token.pwdCheckedAt = Date.now();
+        return token;
       }
+
+      // Các trường tự đặt trên token về đây dưới dạng `unknown` — khai báo bổ
+      // sung cho `@auth/core/jwt` không tới được chỗ này trong cây pnpm, nên
+      // thu hẹp kiểu tại chỗ, đúng như `token.id` vẫn làm.
+      const checkedAt = typeof token.pwdCheckedAt === "number" ? token.pwdCheckedAt : 0;
+      if (Date.now() - checkedAt < PASSWORD_CHECK_INTERVAL_MS) {
+        return token;
+      }
+
+      const current = await prisma.user.findUnique({
+        where: { id: token.id as string },
+        select: { passwordChangedAt: true },
+      });
+
+      // Trả `null` là cách Auth.js hạ phiên: cookie session bị xoá và request
+      // này coi như chưa đăng nhập.
+      if (!current) return null;
+
+      // Token phát trước khi có `pwdAt` không mang giá trị nào; đọc nó là 0 —
+      // đúng bằng giá trị của một tài khoản chưa từng đổi mật khẩu — để lần
+      // deploy đầu tiên không đá mọi người đang đăng nhập ra ngoài.
+      const knownPwdAt = typeof token.pwdAt === "number" ? token.pwdAt : 0;
+      if ((current.passwordChangedAt?.getTime() ?? 0) !== knownPwdAt) {
+        return null;
+      }
+
+      token.pwdCheckedAt = Date.now();
       return token;
     },
     async session({ session, token }) {

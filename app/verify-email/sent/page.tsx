@@ -4,7 +4,7 @@ import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { ResendVerificationForm } from "@/components/auth/ResendVerificationForm";
-import { VerificationCard, VerificationSteps } from "@/components/auth/VerificationCard";
+import { AuthCard, AuthCardLink, VerificationSteps } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
   title: "Kiểm tra hộp thư",
@@ -30,19 +30,21 @@ export default async function VerificationSentPage({
       <main className="flex flex-1 items-center justify-center">
         <Section className="flex items-center justify-center">
           {failed ? (
-            <VerificationCard
+            <AuthCard
               tone="warning"
               icon={<MailWarning className="h-6 w-6" aria-hidden="true" />}
               title="Chưa gửi được email"
               description="Tài khoản đã được tạo, nhưng email xác nhận chưa gửi đi được. Nhập lại địa chỉ để thử lần nữa."
+              footer={<AuthCardLink href="/login" prompt="Đã xác nhận rồi?" label="Đăng nhập" />}
             >
               <ResendVerificationForm />
-            </VerificationCard>
+            </AuthCard>
           ) : (
-            <VerificationCard
+            <AuthCard
               icon={<Inbox className="h-6 w-6" aria-hidden="true" />}
               title="Kiểm tra hộp thư của bạn"
               description="Chúng tôi vừa gửi một link xác nhận tới email của bạn. Bấm vào link đó để hoàn tất đăng ký. Link có hiệu lực trong 24 giờ."
+              footer={<AuthCardLink href="/login" prompt="Đã xác nhận rồi?" label="Đăng nhập" />}
             >
               <VerificationSteps current={1} />
 
@@ -53,7 +55,7 @@ export default async function VerificationSentPage({
                 </p>
                 <ResendVerificationForm label="Gửi lại tới địa chỉ" />
               </div>
-            </VerificationCard>
+            </AuthCard>
           )}
         </Section>
       </main>

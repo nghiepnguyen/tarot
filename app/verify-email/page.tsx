@@ -5,7 +5,7 @@ import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { ResendVerificationForm } from "@/components/auth/ResendVerificationForm";
-import { VerificationCard } from "@/components/auth/VerificationCard";
+import { AuthCard, AuthCardLink } from "@/components/auth/AuthCard";
 import { consumeVerificationToken } from "@/lib/auth/verification";
 
 export const metadata: Metadata = {
@@ -45,7 +45,7 @@ export default async function VerifyEmailPage({
       <Header />
       <main className="flex flex-1 items-center justify-center">
         <Section className="flex items-center justify-center">
-          <VerificationCard
+          <AuthCard
             tone="warning"
             icon={
               expired ? (
@@ -60,9 +60,10 @@ export default async function VerifyEmailPage({
                 ? "Link xác nhận chỉ sống trong 24 giờ. Nhập email để nhận một link mới."
                 : "Link này không còn hiệu lực — thường là vì đã có một link mới hơn được gửi. Nhập email để nhận lại link mới nhất."
             }
+            footer={<AuthCardLink href="/login" prompt="Đã xác nhận rồi?" label="Đăng nhập" />}
           >
             <ResendVerificationForm />
-          </VerificationCard>
+          </AuthCard>
         </Section>
       </main>
       <Footer />

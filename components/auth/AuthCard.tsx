@@ -7,17 +7,17 @@ import { SUPPORT_EMAIL, supportMailto } from "@/lib/seo/site";
 type Tone = "pending" | "warning";
 
 /**
- * Khung chung cho mọi trang trong luồng xác nhận email.
+ * Khung chung cho mọi trang đứng ngoài phiên đăng nhập: xác nhận email, quên
+ * mật khẩu, đặt lại mật khẩu.
  *
- * Bốn trang (đã gửi, gửi hỏng, link hết hạn, link sai) là bốn trạng thái của
- * cùng một việc, nên chúng phải trông như một chỗ chứ không phải bốn trang rời
- * nhau: cùng một huy hiệu trạng thái, cùng một thứ tự tiêu đề → giải thích →
- * hành động → lối thoát.
+ * Chúng là nhiều trạng thái của cùng một việc "tài khoản chưa vào được", nên
+ * phải trông như một chỗ chứ không phải bảy trang rời nhau: cùng huy hiệu
+ * trạng thái, cùng thứ tự tiêu đề → giải thích → hành động → lối thoát.
  *
  * `tone` chỉ đổi màu huy hiệu. Màu không phải tín hiệu duy nhất — icon và tiêu
  * đề đã nói rõ trạng thái, nên người không phân biệt được màu không mất gì.
  */
-export function VerificationCard({
+export function AuthCard({
   tone = "pending",
   icon,
   title,
@@ -30,6 +30,7 @@ export function VerificationCard({
   title: string;
   description: ReactNode;
   children?: ReactNode;
+  /** Dòng lối thoát riêng của từng trang, đặt trên dòng hỗ trợ dùng chung. */
   footer?: ReactNode;
 }) {
   // `earth` thuộc bảng màu minh hoạ, không phải bảng tương tác — dùng cho một
@@ -56,17 +57,7 @@ export function VerificationCard({
       {children}
 
       <div className="flex flex-col items-center gap-1 border-t border-border pt-5 text-center text-sm text-muted">
-        {footer ?? (
-          <p>
-            Đã xác nhận rồi?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-accent underline underline-offset-4 transition-colors duration-200 hover:text-foreground"
-            >
-              Đăng nhập
-            </Link>
-          </p>
-        )}
+        {footer}
         <p>
           Cần hỗ trợ?{" "}
           <a
@@ -121,5 +112,20 @@ export function VerificationSteps({ current }: { current: number }) {
         );
       })}
     </ol>
+  );
+}
+
+/** Dòng "đã có lối khác" ở chân thẻ, cùng một kiểu chữ ở mọi trang. */
+export function AuthCardLink({ href, prompt, label }: { href: string; prompt: string; label: string }) {
+  return (
+    <p>
+      {prompt}{" "}
+      <Link
+        href={href}
+        className="font-medium text-accent underline underline-offset-4 transition-colors duration-200 hover:text-foreground"
+      >
+        {label}
+      </Link>
+    </p>
   );
 }

@@ -61,6 +61,12 @@ export function LoginForm() {
           {state?.errors?.password?.map((error) => (
             <p key={error} className="text-sm text-red-600">{error}</p>
           ))}
+          <Link
+            href="/forgot-password"
+            className="self-end px-1 text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-accent"
+          >
+            Quên mật khẩu?
+          </Link>
         </div>
 
         {state?.message ? <p className="text-sm text-red-600">{state.message}</p> : null}
