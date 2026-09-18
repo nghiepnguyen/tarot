@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
@@ -71,11 +72,35 @@ const structuredData = {
   ],
 };
 
+/**
+ * Giá đọc từ database nên không bao giờ lệch với số tiền lúc thanh toán, nhưng
+ * đổi lại trang phải chịu hai thứ.
+ *
+ * Một: lúc `next build`, Next thử prerender trang này. Query chạy trước khi
+ * `Header` gọi `auth()` - thứ vốn đẩy trang sang dynamic - nên nó đi hỏi
+ * database ngay trong lúc build. Máy build không nhất thiết có database (CI thì
+ * chắc chắn không), và build đổ. `connection()` chặn prerender ngay tại đây,
+ * đúng cách tài liệu Next hướng dẫn cho query database.
+ *
+ * Hai: database ngắt thì phần còn lại của trang - toàn bộ nội dung giới thiệu -
+ * không có lý do gì phải chết theo. Bảng giá lùi về trạng thái rỗng đã dựng sẵn
+ * trong `Pricing`, lỗi vẫn ghi ra log để còn biết mà sửa.
+ */
+async function activeCreditPackages() {
+  await connection();
+  try {
+    return await prisma.creditPackage.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } catch (error) {
+    console.error("gioi-thieu: không đọc được gói credit", error);
+    return [];
+  }
+}
+
 export default async function GioiThieuPage() {
-  const packages = await prisma.creditPackage.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  const packages = await activeCreditPackages();
 
   return (
     <div className="flex flex-1 flex-col">
