@@ -50,6 +50,12 @@ CRON_SECRET=
 RESEND_API_KEY=
 ALERT_EMAIL_FROM=alert@thanhnghiep.top
 AUTH_EMAIL_FROM=no-reply@thanhnghiep.top
+
+# Sentry — theo dõi lỗi. Ba biến dưới chỉ cần lúc build để upload source map.
+NEXT_PUBLIC_SENTRY_DSN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+SENTRY_AUTH_TOKEN=
 ```
 
 `NEXT_PUBLIC_APP_URL` là origin dùng để dựng `returnUrl`/`cancelUrl` của PayOS trong `app/actions/payments.ts`. Sai giá trị thì sau khi thanh toán người dùng bị đẩy về nhầm domain. Giá trị theo môi trường:
@@ -65,6 +71,8 @@ AUTH_EMAIL_FROM=no-reply@thanhnghiep.top
 `RESEND_API_KEY` phục vụ hai việc: cảnh báo vận hành (xem "Cảnh báo" ở dưới) và email xác nhận đăng ký (xem "Xác nhận email" ở dưới). `ALERT_EMAIL_FROM` là địa chỉ gửi cảnh báo; `AUTH_EMAIL_FROM` là địa chỉ gửi thư cho khách, không set thì dùng chung `ALERT_EMAIL_FROM`.
 
 Thiếu cấu hình Resend thì cảnh báo bị bỏ qua kèm một dòng log, còn đăng ký vẫn tạo được tài khoản nhưng link xác nhận chỉ in ra server log. Đủ để chạy local; **không** dùng được trên production.
+
+`NEXT_PUBLIC_SENTRY_DSN` bật gửi lỗi về Sentry. Không set thì SDK vẫn nạp nhưng `enabled: false`, app chạy bình thường và không có event nào rời máy — mặc định hợp lý khi chạy local. `SENTRY_AUTH_TOKEN` cùng `SENTRY_ORG`/`SENTRY_PROJECT` chỉ dùng lúc build để upload source map; thiếu thì build vẫn chạy, chỉ là stack trace trong Sentry ở dạng đã minify. Chi tiết ở [MONITORING.md](MONITORING.md).
 
 Đây là toàn bộ biến code đang đọc. Redis và object storage chưa có trong dự án nên không có biến tương ứng.
 
@@ -176,9 +184,14 @@ lib/
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit
   db/                   # Prisma client
+  monitoring/           # cấu hình Sentry dùng chung cho ba runtime
   payments/             # PayOS: client, vòng đời đơn hàng, hoàn tiền
   tarot/                # dữ liệu 78 lá, logic rút bài
   validation/
+instrumentation.ts      # Sentry cho Node/Edge + onRequestError
+instrumentation-client.ts
+sentry.server.config.ts
+sentry.edge.config.ts
 prisma.config.ts        # nơi khai báo schema và lệnh seed
 prisma/
   schema.prisma
@@ -224,6 +237,7 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 - Không log câu hỏi hoặc dữ liệu nhạy cảm nếu không cần thiết.
 - Thiết lập backup database và chính sách retention.
 - Theo dõi error rate, latency, AI cost, conversion và giao dịch thất bại.
+- Đặt `NEXT_PUBLIC_SENTRY_DSN` cho Production và Preview, cộng `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN` để có source map. Thiếu DSN thì lỗi production không đi đâu cả mà cũng không có cảnh báo nào báo cho biết — xem `MONITORING.md`.
 - SEO: `app/robots.ts`, `app/sitemap.ts` và `app/opengraph-image.tsx` sinh ra `/robots.txt`, `/sitemap.xml`, ảnh OG; canonical và Open Graph lấy origin từ `SITE_URL` trong `lib/seo/site.ts`. Nếu `NEXT_PUBLIC_APP_URL` sai thì canonical của toàn site sai theo.
 - Các alias `*.vercel.app` vẫn trả 200 và không có `x-robots-tag`, nên về lý thuyết Google index được cả hai host. Canonical trỏ về domain chính đã xử lý phần lớn rủi ro; muốn dứt điểm thì gỡ alias `tarot-indol-tau.vercel.app` trong Vercel.
 - Analytics: Google Analytics 4 (`G-YR3ZHD8JBV`) hardcode trong `lib/analytics/gtag.ts`, không cần biến môi trường. Sau khi deploy, mở DebugView của GA4 và xác nhận `page_view` bắn đúng một lần mỗi route — điều hướng client-side của App Router là chỗ dễ đếm thiếu hoặc đếm trùng nhất. Danh mục event ở `ANALYTICS.md`.

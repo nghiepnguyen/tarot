@@ -53,7 +53,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - Vitest cho unit test. Chỉ quét `lib/**/*.test.ts`; logic cần test nằm ở `lib/`, server action và route handler giữ mỏng để gọi xuống đó.
 - Playwright cho flow nhập câu hỏi, bốc bài, unlock AI và nạp credit. `e2e/global-setup.ts` tự seed dữ liệu, dọn rate limit và từ chối chạy nếu `DATABASE_URL` không phải database dùng một lần.
 - ESLint và Prettier cho chất lượng mã nguồn.
-- Sentry hoặc công cụ tương đương cho error tracking.
+- Sentry (`@sentry/nextjs`) cho error tracking ở cả ba runtime — browser, Node, Edge — cộng trace hiệu năng lấy mẫu 10% ở production. Thiếu `NEXT_PUBLIC_SENTRY_DSN` thì SDK tự tắt, app chạy bình thường. Chi tiết: `MONITORING.md`.
 - Vercel cho deploy Next.js; PostgreSQL dùng dịch vụ managed (đang là Neon). Migration production chạy tay, xem `SETUP.md`.
 
 ## Ngôn ngữ thiết kế

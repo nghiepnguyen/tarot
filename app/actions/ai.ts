@@ -15,6 +15,7 @@ import {
   type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
 import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/gemini";
+import { reportHandledError } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
 
 export type UnlockResult =
@@ -99,6 +100,14 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     revalidatePath("/history");
     return { ok: true, data: result };
   } catch (error) {
+    // Người dùng chỉ thấy một câu xin lỗi và được hoàn credit, nên nếu không
+    // báo về Sentry ở đây thì Gemini hỏng bao lâu cũng không ai biết.
+    reportHandledError(error, {
+      area: "ai-unlock",
+      extra: { readingId: reading.id, model: GEMINI_MODEL },
+      userId: session.user.id,
+    });
+
     const refunded = await prisma.user.update({
       where: { id: session.user.id },
       data: { credits: { increment: COST_PER_INTERPRETATION } },

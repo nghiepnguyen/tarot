@@ -3,6 +3,7 @@ import type { Order, OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { getPaymentLink } from "./payos";
 import { alertAmountMismatch } from "./alerts";
+import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import { refundOrder as refundOrderWith } from "./refund";
 
 export type { RefundOutcome } from "./refund";
@@ -51,6 +52,17 @@ export async function creditPaidOrder(
     );
     // Không ai đọc Runtime Logs. Đây là tình huống duy nhất trong cả luồng
     // thanh toán mà không đường tự động nào gỡ được, nên phải chủ động báo.
+    // Báo cả hai đường: email có thể trượt (Resend hỏng, thư vào spam).
+    reportHandledIssue("Số tiền PayOS trả về lệch với đơn", {
+      area: "payos-amount-mismatch",
+      extra: {
+        orderId: order.id,
+        providerOrderId,
+        expectedVnd: order.amountVnd,
+        paidVnd: paidAmountVnd,
+      },
+      userId: order.userId,
+    });
     await alertAmountMismatch({
       orderId: order.id,
       providerOrderId,
@@ -117,6 +129,11 @@ export async function reconcileOrder(order: Order): Promise<OrderStatus> {
     info = await getPaymentLink(order.providerPaymentLinkId ?? order.providerOrderId);
   } catch (error) {
     console.error(`[payos] Không đối soát được đơn ${order.id}:`, error);
+    reportHandledError(error, {
+      area: "payos-reconcile",
+      extra: { orderId: order.id, providerOrderId: order.providerOrderId },
+      userId: order.userId,
+    });
     // PayOS đang lỗi. Đơn quá hạn thì vẫn đóng được dựa trên đồng hồ của
     // chính mình — link đã hết hạn thì không ai trả tiền vào đó nữa.
     if (isExpired(order)) {

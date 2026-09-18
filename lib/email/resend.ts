@@ -1,5 +1,7 @@
 import "server-only";
 
+import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
+
 const RESEND_API = "https://api.resend.com/emails";
 
 export interface SendEmailInput {
@@ -52,11 +54,18 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
     if (!response.ok) {
       const detail = await response.text();
       console.error(`[email] Resend trả ${response.status} cho "${input.subject}": ${detail}`);
+      // Chỉ gửi subject và mã lỗi: địa chỉ người nhận và nội dung thư không
+      // được rời khỏi server.
+      reportHandledIssue("Resend từ chối gửi email", {
+        area: "email-send",
+        extra: { subject: input.subject, status: response.status },
+      });
       return false;
     }
     return true;
   } catch (error) {
     console.error(`[email] Không gửi được "${input.subject}":`, error);
+    reportHandledError(error, { area: "email-send", extra: { subject: input.subject } });
     return false;
   }
 }
