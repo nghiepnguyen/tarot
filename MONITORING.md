@@ -11,6 +11,8 @@ SDK: `@sentry/nextjs`. Bắt lỗi ở cả ba runtime — trình duyệt, Node 
 | `sentry.server.config.ts` / `sentry.edge.config.ts` | `Sentry.init()` cho runtime Node và Edge. |
 | `instrumentation-client.ts` | `Sentry.init()` phía trình duyệt, chạy trước khi React hydrate. Export `onRouterTransitionStart` để span điều hướng có điểm bắt đầu. |
 | `app/global-error.tsx` | Lưới an toàn khi lỗi văng ra khỏi `app/layout.tsx`: gửi exception rồi hiện trang xin lỗi kèm nút thử lại. |
+| `app/error.tsx` | Lỗi trong một route segment. Chỉ báo Sentry khi lỗi **không** có `digest` — loại có digest đã đi qua `onRequestError`, bắt lại là nhân đôi event. |
+| `components/monitoring/SentryUser.tsx` | Gắn id người dùng vào scope phía trình duyệt, render từ `Header` (chỗ đã sẵn có `auth()`). Chỉ id, không email. |
 | `lib/monitoring/report.ts` | `reportHandledError()` / `reportHandledIssue()` cho những lỗi app tự xử lý xong — Sentry không tự thấy chúng. |
 | `next.config.ts` | `withSentryConfig` chèn instrumentation lúc build, upload source map, dựng route tunnel, bật cron monitor. |
 
@@ -45,7 +47,13 @@ curl -s https://tarot.thanhnghiep.top/ | grep -oE '/_next/static/immutable/chunk
 
 `sendDefaultPii: false`: không gửi IP, cookie hay header xác thực. Sản phẩm giữ email và lịch sử thanh toán, còn chính sách riêng tư không hứa chia sẻ những thứ đó với bên thứ ba — bật `sendDefaultPii` là phải sửa cả chính sách.
 
-Không khai báo khoá `dataCollection` trong `Sentry.init()`. Đây là cái bẫy dễ dính nhất của SDK: trong `@sentry/core` 10.75, `resolveDataCollectionOptions()` chọn base theo `options.dataCollection != null ? DEFAULTS : defaultPiiToCollectionOptions(options.sendDefaultPii)` — một object **rỗng** vẫn là `!= null`, nên `dataCollection: {}` bật hết `DEFAULTS`: cookie phiên, body request đi vào (form đăng nhập, câu hỏi tarot, payload webhook PayOS), prompt và output Gemini, dữ liệu truy vấn database. Wizard của Sentry sinh ra đúng đoạn `dataCollection: {}` đó. Bỏ hẳn khoá này thì SDK rơi về nhánh `sendDefaultPii: false` và mọi mục trên đều tắt.
+`dataCollection` khai báo tường minh từng loại dữ liệu — `userInfo`, `cookies`, `httpBodies`, `genAI`, `graphQL`, `databaseQueryData`, `stackFrameVariables` đều tắt; `httpHeaders` và `urlQueryParams` giữ lại phần hữu ích cho việc gỡ lỗi nhưng chặn các khoá mang danh tính. Đây là đường thay cho `sendDefaultPii`, thứ sẽ bị bỏ ở SDK v11.
+
+Cái bẫy nằm ở chỗ **thiếu** một trường chứ không phải thừa. Trong `@sentry/core` 10.75, `resolveDataCollectionOptions()` chọn base theo `options.dataCollection != null ? DEFAULTS : defaultPiiToCollectionOptions(options.sendDefaultPii)`. Chỉ cần khoá `dataCollection` tồn tại là mọi trường không liệt kê rơi vào `DEFAULTS`, mà `DEFAULTS` bật hết: cookie phiên, body request đi vào (form đăng nhập, câu hỏi tarot, payload webhook PayOS), prompt và output Gemini, dữ liệu truy vấn database. Wizard của Sentry sinh ra đúng `dataCollection: {}` — một object rỗng vẫn là `!= null`, nên nó mở toàn bộ.
+
+Vì vậy chỉ thêm trường vào đối tượng đó, đừng bao giờ bớt. `lib/monitoring/sentry.test.ts` gọi `client.getDataCollectionOptions()` rồi so danh sách khoá sau khi SDK phân giải, nên bản nâng cấp nào thêm một đường thu thập mới cũng làm test đỏ thay vì âm thầm bật.
+
+`stackFrameVariables: false` là lựa chọn có chủ ý, khác mặc định của SDK: biến cục bộ tại chỗ ném lỗi rất dễ đang giữ đúng câu hỏi người dùng vừa gõ.
 
 Session Replay **không** bật. Ngoài chuyện nặng thêm khoảng 50KB cho mọi lượt truy cập, nó sẽ quay lại đúng câu hỏi người dùng gõ vào — thứ riêng tư nhất trong sản phẩm này. Cần bật thì phải che kín text và nói rõ trong chính sách riêng tư.
 

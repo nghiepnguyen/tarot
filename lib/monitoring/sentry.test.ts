@@ -46,11 +46,50 @@ describe("cấu hình Sentry dùng chung", () => {
     expect(preview.sharedSentryOptions.environment).toBe("preview");
   });
 
-  it("không bao giờ gửi PII mặc định", async () => {
+  /**
+   * Khoá `dataCollection` chỉ cần tồn tại là SDK dùng bộ DEFAULTS cho mọi
+   * trường không liệt kê, mà DEFAULTS bật hết. Test này soi giá trị sau khi
+   * SDK đã phân giải, nên bản nâng cấp nào thêm trường thu thập mới cũng làm
+   * nó đỏ thay vì âm thầm bật.
+   */
+  it("tắt mọi đường thu thập dữ liệu người dùng", async () => {
     const { sharedSentryOptions } = await freshModule({
       NEXT_PUBLIC_SENTRY_DSN: "https://public@o1.ingest.sentry.io/1",
     });
+    const Sentry = await import("@sentry/nextjs");
 
-    expect(sharedSentryOptions.sendDefaultPii).toBe(false);
+    Sentry.init({ ...sharedSentryOptions, enabled: false });
+    const resolved = Sentry.getClient()?.getDataCollectionOptions();
+
+    expect(resolved).toBeDefined();
+    expect(Object.keys(resolved!).sort()).toEqual([
+      "cookies",
+      "databaseQueryData",
+      "frameContextLines",
+      "genAI",
+      "graphQL",
+      "httpBodies",
+      "httpHeaders",
+      "stackFrameVariables",
+      "urlQueryParams",
+      "userInfo",
+    ]);
+
+    expect(resolved).toMatchObject({
+      userInfo: false,
+      cookies: false,
+      httpBodies: [],
+      genAI: { inputs: false, outputs: false },
+      graphQL: { document: false, variables: false },
+      databaseQueryData: false,
+      stackFrameVariables: false,
+    });
+    expect(resolved!.httpHeaders).toMatchObject({
+      request: { deny: expect.arrayContaining(["authorization", "cookie"]) },
+      response: { deny: ["set-cookie"] },
+    });
+    expect(resolved!.urlQueryParams).toMatchObject({
+      deny: expect.arrayContaining(["token", "secret"]),
+    });
   });
 });

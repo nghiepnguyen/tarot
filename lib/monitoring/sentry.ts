@@ -26,11 +26,34 @@ export const sharedSentryOptions = {
   // hết quota của gói free. Ngoài production thì lấy hết cho dễ soi.
   tracesSampleRate: environment === "production" ? 0.1 : 1,
 
-  // Không gửi IP, cookie hay header xác thực. Sản phẩm giữ email và lịch sử
-  // thanh toán của người dùng, và chính sách riêng tư không hứa chia sẻ những
-  // thứ đó với bên thứ ba.
-  sendDefaultPii: false,
+  // Khai báo tường minh từng loại dữ liệu thay cho `sendDefaultPii: false`
+  // (sẽ bị bỏ ở SDK v11).
+  //
+  // CẨN THẬN: chỉ cần khoá `dataCollection` tồn tại là SDK chuyển sang bộ
+  // DEFAULTS cho **mọi khoá không liệt kê**, mà DEFAULTS thì bật hết. Thêm
+  // trường mới vào đây chứ đừng bao giờ xoá bớt; test trong sentry.test.ts
+  // sẽ đỏ nếu SDK sinh thêm khoá lạ.
+  dataCollection: {
+    userInfo: false,
+    // Cookie chứa session token của next-auth.
+    cookies: false,
+    // Giữ lại header hữu ích cho việc gỡ lỗi, chặn đúng những cái mang danh tính.
+    httpHeaders: {
+      request: { deny: ["authorization", "cookie", "x-api-key", "x-csrf-token"] },
+      response: { deny: ["set-cookie"] },
+    },
+    // Body request chứa form đăng nhập, câu hỏi tarot và payload webhook PayOS.
+    httpBodies: [],
+    urlQueryParams: { deny: ["token", "code", "secret", "key"] },
+    // Prompt và kết quả Gemini dựng từ chính câu hỏi của người dùng.
+    genAI: { inputs: false, outputs: false },
+    graphQL: { document: false, variables: false },
+    databaseQueryData: false,
+    // Biến cục bộ trong stack frame là đường rò rỉ ít ai ngờ: câu hỏi của
+    // người dùng đang nằm trong một biến ngay tại chỗ ném lỗi.
+    stackFrameVariables: false,
+  },
 
   // Log của SDK chỉ bật khi có biến môi trường, tránh làm ồn terminal dev.
   debug: process.env.SENTRY_DEBUG === "1",
-} as const;
+};

@@ -7,6 +7,7 @@ import { CreditBadge } from "@/components/ui/CreditBadge";
 import { NavLinks } from "@/components/ui/NavLinks";
 import { MobileNav } from "@/components/ui/MobileNav";
 import { navLinkClass } from "@/components/ui/navLink";
+import { SentryUser } from "@/components/monitoring/SentryUser";
 import { LogIn } from "lucide-react";
 
 const NAV_LINKS = [
@@ -25,6 +26,8 @@ export async function Header() {
 
   return (
     <header className="relative border-b border-border">
+      <SentryUser userId={session?.user?.id ?? null} />
+
       {/* Header giờ có tới sáu đường đi. Không có link này thì người dùng bàn
           phím phải tab hết chúng trên từng trang mới tới được nội dung. Chỉ
           hiện khi được focus. z-30 để nằm trên dropdown của UserMenu (z-20). */}
