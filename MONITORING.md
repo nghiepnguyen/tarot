@@ -22,6 +22,25 @@ DSN để ở biến `NEXT_PUBLIC_` cho cả server lẫn client vì nó vốn n
 
 Đánh đổi: biến `NEXT_PUBLIC_` được nướng vào bundle lúc build, kể cả phía server. Đổi DSN thì phải build lại, đặt biến rồi `next start` không có tác dụng — giống hệt `NEXT_PUBLIC_APP_URL`.
 
+### Đừng đặt tên biến là `SENTRY_DSN`
+
+Đây là cái bẫy đã dính một lần khi cấu hình Vercel. Trình duyệt không đọc được env của server, nên DSN phải mang tiền tố `NEXT_PUBLIC_` và phải có mặt **lúc build** thì mới vào được bundle. Đặt tên `SENTRY_DSN` thì client không bao giờ thấy.
+
+Phần khó chịu là server trông vẫn như đã chạy. `@sentry/node-core` tự nhặt biến đó khi `dsn` không được truyền:
+
+```js
+dsn: options.dsn ?? process.env.SENTRY_DSN,
+```
+
+SDK phân giải được DSN và sinh header trace mang `sentry-public_key`, nhìn HTML tưởng đã xong. Nhưng `lib/monitoring/sentry.ts` quyết định `enabled` theo `NEXT_PUBLIC_SENTRY_DSN`, thiếu biến đó thì `enabled: false` và **không event nào được gửi ở cả hai phía** — chỉ còn header đi ra.
+
+Cách kiểm nhanh, không cần chờ lỗi thật: tải một chunk client của production về rồi grep public key của DSN. Không có nghĩa là biến chưa tới lúc build.
+
+```bash
+curl -s https://tarot.thanhnghiep.top/ | grep -oE '/_next/static/immutable/chunks/[^"]+\.js' | sort -u \
+  | while read -r p; do curl -s "https://tarot.thanhnghiep.top$p"; done | grep -c '<public key của DSN>'
+```
+
 ## Quyền riêng tư
 
 `sendDefaultPii: false`: không gửi IP, cookie hay header xác thực. Sản phẩm giữ email và lịch sử thanh toán, còn chính sách riêng tư không hứa chia sẻ những thứ đó với bên thứ ba — bật `sendDefaultPii` là phải sửa cả chính sách.
