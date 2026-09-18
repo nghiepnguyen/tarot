@@ -41,6 +41,14 @@ export default function PrivacyPage() {
           Ngoài ra, dữ liệu đo lường ẩn danh được gửi tới Google Analytics như
           mô tả ở mục 6.
         </p>
+        <p>
+          Khi trang gặp lỗi kỹ thuật, thông tin về lỗi đó được gửi tới Sentry
+          để chúng tôi sửa: nội dung thông báo lỗi, vị trí trong mã nguồn,
+          đường dẫn trang và loại trình duyệt. Nếu bạn đang đăng nhập, kèm
+          theo mã định danh tài khoản — không kèm email hay tên. Câu hỏi bạn
+          nhập, nội dung diễn giải, cookie đăng nhập và dữ liệu biểu mẫu không
+          được gửi đi.
+        </p>
       </section>
 
       <section>

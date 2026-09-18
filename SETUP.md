@@ -169,6 +169,8 @@ Cách xử lý hiện tại là áp migration ngay sát lúc deploy và ưu tiê
 ```text
 app/
   page.tsx              # trang bốc bài
+  error.tsx             # lỗi trong một route segment
+  global-error.tsx      # lỗi văng ra khỏi chính root layout
   actions/              # server action: ai, auth, payments, readings
   api/auth, api/webhooks, api/cron
   credits/              # chọn gói và nạp credit
@@ -176,6 +178,7 @@ app/
   terms/, privacy/, refund/
 components/
   analytics/            # script GA4, tracker page_view / purchase / auth
+  monitoring/           # gắn id người dùng vào scope Sentry phía client
   tarot/                # ArcDeck, QuestionForm, ReadingView, FlipCard, ...
   ui/                   # Button, Input, Header, Footer, Toast, Section
 lib/
@@ -184,7 +187,7 @@ lib/
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit
   db/                   # Prisma client
-  monitoring/           # cấu hình Sentry dùng chung cho ba runtime
+  monitoring/           # cấu hình Sentry dùng chung + báo lỗi đã xử lý
   payments/             # PayOS: client, vòng đời đơn hàng, hoàn tiền
   tarot/                # dữ liệu 78 lá, logic rút bài
   validation/

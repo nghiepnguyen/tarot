@@ -6,7 +6,7 @@ SDK: `@sentry/nextjs`. Bắt lỗi ở cả ba runtime — trình duyệt, Node 
 
 | Thành phần | Vai trò |
 |---|---|
-| `lib/monitoring/sentry.ts` | Cấu hình dùng chung: DSN, environment, tỉ lệ lấy mẫu trace, `sendDefaultPii: false`. |
+| `lib/monitoring/sentry.ts` | Cấu hình dùng chung: DSN, environment, tỉ lệ lấy mẫu trace, và `dataCollection` khai báo tắt từng loại dữ liệu. |
 | `instrumentation.ts` | Next gọi `register()` một lần mỗi tiến trình server; nạp config theo `NEXT_RUNTIME`. Đồng thời export `onRequestError` để bắt lỗi server component, route handler và server action. |
 | `sentry.server.config.ts` / `sentry.edge.config.ts` | `Sentry.init()` cho runtime Node và Edge. |
 | `instrumentation-client.ts` | `Sentry.init()` phía trình duyệt, chạy trước khi React hydrate. Export `onRouterTransitionStart` để span điều hướng có điểm bắt đầu. |
@@ -45,7 +45,7 @@ curl -s https://tarot.thanhnghiep.top/ | grep -oE '/_next/static/immutable/chunk
 
 ## Quyền riêng tư
 
-`sendDefaultPii: false`: không gửi IP, cookie hay header xác thực. Sản phẩm giữ email và lịch sử thanh toán, còn chính sách riêng tư không hứa chia sẻ những thứ đó với bên thứ ba — bật `sendDefaultPii` là phải sửa cả chính sách.
+Sản phẩm giữ email, câu hỏi và lịch sử thanh toán của người dùng, còn chính sách riêng tư không hứa chia sẻ những thứ đó với bên thứ ba. Nới bất kỳ mục nào dưới đây là phải sửa cả chính sách.
 
 `dataCollection` khai báo tường minh từng loại dữ liệu — `userInfo`, `cookies`, `httpBodies`, `genAI`, `graphQL`, `databaseQueryData`, `stackFrameVariables` đều tắt; `httpHeaders` và `urlQueryParams` giữ lại phần hữu ích cho việc gỡ lỗi nhưng chặn các khoá mang danh tính. Đây là đường thay cho `sendDefaultPii`, thứ sẽ bị bỏ ở SDK v11.
 
@@ -102,5 +102,6 @@ Tag `handled: true` để lọc riêng khỏi lỗi làm sập request. Extra ch
 
 1. Đặt `NEXT_PUBLIC_SENTRY_DSN` trong `.env.local` (cùng `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`), chạy `pnpm dev`.
 2. Ném thử một lỗi trong server action hoặc route handler, mở Issues trong Sentry xem có event chưa.
-3. Mở DevTools → Network, lọc `monitoring`: request phải đi tới `/monitoring` của chính domain, không phải `ingest.sentry.io`.
+3. Mở DevTools → Network, lọc `monitoring`: request phải đi tới `/monitoring` của chính domain, không phải `ingest.sentry.io`. Lỗi phía trình duyệt bắn bằng `setTimeout(() => { myUndefinedFunction(); }, 0)` — gõ thẳng vào console thì không phải lúc nào cũng đi qua `window.onerror`.
 4. Sau deploy có `SENTRY_AUTH_TOKEN`, mở một issue và xác nhận stack trace chỉ đúng file `.ts`/`.tsx` chứ không phải chunk đã minify.
+5. Trên production, kiểm bundle client có DSN chưa (mục "Đừng đặt tên biến là `SENTRY_DSN`"). Không có nghĩa là biến chưa tới lúc build, và không có lỗi client nào được ghi — dù server vẫn trông như đang chạy.
