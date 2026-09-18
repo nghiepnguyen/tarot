@@ -60,6 +60,31 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Trang giới thiệu dài, các phần tới cùng lúc thì không có thứ tự đọc nào cả.
+   Một lần hiện nhẹ khi phần đó vào khung nhìn đủ để tách nhịp. Chạy bằng
+   scroll-driven animation của CSS: không JS, không listener scroll. Trình duyệt
+   chưa hỗ trợ `animation-timeline` thì nội dung hiện sẵn, không mất gì. */
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal-on-scroll {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 26%;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;

@@ -15,14 +15,21 @@ const variantClasses: Record<Variant, string> = {
     "bg-transparent text-foreground border border-transparent hover:bg-sage-tint disabled:opacity-40",
 };
 
+const baseClasses =
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium tracking-wide transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed";
+
+/**
+ * Cùng bộ class với <Button>, dùng cho những chỗ đích đến là một trang khác:
+ * ở đó phải là <Link> để trình duyệt và bot đọc được href, không phải <button>.
+ */
+export function buttonClasses(variant: Variant = "primary", className = ""): string {
+  return `${baseClasses} ${variantClasses[variant]} ${className}`;
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", className = "", ...props }, ref) => {
     return (
-      <button
-        ref={ref}
-        className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium tracking-wide transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed ${variantClasses[variant]} ${className}`}
-        {...props}
-      />
+      <button ref={ref} className={buttonClasses(variant, className)} {...props} />
     );
   },
 );
