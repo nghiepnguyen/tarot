@@ -59,7 +59,7 @@ export default async function Home({
         <AuthSuccessTracker method={authResult} />
       ) : null}
       <Header />
-      <main className="flex flex-1 flex-col">
+      <main id="main-content" className="flex flex-1 flex-col">
         <Section>
           <TarotExperience isLoggedIn={Boolean(session?.user)} />
         </Section>

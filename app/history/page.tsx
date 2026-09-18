@@ -95,7 +95,7 @@ export default async function HistoryPage({
   return (
     <div className="flex flex-1 flex-col">
       <Header />
-      <main className="flex flex-1 flex-col">
+      <main id="main-content" className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1">

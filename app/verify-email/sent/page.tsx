@@ -27,7 +27,7 @@ export default async function VerificationSentPage({
   return (
     <div className="flex flex-1 flex-col">
       <Header />
-      <main className="flex flex-1 items-center justify-center">
+      <main id="main-content" className="flex flex-1 items-center justify-center">
         <Section className="flex items-center justify-center">
           {failed ? (
             <AuthCard

@@ -25,7 +25,7 @@ export default async function LoginPage({
     <div className="flex flex-1 flex-col">
       {authResult === "signup" ? <AuthSuccessTracker method="signup" /> : null}
       <Header />
-      <main className="flex flex-1 items-center justify-center">
+      <main id="main-content" className="flex flex-1 items-center justify-center">
         <Section className="flex flex-col items-center justify-center gap-4">
           {verified === "1" || reset === "1" ? (
             <p

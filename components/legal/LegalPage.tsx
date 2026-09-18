@@ -13,7 +13,7 @@ export function LegalPage({ title, updatedAt, children }: LegalPageProps) {
   return (
     <div className="flex flex-1 flex-col">
       <Header />
-      <main className="flex flex-1 flex-col">
+      <main id="main-content" className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-2">

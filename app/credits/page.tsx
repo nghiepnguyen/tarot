@@ -37,7 +37,7 @@ export default async function CreditsPage({
     <div className="flex flex-1 flex-col">
       <Header />
       <OrderReturn userId={user.id} orderId={params.order} status={params.status} />
-      <main className="flex flex-1 flex-col">
+      <main id="main-content" className="flex flex-1 flex-col">
         <Section className="max-w-3xl">
           <div className="flex flex-col gap-8">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
