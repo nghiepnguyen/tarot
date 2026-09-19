@@ -13,6 +13,12 @@ import { LoginSchema } from "@/lib/validation/auth";
  * lần mỗi request). Năm phút là chỗ đứng giữa: đổi mật khẩu hạ được phiên cũ
  * trong vòng năm phút, mà mỗi người chỉ tốn thêm một truy vấn khoá chính mỗi
  * năm phút.
+ *
+ * Cùng truy vấn đó đọc luôn `role`, nên khoảng này cũng là cận trên cho độ trễ
+ * lan quyền quản trị: cấp hay thu quyền có hiệu lực trên token trong vòng năm
+ * phút, hoặc ngay lập tức nếu đăng xuất rồi đăng nhập lại. Token chỉ là bản
+ * cache — mọi thao tác chạm dữ liệu vẫn đi qua `lib/auth/admin.ts`, chỗ đọc
+ * thẳng database, nên thu quyền chặn được thao tác ngay không cần chờ.
  */
 const PASSWORD_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -50,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           passwordChangedAt: user.passwordChangedAt,
+          role: user.role,
         };
       },
     }),
@@ -59,6 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id as string;
         token.pwdAt = user.passwordChangedAt?.getTime() ?? 0;
+        token.role = user.role ?? "USER";
         token.pwdCheckedAt = Date.now();
         return token;
       }
@@ -73,7 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const current = await prisma.user.findUnique({
         where: { id: token.id as string },
-        select: { passwordChangedAt: true },
+        select: { passwordChangedAt: true, role: true },
       });
 
       // Trả `null` là cách Auth.js hạ phiên: cookie session bị xoá và request
@@ -88,11 +96,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return null;
       }
 
+      token.role = current.role;
       token.pwdCheckedAt = Date.now();
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
+      // Token phát trước khi có cột `role` không mang trường này; đọc là USER
+      // để lần deploy đầu tiên không biến người đang đăng nhập thành admin.
+      session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
       return session;
     },
   },

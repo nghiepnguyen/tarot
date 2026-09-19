@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id                   String             @id @default(cuid())
   email                String             @unique
@@ -18,6 +23,9 @@ model User {
   // Mốc đổi mật khẩu gần nhất. Session là JWT không tra database, nên đây là
   // thứ duy nhất cho phép hạ những phiên đã phát trước lần đổi đó.
   passwordChangedAt    DateTime?
+  // Cấp bằng `pnpm grant-admin <email>`. Không có đường nào trong giao diện
+  // nâng quyền cho chính mình hay cho người khác.
+  role                 Role               @default(USER)
   credits              Int                @default(0)
   freeCreditsGrantedAt DateTime?
   createdAt            DateTime           @default(now())
@@ -135,6 +143,32 @@ model Order {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+}
+
+/// Nhật ký thao tác quản trị.
+///
+/// `CreditTransaction` ghi *cái gì* xảy ra với số dư, không ghi *ai* và *vì
+/// sao*. Điều đó đủ khi mọi đường ghi đều là máy (`PURCHASE` là webhook,
+/// `UNLOCK_SPEND` là người dùng, `FREE_GRANT` là lúc xác nhận email).
+/// `ADMIN_ADJUST` và nút hoàn tiền trên web là những đường đầu tiên mang quyết
+/// định của một con người, nên phải có chỗ ký tên.
+///
+/// Cố tình không có quan hệ khoá ngoại tới `User` hay `Order`: xoá tài khoản
+/// đang cascade sang đơn và giao dịch, mà dòng nhật ký thì phải sống lâu hơn
+/// đối tượng của nó. Lưu id dạng chuỗi thuần, đúng như `relatedOrderId`.
+model AdminAuditLog {
+  id            String   @id @default(cuid())
+  adminUserId   String
+  /// "credit_adjust" | "order_refund" | "order_reconcile"
+  action        String
+  targetUserId  String?
+  targetOrderId String?
+  amount        Int?
+  reason        String
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adminUserId, createdAt])
 }
 
 model Reading {
