@@ -1,34 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
 
-/**
- * Đơn giá `gemini-3-flash-preview`, tier Standard: $0,50 / 1M token input và
- * $3,00 / 1M token output. Thinking token tính theo giá output. Tỷ giá và cách
- * tính ở mục 9 của `AI Tarot Interpretation Prompts.md`.
- *
- * Đây là số cứng, không phải số đo: đổi model hay đổi tier thì phải sửa ở đây,
- * database không biết giá.
- */
-export const USD_PER_INPUT_TOKEN = 0.5 / 1_000_000;
-export const USD_PER_OUTPUT_TOKEN = 3.0 / 1_000_000;
-export const VND_PER_USD = 25_876;
-
-export interface TokenSums {
-  inputTokens: number | null;
-  outputTokens: number | null;
-  thinkingTokens: number | null;
-}
-
-/**
- * Ba cột token nullable theo thiết kế (row cũ, và những lượt Gemini không trả
- * `usageMetadata`), nên `_sum` có thể là `null` trên cả ba.
- */
-export function estimateAiCostVnd(sums: TokenSums): number {
-  const input = sums.inputTokens ?? 0;
-  const output = (sums.outputTokens ?? 0) + (sums.thinkingTokens ?? 0);
-  const usd = input * USD_PER_INPUT_TOKEN + output * USD_PER_OUTPUT_TOKEN;
-  return Math.round(usd * VND_PER_USD);
-}
-
 /** Số người có mặt ở cả hai tập. Dùng cho tỷ lệ free-to-paid. */
 export function intersectUserIds(a: readonly string[], b: readonly string[]): string[] {
   const right = new Set(b);
@@ -112,6 +83,7 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
     freeGrantUsers,
     paidUsers,
     aiUsage,
+    aiUsageByModel,
   ] = await Promise.all([
     // Tiền lấy từ `Order`, không từ sổ credit: `refundOrder` lật PAID sang
     // REFUNDED, nên lọc theo trạng thái ra luôn doanh thu ròng. Đếm dòng
@@ -151,8 +123,16 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
     db.creditTransaction.groupBy({ by: ["userId"], where: { type: "FREE_GRANT" } }),
     db.order.groupBy({ by: ["userId"], where: { status: "PAID" } }),
     db.aiInterpretation.aggregate({
-      _sum: { inputTokens: true, outputTokens: true, thinkingTokens: true },
       _avg: { latencyMs: true },
+      _count: { _all: true },
+      where: { createdAt: { gte: since } },
+    }),
+    // Token gom theo model chứ không cộng một cục: giá khác nhau theo model
+    // (`lib/ai/pricing.ts`), nên một kỳ có hai model mà cộng chung thì ra sai
+    // tiền. Gộp lại được, tách ra thì không.
+    db.aiInterpretation.groupBy({
+      by: ["model"],
+      _sum: { inputTokens: true, outputTokens: true, thinkingTokens: true },
       _count: { _all: true },
       where: { createdAt: { gte: since } },
     }),
@@ -177,7 +157,13 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
     unlockingUserIds: unlockingUsers.map((row) => row.userId),
     freeGrantUserIds: freeGrantUsers.map((row) => row.userId),
     paidUserIds: paidUsers.map((row) => row.userId),
-    aiTokens: aiUsage._sum,
+    aiTokensByModel: aiUsageByModel.map((row) => ({
+      model: row.model,
+      inputTokens: row._sum.inputTokens,
+      outputTokens: row._sum.outputTokens,
+      thinkingTokens: row._sum.thinkingTokens,
+      runs: row._count._all,
+    })),
     aiLatencyMs: aiUsage._avg.latencyMs,
     aiRuns: aiUsage._count._all,
   };

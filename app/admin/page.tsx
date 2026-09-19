@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
 import { Panel, Stat } from "@/components/admin/Panel";
-import { estimateAiCostVnd, fetchDashboardRaw, ratio, toFunnel } from "@/lib/admin/metrics";
+import { fetchDashboardRaw, ratio, toFunnel } from "@/lib/admin/metrics";
+import { isPricedModel, sumAiCostVnd } from "@/lib/ai/pricing";
 
 const RANGES = [7, 30, 90];
 
@@ -38,7 +39,12 @@ export default async function AdminDashboardPage({
     paidUserIds: raw.paidUserIds,
   });
 
-  const aiCostVnd = estimateAiCostVnd(raw.aiTokens);
+  const aiCostVnd = sumAiCostVnd(raw.aiTokensByModel);
+  // Model không có trong bảng giá vẫn ra một con số, tính bằng giá mặc định.
+  // Nói thẳng ra là ước lượng thay vì để người đọc tưởng đó là tiền thật.
+  const unpricedModels = raw.aiTokensByModel
+    .filter((row) => !isPricedModel(row.model))
+    .map((row) => row.model);
   const ordersTotal = raw.ordersByStatus.reduce((sum, row) => sum + row._count._all, 0);
   const unlockSpends = raw.creditsByType.find((row) => row.type === "UNLOCK_SPEND")?._count._all ?? 0;
 
@@ -77,7 +83,9 @@ export default async function AdminDashboardPage({
           <Stat
             label="Chi phí AI"
             value={vnd(aiCostVnd)}
-            hint={`${raw.aiRuns} lượt sinh, ${raw.aiRuns > 0 ? vnd(Math.round(aiCostVnd / raw.aiRuns)) : "—"}/lượt`}
+            hint={`${raw.aiRuns} lượt sinh, ${raw.aiRuns > 0 ? vnd(Math.round(aiCostVnd / raw.aiRuns)) : "—"}/lượt${
+              unpricedModels.length > 0 ? ` — ước lượng, chưa có giá cho ${unpricedModels.join(", ")}` : ""
+            }`}
           />
         </div>
       </Panel>
