@@ -5,6 +5,13 @@ export interface CronMonitorConfig {
   monitorSlug: string;
   /** Lịch crontab, phải khớp `vercel.json` để Sentry biết khi nào là trễ. */
   schedule: string;
+  /**
+   * Múi giờ của lịch, dạng tz database. Vercel Cron luôn hiểu `schedule` theo
+   * UTC. Không truyền thì Sentry hiện "At 20:00 (undefined)" và người đọc phải
+   * tự đoán — nó đoán đúng UTC, nhưng đoán ngầm thì sớm muộn cũng có người
+   * đoán ra giờ Việt Nam.
+   */
+  timezone: string;
   /** Phút. Quá số này mà chưa đóng check-in thì Sentry coi là treo. */
   maxRuntimeMinutes: number;
   /**
@@ -41,6 +48,7 @@ export async function withCronCheckIn<T>(
 
   const monitorConfig = {
     schedule: { type: "crontab" as const, value: config.schedule },
+    timezone: config.timezone,
     maxRuntime: config.maxRuntimeMinutes,
     checkinMargin: config.checkinMarginMinutes,
   };

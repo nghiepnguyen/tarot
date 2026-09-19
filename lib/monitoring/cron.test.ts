@@ -9,6 +9,7 @@ vi.mock("@sentry/nextjs", () => ({
 const CONFIG = {
   monitorSlug: "reconcile-orders",
   schedule: "0 20 * * *",
+  timezone: "UTC",
   maxRuntimeMinutes: 5,
   checkinMarginMinutes: 60,
 };
@@ -36,11 +37,14 @@ describe("withCronCheckIn", () => {
     });
   });
 
-  it("passes the schedule so Sentry knows when a run is late", async () => {
+  // Thiếu timezone thì Sentry hiện "At 20:00 (undefined)" và người đọc phải tự
+  // đoán lịch là giờ nào.
+  it("passes the schedule and its timezone so Sentry knows when a run is late", async () => {
     await withCronCheckIn(CONFIG, async () => null, { isVercel: true });
 
     expect(captureCheckIn.mock.calls[0]?.[1]).toEqual({
       schedule: { type: "crontab", value: "0 20 * * *" },
+      timezone: "UTC",
       maxRuntime: 5,
       checkinMargin: 60,
     });

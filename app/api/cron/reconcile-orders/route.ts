@@ -9,7 +9,9 @@ export const maxDuration = 60;
 /** Phải khớp `vercel.json`: Sentry dựa vào đây để biết lượt chạy nào bị trễ. */
 const CRON_MONITOR = {
   monitorSlug: "reconcile-orders",
+  // 20:00 UTC, tức 3 giờ sáng giờ Việt Nam.
   schedule: "0 20 * * *",
+  timezone: "UTC",
   maxRuntimeMinutes: 5,
   checkinMarginMinutes: 60,
 };
