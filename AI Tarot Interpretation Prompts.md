@@ -10,7 +10,7 @@ AI **không được khẳng định tương lai là chắc chắn**, không đ�
 
 ### Phần nào đã chạy thật
 
-Prompt đang chạy trên production nằm ở `lib/ai/interpretation.ts` (`SYSTEM_INSTRUCTION` và `buildInterpretationPrompt`), gọi qua `lib/ai/gemini.ts`. Đó là một prompt chung, không phân nhánh theo chủ đề, và trả về schema của mục 6.2 chứ không phải 6.1.
+Prompt đang chạy trên production nằm ở `lib/ai/prompts/` — mỗi bản một file đóng băng, bản đang chạy là `ACTIVE_PROMPT_VERSION` trong `lib/ai/prompts/index.ts` — gọi qua `lib/ai/gemini.ts`. Đó là một prompt chung, không phân nhánh theo chủ đề, và trả về schema của mục 6.2 chứ không phải 6.1.
 
 Chưa triển khai: định tuyến theo chủ đề (mục 4), trường `user_context` (mục 2), bước kiểm duyệt sau sinh nội dung (mục 7) và `content_flags`. Những mục đó là thiết kế cho giai đoạn sau; giữ lại ở đây để khi làm không phải dựng lại từ đầu. Khi sửa giọng văn hoặc độ dài, sửa ở `lib/ai/interpretation.ts` trước rồi cập nhật tài liệu này cho khớp.
 
@@ -373,7 +373,9 @@ Thực tế hiện tại: `AiInterpretation` lưu `model`, `inputTokens`, `outpu
 
 `thinkingTokens` tách riêng khỏi `outputTokens` dù cả hai tính cùng một giá: phần thinking phình nhanh hơn phần chữ mỗi khi prompt siết thêm ràng buộc, và gộp lại thì không còn nhìn ra điều đó.
 
-Chưa lưu `prompt_version` và trạng thái kiểm duyệt. Bảng số dưới đây là đo tay trước khi có các cột trên, giữ lại làm mốc so sánh; từ nay số thật nằm trong database.
+Từ ngày 19/09/2026 mỗi row còn lưu `promptVersion`, trỏ vào registry `lib/ai/prompts/`. Row cũ chỉ được backfill khi có token usage — trước 13/09/2026 không có cột token nào, nên không có bằng chứng nào chỉ ra prompt nào đã sinh ra chúng; số đó để NULL và `/admin/prompts` gom vào một dòng "(chưa ghi)".
+
+Trạng thái kiểm duyệt vẫn chưa lưu. Bảng số dưới đây là đo tay trước khi có các cột trên, giữ lại làm mốc so sánh; từ nay số thật nằm trong database.
 
 ### Thời gian và token, đo ngày 13/09/2026
 
@@ -390,7 +392,7 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 
 ### Chi phí mỗi lượt
 
-`gemini-3-flash-preview`, tier Standard, bảng giá trả phí: **$0,50 / 1M token input** và **$3,00 / 1M token output**. Thinking token tính theo giá output. Model này được Google đánh dấu là *legacy*, nhưng vẫn nằm trong bảng giá và không có lịch tăng giá nào treo phía trước — khác với 3.6/3.7/3.8 Flash, vốn sẽ tăng gấp đôi từ 01/01/2027.
+`gemini-3-flash-preview`, tier Standard, bảng giá trả phí: **$0,50 / 1M token input** và **$3,00 / 1M token output**. Số này nằm trong bảng giá theo model ở `lib/ai/pricing.ts`; thêm model mới thì phải thêm giá của nó vào đó, không thì mọi con số tiền trên `/admin` tính bằng giá mặc định và chỉ là ước lượng. Thinking token tính theo giá output. Model này được Google đánh dấu là *legacy*, nhưng vẫn nằm trong bảng giá và không có lịch tăng giá nào treo phía trước — khác với 3.6/3.7/3.8 Flash, vốn sẽ tăng gấp đôi từ 01/01/2027.
 
 Ở tỷ giá 25.876đ/USD, một lượt mở khóa tốn khoảng **365đ** (trước khi prompt dài ra là 146đ).
 
@@ -405,7 +407,7 @@ COGS đi từ khoảng 4% lên khoảng 11% doanh thu. Giá 10 credit mỗi lư�
 
 Tier **Flex** của cùng model rẻ đúng một nửa ($0,25 / $1,50, tức ~182đ mỗi lượt), đổi lại là độ trễ không cam kết. Với một thao tác người dùng đã phải ngồi chờ 28 giây thì khoản tiết kiệm đó nhiều khả năng không đáng, nhưng nó có tồn tại nếu về sau chi phí thành vấn đề.
 
-Truy vấn chi phí thực tế theo ngày, nay khi số đã nằm trong database:
+Chi phí theo từng bản prompt xem thẳng ở `/admin/prompts`. Truy vấn chi phí thực tế theo ngày:
 
 ```sql
 SELECT date_trunc('day', "createdAt") AS ngay,
