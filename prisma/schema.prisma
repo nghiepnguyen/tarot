@@ -199,6 +199,11 @@ model AiInterpretation {
   reflectiveQuestion    String
   closingNote           String?
   model                 String
+  /// Id bản prompt đã sinh ra row này, trỏ vào registry ở `lib/ai/prompts/`.
+  /// Nullable vì row cũ không có: migration `add_prompt_version` chỉ backfill
+  /// những row có token usage — phần còn lại không có bằng chứng nào chỉ ra
+  /// prompt nào đã sinh ra chúng. Id không còn trong registry vẫn thống kê được.
+  promptVersion         String?
   // Chi phí mỗi lượt sinh. Nullable vì những row viết trước khi có các cột
   // này không có số, và vì Gemini không đảm bảo luôn trả usageMetadata.
   // thinkingTokens tách riêng khỏi outputTokens dù cả hai tính cùng một giá:
@@ -209,4 +214,6 @@ model AiInterpretation {
   thinkingTokens        Int?
   latencyMs             Int?
   createdAt             DateTime @default(now())
+
+  @@index([promptVersion])
 }

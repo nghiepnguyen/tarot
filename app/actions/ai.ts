@@ -9,13 +9,14 @@ import { TAROT_CARDS } from "@/lib/tarot/cards";
 import {
   COST_PER_INTERPRETATION,
   DEMO_TOPUP_AMOUNT,
-  GEMINI_MODEL,
   toDisplayInterpretation,
   type DisplayInterpretation,
   type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
+import { ACTIVE_PROMPT_VERSION } from "@/lib/ai/prompts";
+import { isPricedModel } from "@/lib/ai/pricing";
 import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/gemini";
-import { reportHandledError } from "@/lib/monitoring/report";
+import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
 
 export type UnlockResult =
@@ -73,7 +74,18 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   });
 
   try {
-    const { result, usage } = await generateInterpretation(reading.question, cardInputs);
+    const version = ACTIVE_PROMPT_VERSION;
+    const { result, usage } = await generateInterpretation(reading.question, cardInputs, version);
+
+    // Model chạy mà không có trong bảng giá thì mọi con số tiền trên
+    // `/admin` thành ước lượng, và không có gì khác kêu lên. Kêu ở đây, lúc
+    // phát sinh, chứ không đợi ai đó mở dashboard và tin nhầm.
+    if (!isPricedModel(version.model)) {
+      reportHandledIssue("Model AI chưa có trong bảng giá", {
+        area: "ai-unlock",
+        extra: { model: version.model, promptVersion: version.id },
+      });
+    }
 
     await prisma.aiInterpretation.create({
       data: {
@@ -89,7 +101,8 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
         actionSuggestionsList: result.actionSuggestions as unknown as Prisma.InputJsonValue,
         reflectiveQuestion: result.reflectiveQuestion,
         closingNote: result.closingNote,
-        model: GEMINI_MODEL,
+        model: version.model,
+        promptVersion: version.id,
         inputTokens: usage.inputTokens,
         outputTokens: usage.outputTokens,
         thinkingTokens: usage.thinkingTokens,
@@ -104,7 +117,11 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     // báo về Sentry ở đây thì Gemini hỏng bao lâu cũng không ai biết.
     reportHandledError(error, {
       area: "ai-unlock",
-      extra: { readingId: reading.id, model: GEMINI_MODEL },
+      extra: {
+        readingId: reading.id,
+        model: ACTIVE_PROMPT_VERSION.model,
+        promptVersion: ACTIVE_PROMPT_VERSION.id,
+      },
       userId: session.user.id,
     });
 

@@ -4,36 +4,14 @@ import {
   FREE_TRIAL_CREDITS,
   FREE_TRIAL_UNLOCKS,
   InterpretationResultSchema,
-  buildInterpretationPrompt,
   toDisplayInterpretation,
-  type InterpretationCardInput,
 } from "./interpretation";
-import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { AiInterpretation } from "@prisma/client";
 
 describe("FREE_TRIAL_CREDITS", () => {
   it("grants exactly enough credit for FREE_TRIAL_UNLOCKS unlocks, no partial unlock left over", () => {
     expect(FREE_TRIAL_CREDITS).toBe(FREE_TRIAL_UNLOCKS * COST_PER_INTERPRETATION);
     expect(FREE_TRIAL_CREDITS % COST_PER_INTERPRETATION).toBe(0);
-  });
-});
-
-const sampleCards: InterpretationCardInput[] = [
-  { position: "Bối cảnh", card: TAROT_CARDS[0], orientation: "upright" },
-  { position: "Hiện tại", card: TAROT_CARDS[1], orientation: "reversed" },
-  { position: "Hướng đi", card: TAROT_CARDS[2], orientation: "upright" },
-];
-
-describe("buildInterpretationPrompt", () => {
-  it("includes the question and every card's position, name, and orientation", () => {
-    const prompt = buildInterpretationPrompt("Tôi nên làm gì?", sampleCards);
-
-    expect(prompt).toContain("Tôi nên làm gì?");
-    for (const { position, card, orientation } of sampleCards) {
-      expect(prompt).toContain(position);
-      expect(prompt).toContain(card.name);
-      expect(prompt).toContain(orientation === "reversed" ? "ngược" : "xuôi");
-    }
   });
 });
 

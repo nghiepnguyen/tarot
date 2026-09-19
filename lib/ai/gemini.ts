@@ -1,14 +1,10 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
-import {
-  GEMINI_MODEL,
-  INTERPRETATION_RESPONSE_SCHEMA,
-  InterpretationResultSchema,
-  SYSTEM_INSTRUCTION,
-  buildInterpretationPrompt,
-  type GeneratedInterpretation,
-  type InterpretationCardInput,
+import type {
+  GeneratedInterpretation,
+  InterpretationCardInput,
 } from "@/lib/ai/interpretation";
+import type { PromptVersion } from "@/lib/ai/prompts";
 
 export class MissingApiKeyError extends Error {
   constructor() {
@@ -26,20 +22,29 @@ function getClient(): GoogleGenAI {
   return client;
 }
 
+/**
+ * Sinh một bản luận giải bằng đúng `version` được truyền vào.
+ *
+ * Nhận version thay vì đọc hằng số toàn cục: model, system instruction, schema
+ * và cách dựng prompt phải đi cùng nhau thành một bộ, và bên gọi phải ghi
+ * `version.id` xuống database cùng kết quả — không thì về sau không tách được
+ * số đo của bản prompt này khỏi bản khác.
+ */
 export async function generateInterpretation(
   question: string,
   cards: InterpretationCardInput[],
+  version: PromptVersion,
 ): Promise<GeneratedInterpretation> {
   const ai = getClient();
 
   const startedAt = Date.now();
   const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
-    contents: buildInterpretationPrompt(question, cards),
+    model: version.model,
+    contents: version.buildPrompt(question, cards),
     config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: version.systemInstruction,
       responseMimeType: "application/json",
-      responseSchema: INTERPRETATION_RESPONSE_SCHEMA,
+      responseSchema: version.responseSchema,
     },
   });
   const latencyMs = Date.now() - startedAt;
@@ -50,7 +55,7 @@ export async function generateInterpretation(
   const usage = response.usageMetadata;
 
   return {
-    result: InterpretationResultSchema.parse(JSON.parse(text)),
+    result: version.resultSchema.parse(JSON.parse(text)),
     usage: {
       inputTokens: usage?.promptTokenCount,
       outputTokens: usage?.candidatesTokenCount,
