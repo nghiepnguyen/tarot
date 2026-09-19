@@ -14,7 +14,8 @@ SDK: `@sentry/nextjs`. Bắt lỗi ở cả ba runtime — trình duyệt, Node 
 | `app/error.tsx` | Lỗi trong một route segment. Chỉ báo Sentry khi lỗi **không** có `digest` — loại có digest đã đi qua `onRequestError`, bắt lại là nhân đôi event. |
 | `components/monitoring/SentryUser.tsx` | Gắn id người dùng vào scope phía trình duyệt, render từ `Header` (chỗ đã sẵn có `auth()`). Chỉ id, không email. |
 | `lib/monitoring/report.ts` | `reportHandledError()` / `reportHandledIssue()` cho những lỗi app tự xử lý xong — Sentry không tự thấy chúng. |
-| `next.config.ts` | `withSentryConfig` chèn instrumentation lúc build, upload source map, dựng route tunnel, bật cron monitor. |
+| `lib/monitoring/cron.ts` | `withCronCheckIn()` bọc một cron job bằng check-in `in_progress` / `ok` / `error`. Gọi thẳng `captureCheckIn`, không dùng bản tự động của SDK. |
+| `next.config.ts` | `withSentryConfig` chèn instrumentation lúc build, upload source map, dựng route tunnel. |
 
 ## Thiếu DSN thì không hỏng gì
 
@@ -92,7 +93,36 @@ Tag `handled: true` để lọc riêng khỏi lỗi làm sập request. Extra ch
 
 ## Cron monitor
 
-`_experimental.vercelCronsMonitoring: true` tạo check-in cho job khai trong `vercel.json`, chỉ chạy khi có biến `VERCEL` nên local không bị ảnh hưởng. Không dùng `webpack.automaticVercelMonitors`: nó bọc lúc build bằng loader webpack, mà Next 16 build bằng Turbopack, và nó cũng không hỗ trợ route handler của App Router — đúng loại route mà `/api/cron/reconcile-orders` đang dùng.
+`lib/monitoring/cron.ts` gọi thẳng `Sentry.captureCheckIn`: `in_progress` trước khi chạy, `ok` hoặc `error` sau khi xong, rồi ném lại lỗi cho người gọi. Monitor tên **`reconcile-orders`**, khai trong chính route handler và phải khớp lịch trong `vercel.json`.
+
+Chỉ chạy khi có biến `VERCEL`, nên `pnpm dev` và test không ghi vào monitor thật. Check-in nằm **sau** cửa kiểm `CRON_SECRET`: request không có quyền không được phép ghi vào monitor.
+
+`checkinMargin` để 60 phút vì cron trên gói Hobby của Vercel không chạy đúng phút đã khai, nó được kích trong khoảng một giờ quanh mốc. Biên hẹp hơn thì Sentry báo "missed" gần như mỗi ngày và cảnh báo thành tiếng ồn.
+
+### Vì sao không dùng bản tự động của SDK
+
+`_experimental.vercelCronsMonitoring` đã thử và đã bỏ. Đọc `node_modules/@sentry/nextjs/build/cjs/server/vercelCronsMonitoring.js` thì nó có bốn điều kiện ngầm, trượt cái nào cũng im lặng không báo gì:
+
+1. `globalThis._sentryVercelCronsConfig` phải được inject lúc build.
+2. Header `user-agent` phải chứa `vercel-cron` — nên curl tay không bao giờ sinh check-in.
+3. Đường dẫn request phải khớp `path` trong `vercel.json`, và monitor slug chính là đường dẫn đó.
+4. Check-in bám vào root span: `spanStart` mở, `spanEnd` đóng.
+
+Điều kiện 4 mới là thứ giết nó ở đây. `tracesSampleRate` ở production là 0.1 (`lib/monitoring/sentry.ts`), span không được lấy mẫu thì không có gì bắt đầu — với một job chạy mỗi ngày một lần, khoảng mười ngày mới có một check-in, và Sentry sẽ báo "missed" gần như mỗi ngày.
+
+Cũng không dùng `webpack.automaticVercelMonitors`: nó bọc lúc build bằng loader webpack, mà Next 16 build bằng Turbopack, và nó không hỗ trợ route handler của App Router.
+
+### Kiểm sau khi deploy
+
+Cron chạy `0 20 * * *` UTC, tức 3 giờ sáng giờ Việt Nam. Không cần chờ tới đó:
+
+```bash
+curl -i -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/reconcile-orders
+```
+
+Rồi mở Sentry → Crons, tìm monitor `reconcile-orders`. Route này idempotent nên chạy tay an toàn: nó chỉ hỏi lại PayOS trạng thái những đơn `PENDING` quá hạn.
+
+Monitor mới không tự gắn alert rule — vào Alerts bật thông báo cho nó, nếu không thì vẫn là "không ai biết", chỉ khác chỗ chứa.
 
 ## Đừng chạy lại wizard
 

@@ -25,14 +25,15 @@ export default withSentryConfig(nextConfig, {
   // bị chặn trong app/robots.ts.
   tunnelRoute: "/monitoring",
 
-  _experimental: {
-    // Tạo cron monitor cho job khai trong vercel.json. Bản `webpack.
-    // automaticVercelMonitors` không dùng được: nó bọc lúc build bằng loader
-    // của webpack, mà Next 16 build bằng Turbopack, và nó cũng không hỗ trợ
-    // route handler của App Router — đúng loại route mà cron đang dùng. Bản
-    // này chạy lúc runtime dựa trên span nên không vướng cả hai.
-    vercelCronsMonitoring: true,
-  },
+  // Không bật `_experimental.vercelCronsMonitoring`. Nó có bốn điều kiện ngầm
+  // và trượt cái nào cũng im lặng — nặng nhất là check-in bám vào root span,
+  // mà `tracesSampleRate` ở production là 0.1, nên một job chạy mỗi ngày phần
+  // lớn lượt chạy không sinh check-in nào. Cron monitor giờ gọi thẳng
+  // `captureCheckIn` trong `lib/monitoring/cron.ts`.
+  //
+  // Cũng không dùng `webpack.automaticVercelMonitors`: nó bọc lúc build bằng
+  // loader của webpack, mà Next 16 build bằng Turbopack, và nó không hỗ trợ
+  // route handler của App Router.
 
   silent: !process.env.CI,
   telemetry: false,

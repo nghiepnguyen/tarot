@@ -98,7 +98,7 @@ Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ 
 ### 1. Không ai biết khi có chuyện
 
 - **Kênh nhận thông báo từ Sentry.** Lỗi đã vào được Sentry, nhưng chưa ai xác nhận issue mới thì thông báo đi đâu. Alert rule mặc định gửi email cho thành viên project; nếu hộp thư đó không ai mở thì tình trạng vẫn là "không ai biết", chỉ khác chỗ chứa.
-- **Cron monitor chưa kiểm chứng.** `_experimental.vercelCronsMonitoring` đã bật nhưng chưa đối chiếu check-in của `/api/cron/reconcile-orders` trong Sentry với lần chạy thật lúc 3 giờ sáng. Đây là option experimental nên khả năng không chạy là có thật.
+- **Cron monitor.** Đã bỏ `_experimental.vercelCronsMonitoring` và gọi thẳng `captureCheckIn` trong `lib/monitoring/cron.ts` — option experimental bám check-in vào root span, mà production chỉ lấy mẫu 10% trace, nên một job chạy mỗi ngày phần lớn lượt chạy không sinh check-in nào. Còn lại hai việc bằng tay: kiểm monitor `reconcile-orders` có nhận check-in sau lần deploy này chưa (cách kiểm ở `MONITORING.md`), và gắn alert rule cho nó — monitor mới không tự có.
 - **Theo dõi cảnh báo thanh toán.** Email cảnh báo gửi về hộp thư hỗ trợ. Chưa có gì đảm bảo hộp thư đó được đọc trong ngày.
 
 ### 2. Vận hành đang phải làm tay
