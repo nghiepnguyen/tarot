@@ -1,4 +1,14 @@
 import type { PrismaClient } from "@prisma/client";
+import { writeAuditLog, type AuditWriter } from "@/lib/admin/audit";
+
+/**
+ * Người bấm nút, khi lệnh hoàn tới từ trang quản trị. Optional: script vận
+ * hành `pnpm refund-order` gọi không kèm actor và đi tiếp như cũ.
+ */
+export interface RefundActor {
+  adminUserId: string;
+  reason: string;
+}
 
 export type RefundOutcome =
   | { ok: true; creditsReversed: number; balanceAfter: number }
@@ -16,7 +26,11 @@ export type RefundOutcome =
  * âm vào sổ vẫn đúng hơn là im lặng bỏ qua, và chặn họ mở khóa tiếp cho tới
  * khi nạp bù.
  */
-export async function refundOrder(db: PrismaClient, orderId: string): Promise<RefundOutcome> {
+export async function refundOrder(
+  db: PrismaClient,
+  orderId: string,
+  actor?: RefundActor,
+): Promise<RefundOutcome> {
   const order = await db.order.findUnique({ where: { id: orderId } });
   if (!order) return { ok: false, error: `Không tìm thấy đơn ${orderId}.` };
   if (order.status === "REFUNDED") return { ok: false, error: `Đơn ${orderId} đã được hoàn.` };
@@ -49,6 +63,19 @@ export async function refundOrder(db: PrismaClient, orderId: string): Promise<Re
         relatedOrderId: order.id,
       },
     });
+
+    // Trong cùng transaction: dòng nhật ký không được phép commit rời khỏi
+    // thứ nó mô tả.
+    if (actor) {
+      await writeAuditLog(tx as unknown as AuditWriter, {
+        adminUserId: actor.adminUserId,
+        action: "order_refund",
+        targetUserId: order.userId,
+        targetOrderId: order.id,
+        amount: -order.creditsGranted,
+        reason: actor.reason,
+      });
+    }
 
     return { ok: true as const, creditsReversed: order.creditsGranted, balanceAfter: user.credits };
   });

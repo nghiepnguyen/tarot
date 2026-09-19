@@ -22,6 +22,15 @@ export interface FakeCreditTransaction {
   relatedReadingId?: string | null;
 }
 
+export interface FakeAuditLog {
+  adminUserId: string;
+  action: string;
+  targetUserId?: string | null;
+  targetOrderId?: string | null;
+  amount?: number | null;
+  reason: string;
+}
+
 type NumericUpdate = number | { increment?: number; decrement?: number };
 
 function applyNumeric(current: number, update: NumericUpdate): number {
@@ -66,6 +75,7 @@ export function createFakePrisma(orders: Order[] = [], users: FakeUser[] = []) {
   const orderRows = new Map(orders.map((order) => [order.id, { ...order }]));
   const userRows = new Map(users.map((user) => [user.id, { ...user }]));
   const creditTransactions: FakeCreditTransaction[] = [];
+  const auditLogs: FakeAuditLog[] = [];
 
   const matches = (order: Order, where: Record<string, unknown>): boolean =>
     Object.entries(where).every(([key, value]) => {
@@ -122,6 +132,10 @@ export function createFakePrisma(orders: Order[] = [], users: FakeUser[] = []) {
       },
     },
     user: {
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        const user = userRows.get(where.id);
+        return user ? { ...user } : null;
+      },
       update: async ({
         where,
         data,
@@ -145,6 +159,12 @@ export function createFakePrisma(orders: Order[] = [], users: FakeUser[] = []) {
         return data;
       },
     },
+    adminAuditLog: {
+      create: async ({ data }: { data: FakeAuditLog }) => {
+        auditLogs.push(data);
+        return data;
+      },
+    },
     // `tx` để unknown: bản fake dùng chính nó làm transaction client, và
     // khai báo `typeof db` ở đây sẽ tạo vòng lặp kiểu.
     $transaction: async <T,>(fn: (tx: never) => Promise<T>): Promise<T> =>
@@ -156,6 +176,7 @@ export function createFakePrisma(orders: Order[] = [], users: FakeUser[] = []) {
     orderRows,
     userRows,
     creditTransactions,
+    auditLogs,
     order: (id: string) => orderRows.get(id),
     user: (id: string) => userRows.get(id),
   };

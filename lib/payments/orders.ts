@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getPaymentLink } from "./payos";
 import { alertAmountMismatch } from "./alerts";
 import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
-import { refundOrder as refundOrderWith } from "./refund";
+import { refundOrder as refundOrderWith, type RefundActor } from "./refund";
 
 export type { RefundOutcome } from "./refund";
 
@@ -248,6 +248,6 @@ export async function reconcileUserPendingOrders(
 }
 
 /** Xem `lib/payments/refund.ts`. Bọc lại với client dùng chung của app. */
-export function refundOrder(orderId: string) {
-  return refundOrderWith(prisma, orderId);
+export function refundOrder(orderId: string, actor?: RefundActor) {
+  return refundOrderWith(prisma, orderId, actor);
 }

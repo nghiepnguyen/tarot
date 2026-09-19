@@ -74,6 +74,31 @@ describe("refundOrder", () => {
     expect(fake.creditTransactions).toHaveLength(0);
   });
 
+  it("signs the audit log when an admin is behind the refund", async () => {
+    const { fake, db } = setup();
+
+    await refundOrder(db, "order_1", { adminUserId: "admin_1", reason: "Khách báo trùng đơn" });
+
+    expect(fake.auditLogs).toEqual([
+      {
+        adminUserId: "admin_1",
+        action: "order_refund",
+        targetUserId: "user_1",
+        targetOrderId: "order_1",
+        amount: -50,
+        reason: "Khách báo trùng đơn",
+      },
+    ]);
+  });
+
+  it("writes no audit row for the CLI path", async () => {
+    const { fake, db } = setup();
+
+    await refundOrder(db, "order_1");
+
+    expect(fake.auditLogs).toHaveLength(0);
+  });
+
   it("reports a missing order", async () => {
     const { db } = setup();
     await expect(refundOrder(db, "order_nope")).resolves.toEqual({
