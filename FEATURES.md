@@ -60,7 +60,7 @@
 - Nạp credit có trang riêng `/credits`: vào từ badge số credit trên header, menu người dùng, nút ở hồ sơ, và CTA khi hết credit ở panel mở khóa AI.
 - Đơn hàng được đối soát lại với PayOS ở bốn đường (webhook, trang trả về, lúc người dùng mở lại trang nạp, và cron mỗi ngày) nên webhook trượt không làm mất credit của người đã trả tiền; chi tiết ở `SETUP.md`. Cron chạy mỗi ngày vì gói Vercel Hobby từ chối deploy nếu lịch dày hơn.
 - Số tiền PayOS báo phải khớp giá gói đã chốt lúc tạo đơn. Lệch thì không cộng credit và gửi email cảnh báo qua Resend, vì không đường tự động nào gỡ được tình huống đó.
-- Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng `pnpm refund-order <orderId>`. Chưa có trang quản trị.
+- Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng nút trong `/admin/orders` hoặc `pnpm refund-order <orderId>`. Hai đường chạy chung một đoạn logic; đường qua web ký tên người bấm vào nhật ký quản trị.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
 - Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh. Prompt yêu cầu giọng huyền bí và đặt mốc số từ cho từng phần, nên bản đọc dài gấp khoảng hai lần so với trước 13/09/2026.
 - Một lượt sinh mất khoảng 28 giây, nên `/` và `/history` đều khai báo `maxDuration = 60`; thiếu nó thì server action bị cắt giữa chừng. Chi phí khoảng 365đ mỗi lượt, biên vẫn trên 87% ở mọi gói — số đo và cách tính ở mục 9 của `AI Tarot Interpretation Prompts.md`.
@@ -80,10 +80,12 @@
 
 ## Phase 5 — Quản trị và tăng trưởng
 
-- CRUD bộ bài, hình ảnh, từ khóa và diễn giải cơ bản.
-- Quản lý người dùng, credit, giao dịch và booking.
-- Quản lý prompt template và phiên bản model AI.
-- Dashboard conversion: nhập câu hỏi, bốc bài, unlock AI, đặt lịch. Số liệu thô đã có trên Google Analytics 4; dashboard trong trang quản trị thì chưa.
+- Phân quyền: `User.role` (`USER`/`ADMIN`), cấp bằng `pnpm grant-admin <email>` — không có đường nào trong giao diện nâng quyền. Quyền kiểm ở server qua `lib/auth/admin.ts`, đọc thẳng database chứ không tin token; không có quyền thì `/admin` trả 404 chứ không redirect. Bản cache trong JWT trễ tối đa 5 phút, chỉ dùng cho việc hiển thị link.
+- Trang quản trị `/admin`: tổng quan, người dùng, đơn hàng, sổ credit, nhật ký, bộ bài. Cố tình không có `proxy.ts`: proxy chỉ đọc được JWT, mà JWT là bản cache, nên nó không thêm gì về an toàn và chỉ thêm một mặt phẳng dễ sai.
+- Quản lý người dùng, credit và giao dịch: tra theo email, xem sổ và đơn của từng người, chỉnh credit tay (`ADMIN_ADJUST`), hoàn credit và đối soát lại đơn ngay trên trang. Mỗi thao tác bắt buộc ghi lý do và để lại một dòng `AdminAuditLog` trong cùng transaction với thứ nó mô tả. Quản lý booking chưa có vì Phase 4 chưa bắt đầu.
+- CRUD bộ bài: chưa làm và chưa định làm. 78 lá nằm static trong `lib/tarot/cards.ts`, sửa nội dung vẫn đi qua code review và deploy; `/admin/deck` chỉ để tra cứu.
+- Quản lý prompt template và phiên bản model AI: chưa làm.
+- Dashboard conversion: `/admin` có doanh thu ròng, tỷ lệ chốt đơn, chi phí AI, phễu theo người (tài khoản → xác nhận email → bốc bài → mở khóa → trả tiền) và sổ credit theo loại, lọc 7/30/90 ngày. Mọi con số tiền lấy từ Postgres chứ không từ GA4, vì event `purchase` đếm thiếu đơn cứu ở đường đối soát. Phễu bắt đầu từ reading đã lưu: người chưa đăng nhập không vào database, đỉnh phễu ẩn danh chỉ xem được trên GA4. Bước đặt lịch chưa có vì Phase 4 chưa bắt đầu.
 - A/B testing CTA, giá và nội dung paywall.
 - SEO landing pages theo chủ đề câu hỏi.
 - Error tracking: Sentry đã gắn cho cả ba runtime (browser, Node, Edge), kèm `error.tsx`/`global-error.tsx` và báo cáo cho những lỗi app tự xử lý xong — xem `MONITORING.md`. Event không mang cookie, body request, prompt AI hay biến cục bộ; người dùng chỉ đi kèm dưới dạng id.
@@ -101,13 +103,19 @@ Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ 
 
 ### 2. Vận hành đang phải làm tay
 
-- **Trang quản trị.** Hoàn tiền chạy bằng CLI (`pnpm refund-order`), không có chỗ xem đơn, tra giao dịch hay chỉnh credit. `User` cũng chưa có cột phân quyền, nên bước đầu là thêm role rồi mới dựng trang.
 - **Biên nhận cho khách.** Mua xong không nhận được email nào. Resend đã tích hợp sẵn, phần thiếu là template và quyết định về hóa đơn.
 
 ### 3. Vùng chưa được test
 
 - **E2E chưa chạm PayOS.** Test dừng ở nút thanh toán; toàn bộ phần sau — redirect, webhook, cộng credit — chỉ có unit test với PayOS giả. Cần môi trường sandbox của PayOS mới đi tiếp được.
 - **Component chưa có test.** Vitest chỉ quét `lib/`. Panel chọn gói, banner đồng ý và các tracker chỉ được phủ gián tiếp qua e2e.
+- **Ranh giới phân quyền chỉ có e2e.** `lib/auth/admin.ts`, `app/actions/admin.ts` và mọi trang `/admin` nằm ngoài tầm Vitest vì cần runtime của Next. `e2e/admin.spec.ts` là lớp phủ tự động duy nhất cho chúng, nên nó không phải test tùy chọn.
+
+### Nợ chưa trả trong khu quản trị
+
+- **Chỉ có một cấp quyền.** `ADMIN` làm được mọi thứ: xem sổ, chỉnh credit, hoàn đơn. Chưa tách quyền chỉ-đọc cho người trực hỗ trợ.
+- **Dashboard quét tuần tự.** `Reading`, `AiInterpretation` và `CreditTransaction` không có index `createdAt` đứng riêng (`[userId, createdAt]` không phục vụ được range scan toàn cục). Vô hại ở quy mô hiện tại, nhưng đó là thứ đầu tiên phải thêm nếu `/admin` chậm.
+- **Danh sách cắt cứng.** Đơn hàng, giao dịch và nhật ký chỉ hiện 50–100 dòng mới nhất, chưa phân trang như trang người dùng.
 
 ### 4. Nợ đã biết
 

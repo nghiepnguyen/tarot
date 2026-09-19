@@ -41,7 +41,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 
 ## Phạm vi phiên bản đầu
 
-MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, và khu vực khóa nội dung AI. Tài khoản, lịch sử, free trial và nạp credit thật qua PayOS đã có và đang chạy trên production. Đặt lịch tư vấn và trang quản trị chưa làm — việc còn lại xếp theo ưu tiên ở mục "Việc tiếp theo" trong [FEATURES.md](FEATURES.md).
+MVP tập trung vào trang home, nhập câu hỏi, chọn và bốc ba lá, hiển thị diễn giải cơ bản, và khu vực khóa nội dung AI. Tài khoản, lịch sử, free trial và nạp credit thật qua PayOS đã có và đang chạy trên production. Trang quản trị `/admin` đã có: tra người dùng, chỉnh credit, hoàn đơn, sổ giao dịch, nhật ký và dashboard conversion đọc từ database — cấp quyền bằng `pnpm grant-admin`, chi tiết ở [SETUP.md](SETUP.md). Đặt lịch tư vấn chưa làm — việc còn lại xếp theo ưu tiên ở mục "Việc tiếp theo" trong [FEATURES.md](FEATURES.md).
 
 ## Phát triển
 

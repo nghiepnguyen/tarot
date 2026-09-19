@@ -171,21 +171,24 @@ app/
   page.tsx              # trang bốc bài
   error.tsx             # lỗi trong một route segment
   global-error.tsx      # lỗi văng ra khỏi chính root layout
-  actions/              # server action: ai, auth, payments, readings
+  actions/              # server action: admin, ai, auth, payments, readings
   api/auth, api/webhooks, api/cron
+  admin/                # khu quản trị, mọi trang tự gọi requireAdmin()
   credits/              # chọn gói và nạp credit
   history/, login/, signup/, profile/
   terms/, privacy/, refund/
 components/
+  admin/                # form chỉnh credit, nút hoàn đơn, khối Panel/Stat
   analytics/            # script GA4, tracker page_view / purchase / auth
   monitoring/           # gắn id người dùng vào scope Sentry phía client
   tarot/                # ArcDeck, QuestionForm, ReadingView, FlipCard, ...
   ui/                   # Button, Input, Header, Footer, Toast, Section
 lib/
+  admin/                # chỉnh credit, nhật ký quản trị, số liệu dashboard
   ai/                   # prompt, gọi Gemini, validate bằng Zod
   email/                # Resend, chỉ dùng cho cảnh báo vận hành
   analytics/            # measurement ID và trackEvent()
-  auth/                 # rate limit
+  auth/                 # rate limit, guard quyền quản trị
   db/                   # Prisma client
   monitoring/           # cấu hình Sentry dùng chung + báo lỗi đã xử lý
   payments/             # PayOS: client, vòng đời đơn hàng, hoàn tiền
@@ -338,6 +341,43 @@ pnpm refund-order <orderId>             # đổi sang REFUNDED, trừ lại cred
 ```
 
 Script cho phép số dư credit xuống âm nếu khách đã tiêu trước khi yêu cầu hoàn — ghi âm vào sổ đúng hơn là bỏ qua, và chặn họ mở khóa tiếp cho tới khi nạp bù.
+
+Cùng việc đó làm được từ `/admin/orders`: mở "Hoàn credit" trên dòng đơn, ghi lý do, xác nhận. Hai đường gọi chung `lib/payments/refund.ts`, khác ở chỗ đường qua web ghi thêm một dòng `AdminAuditLog` ký tên người bấm. **Cả hai đều chỉ đụng tới credit — tiền vẫn phải hoàn tay trên dashboard PayOS.**
+
+## Trang quản trị
+
+### Cấp quyền
+
+```bash
+pnpm grant-admin <email> --dry-run   # xem tài khoản trước
+pnpm grant-admin <email>             # USER -> ADMIN
+pnpm grant-admin <email> --revoke    # ADMIN -> USER
+```
+
+Nhớ truyền `DATABASE_URL` như mọi lệnh chạm database (`set -a && . ./.env.local && set +a`). Không có đường nào trong giao diện nâng quyền, cho mình hay cho người khác.
+
+Trên production, nếu không có checkout nào trong tay:
+
+```sql
+UPDATE "User" SET "role" = 'ADMIN' WHERE "email" = '...';
+```
+
+### Độ trễ khi đổi quyền
+
+Session là JWT, mang theo một bản cache của `role`. Nó được làm mới trong cùng lần đối chiếu `passwordChangedAt` mỗi 5 phút (`auth.ts`), nên:
+
+- **Cấp quyền**: người vừa được cấp có thể vẫn thấy 404 ở `/admin` trong vòng 5 phút. Đăng xuất rồi đăng nhập lại thì có hiệu lực ngay. Đây là hành vi đúng, không phải lỗi.
+- **Thu quyền**: mục "Quản trị" trên menu còn hiện tối đa 5 phút, nhưng **mọi thao tác bị chặn ngay lập tức** — `lib/auth/admin.ts` đọc `role` thẳng từ database ở mỗi request, không tin token.
+
+### Những gì làm được
+
+`/admin` (tổng quan, lọc 7/30/90 ngày), `/admin/users` (tra theo email, chi tiết từng người, chỉnh credit), `/admin/orders` (lọc theo trạng thái, hoàn credit, đối soát lại), `/admin/transactions`, `/admin/audit`, `/admin/deck` (chỉ đọc).
+
+Chỉnh credit và hoàn đơn đều bắt buộc ghi lý do, và ghi một dòng `AdminAuditLog` trong cùng transaction với thay đổi. `AdminAuditLog` cố tình không có khoá ngoại: xoá tài khoản cascade sang đơn và giao dịch, mà dòng nhật ký thì phải sống lâu hơn đối tượng của nó.
+
+Số tiền trên dashboard lấy từ bảng `Order`, không lấy từ GA4: event `purchase` đếm thiếu những đơn được cứu ở đường đối soát thứ ba. Phễu bắt đầu từ reading đã lưu — người chưa đăng nhập không vào database.
+
+Nếu `/admin` chậm: `Reading`, `AiInterpretation` và `CreditTransaction` chưa có index `createdAt` đứng riêng (`[userId, createdAt]` không phục vụ được range scan toàn cục). Đó là chỗ phải thêm trước tiên.
 
 ## Chạy e2e
 
