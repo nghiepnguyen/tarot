@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         "/history",
         "/login",
         "/signup",
+        "/admin",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

@@ -8,7 +8,7 @@ import { trackEvent } from "@/lib/analytics/gtag";
 import { menuItemClass } from "@/components/ui/navLink";
 import { useDismissable } from "@/components/ui/useDismissable";
 
-export function UserMenu({ label }: { label: string }) {
+export function UserMenu({ label, isAdmin = false }: { label: string; isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +73,20 @@ export function UserMenu({ label }: { label: string }) {
             >
               Hồ sơ
             </Link>
+            {/* Chỉ là đường đi cho nhanh. Quyền thật kiểm ở server: link này
+                trễ nhất năm phút sau khi quyền đổi, còn `/admin` thì không. */}
+            {isAdmin ? (
+              <Link
+                href="/admin"
+                className={itemClass}
+                onClick={() => {
+                  trackEvent("nav_click", { destination: "/admin", source: "user_menu" });
+                  close();
+                }}
+              >
+                Quản trị
+              </Link>
+            ) : null}
             <form action={logoutAction} onSubmit={() => trackEvent("logout")}>
               <button type="submit" className={`w-full text-left ${itemClass}`}>
                 Đăng xuất

@@ -20,7 +20,7 @@ export async function Header() {
   const user = session?.user
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true, email: true, credits: true },
+        select: { name: true, email: true, credits: true, role: true },
       })
     : null;
 
@@ -59,7 +59,10 @@ export async function Header() {
           {user ? (
             <>
               <CreditBadge credits={user.credits} />
-              <UserMenu label={user.name || user.email.split("@")[0]} />
+              <UserMenu
+                label={user.name || user.email.split("@")[0]}
+                isAdmin={user.role === "ADMIN"}
+              />
             </>
           ) : (
             <nav aria-label="Tài khoản" className="flex items-center gap-6">

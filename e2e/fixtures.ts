@@ -83,6 +83,66 @@ export async function passwordResetLinkFor(email: string): Promise<string> {
   }
 }
 
+/**
+ * Cấp quyền quản trị, đi thẳng vào database — đúng như `pnpm grant-admin` làm.
+ * Không có đường nào trong giao diện nâng quyền, nên đây cũng là đường duy
+ * nhất test có.
+ */
+export async function grantAdmin(email: string): Promise<void> {
+  const prisma = new PrismaClient();
+  try {
+    await prisma.user.update({ where: { email }, data: { role: "ADMIN" } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Nạp một đơn đã PAID thẳng vào database: e2e không bao giờ chạm PayOS. */
+export async function seedPaidOrder(
+  email: string,
+  input: { amountVnd: number; creditsGranted: number },
+): Promise<string> {
+  const prisma = new PrismaClient();
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error(`e2e: chưa có tài khoản ${email} để tạo đơn.`);
+
+    const pkg = await prisma.creditPackage.findFirst({ orderBy: { sortOrder: "asc" } });
+    if (!pkg) throw new Error("e2e: database chưa có gói credit nào, chạy seed trước.");
+
+    const order = await prisma.order.create({
+      data: {
+        userId: user.id,
+        packageId: pkg.id,
+        provider: "payos",
+        providerOrderId: `e2e-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        amountVnd: input.amountVnd,
+        creditsGranted: input.creditsGranted,
+        status: "PAID",
+        paidAt: new Date(),
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { credits: { increment: input.creditsGranted } },
+    });
+    await prisma.creditTransaction.create({
+      data: {
+        userId: user.id,
+        type: "PURCHASE",
+        amount: input.creditsGranted,
+        balanceAfter: user.credits + input.creditsGranted,
+        relatedOrderId: order.id,
+      },
+    });
+
+    return order.id;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 export interface SignUpInput {
   name: string;
   email: string;
