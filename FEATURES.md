@@ -126,7 +126,7 @@ Xếp theo mức độ thiệt hại nếu không làm, không theo mức độ 
 - **Migration và deploy là hai việc rời nhau.** Luôn có cửa sổ production chạy code mới trên schema cũ. Cách khép hẳn đã ghi ở cuối mục "Cơ sở dữ liệu" trong `SETUP.md`.
 - **`purchase` đếm thiếu.** Đơn cứu được ở đường đối soát thứ ba không bắn event. Sổ `CreditTransaction` mới là con số doanh thu đúng.
 - **Free trial không có trần.** Mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ tiền API và không thu lại gì. Xác nhận email nâng giá của một lần lạm dụng lên một hộp thư thật, nhưng hộp thư thì miễn phí và vô hạn — không có gì chặn một người đăng ký email mới để lấy tiếp.
-- **Model mặc định vẫn là bản legacy, và chưa ai đo bản thay thế.** Chưa đổi lựa chọn thì mọi lượt chạy `gemini-3-flash-preview`, được Google đánh dấu legacy. `claude-haiku-4-5-20251001` nay chọn được từ `/admin/prompts` và rẻ hơn trên phần thinking, nhưng chưa có lượt sinh thật nào để so chất lượng, tốc độ và chi phí — bảng số đo theo cặp (prompt, model) ở trang đó là chỗ đọc kết quả sau khi đổi.
+- **Model mặc định vẫn là bản legacy, và chưa ai đo bản thay thế.** Chưa đổi lựa chọn thì mọi lượt chạy `gemini-3-flash-preview`, được Google đánh dấu legacy. `claude-haiku-4-5-20251001` nay chọn được từ `/admin/prompts`, nhưng một lượt đo tay cho thấy nó **đắt hơn chừng 43%** (~523đ so với 365đ: tokenizer đếm tiếng Việt tốn hơn, và bỏ thinking không làm phần chữ ngắn lại), và chưa có lượt sinh thật nào để so chất lượng lẫn tốc độ — bảng số đo theo cặp (prompt, model) ở trang đó là chỗ đọc kết quả sau khi đổi.
 
 ## Lưu trữ — không nằm trong kế hoạch
 

@@ -396,7 +396,11 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 
 Ở tỷ giá 25.876đ/USD, một lượt mở khóa tốn khoảng **365đ** (trước khi prompt dài ra là 146đ).
 
-`claude-haiku-4-5-20251001` là lựa chọn thứ hai, chọn được từ `/admin/prompts` mà không cần deploy: **$1,00 / 1M input** và **$5,00 / 1M output**. Đắt hơn trên mỗi token, nhưng lượt sinh chạy không bật thinking, nên phần đắt nhất của bảng đo trên — 2.286 thinking token — không phát sinh. Chưa có lượt sinh thật nào để thay số đo đo tay ở đây bằng số thật; bảng theo cặp (prompt, model) trên `/admin/prompts` là chỗ đọc kết quả sau khi đổi.
+`claude-haiku-4-5-20251001` là lựa chọn thứ hai, chọn được từ `/admin/prompts` mà không cần deploy: **$1,00 / 1M input** và **$5,00 / 1M output**. Một lượt đo tay ngày 21/09/2026, cùng câu hỏi và cùng ba lá: input 2.676, output 3.506, không có thinking token, `stop_reason: end_turn`, JSON qua `resultSchema` ngay lần đầu.
+
+Thành **khoảng 523đ mỗi lượt — đắt hơn Gemini chừng 43%**, ngược với điều dễ tưởng khi thấy "không bật thinking". Hai lý do: tokenizer của Anthropic đếm tiếng Việt tốn hơn (2.676 input so với 1.233 cho cùng một prompt), và phần chữ trả về không hề rẻ đi khi bỏ thinking — 3.506 output so với 2.208. Đổi sang Claude vì thế là quyết định về chất lượng hoặc về chuyện có đường lùi khi Gemini hỏng, không phải để tiết kiệm. COGS ở mức đó đi từ khoảng 11% lên khoảng 15% doanh thu gói Khởi động; giá 10 credit mỗi lượt vẫn không cần chỉnh.
+
+Một lượt đo tay không phải số đo. Bảng theo cặp (prompt, model) trên `/admin/prompts` là chỗ đọc con số thật sau khi chạy đủ lượt.
 
 Hai cột token trong database mang nghĩa của Gemini: `outputTokens` và `thinkingTokens` rời nhau, cộng lại mới ra tổng. `usage.output_tokens` của Anthropic thì đã gồm cả phần thinking, nên `lib/ai/claude.ts` trừ ra trước khi ghi — không thì phần thinking bị tính tiền hai lần.
 
