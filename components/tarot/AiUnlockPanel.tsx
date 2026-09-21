@@ -21,13 +21,23 @@ interface AiUnlockPanelProps {
 // nhất trong sản phẩm, nhưng không lấn át phần còn lại của màn hình.
 const INTERPRETATION_BASE_TEXT = "text-xl";
 // Câu chủ đề, dòng duy nhất được phép to nhất trong thẻ.
-const LEAD = "text-[1em]";
+const LEAD = "text-[1.3em]";
+// Tiêu đề hộp và tên vị trí lá bài — bậc cao nhất trong số các tiêu đề.
+//
+// Trước đây cả ba bậc tiêu đề đều dùng chung một nhãn 14px viết hoa: tên hộp,
+// tên mục và tên vị trí trông y hệt nhau, nên mắt không có mốc nào để bám khi
+// lướt qua một thẻ dài hơn một nghìn từ. Giờ tách bằng cỡ chữ thật:
+// 26 / 23 / 20 / 17.5px trên thang gốc 20px.
+const HEADING = "text-[1.15em] font-semibold tracking-tight";
+// Tiêu đề mục phụ, nằm dưới HEADING một bậc.
+const SECTION = "text-[1em] font-semibold";
+// Câu chốt của mỗi lá: giữa tên vị trí và văn xuôi.
+const KEY_MESSAGE = "text-[0.95em] font-medium";
 // Toàn bộ văn xuôi.
 const BODY = "text-[0.875em]";
-// Nhãn phân mục: chữ nhỏ, viết hoa, giãn chữ. Tách bậc bằng kiểu chữ thay vì
-// bằng cỡ chữ lớn hơn, để mắt luôn phân biệt được đâu là nhãn và đâu là nội
-// dung khi lướt nhanh qua một thẻ dài.
-const LABEL = "text-[0.7em] font-medium uppercase tracking-[0.12em]";
+// Chip chủ đề: vẫn nhỏ, viết hoa, giãn chữ. Đây là nhãn thật, không phải tiêu
+// đề — giữ nhỏ để nó không tranh chỗ với các bậc ở trên.
+const CHIP = "text-[0.7em] font-medium uppercase tracking-[0.12em]";
 
 function SectionHeading({
   icon: Icon,
@@ -36,10 +46,13 @@ function SectionHeading({
   icon: typeof Link2;
   children: string;
 }) {
+  // Cỡ chữ đặt ở thẻ bọc để icon đo theo chính tiêu đề của nó: trước đây icon
+  // đo theo cỡ gốc của thẻ nên to 28px cạnh dòng chữ 14px, và cái đập vào mắt
+  // trước là icon chứ không phải tên mục.
   return (
-    <div className="flex items-center gap-2">
-      <Icon className="h-[1.4em] w-[1.4em] shrink-0 text-accent" aria-hidden="true" />
-      <h5 className={`${LABEL} text-muted`}>{children}</h5>
+    <div className={`flex items-center gap-2.5 ${SECTION} text-foreground`}>
+      <Icon className="h-[1.15em] w-[1.15em] shrink-0 text-accent" aria-hidden="true" />
+      <h5>{children}</h5>
     </div>
   );
 }
@@ -111,9 +124,11 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
         <div className="flex flex-col gap-4">
           {/* Tên phần chạy như một nhãn nhỏ phía trên, nhường vai trò dòng
               lớn nhất cho câu chủ đề — thứ người dùng thật sự đến để đọc. */}
-          <div className="flex items-center gap-2 border-b border-border pb-4">
-            <Sparkles className="h-[1.4em] w-[1.4em] shrink-0 text-accent" aria-hidden="true" />
-            <h4 className={`${LABEL} text-muted`}>Diễn giải chuyên sâu</h4>
+          <div
+            className={`flex items-center gap-2.5 border-b border-border pb-4 ${HEADING} text-foreground`}
+          >
+            <Sparkles className="h-[1.15em] w-[1.15em] shrink-0 text-accent" aria-hidden="true" />
+            <h4>Diễn giải chuyên sâu</h4>
           </div>
 
           {data.summary ? (
@@ -132,7 +147,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
                   // Sage trên nền sage-tint ở light mode chỉ đạt 3.9:1, dưới
                   // ngưỡng 4.5:1 cho chữ nhỏ; chữ nền tối giữ được sắc thái
                   // của chip mà vẫn đọc được.
-                  className={`rounded-full bg-sage-tint px-[0.9em] py-[0.35em] ${LABEL} text-foreground`}
+                  className={`rounded-full bg-sage-tint px-[0.9em] py-[0.35em] ${CHIP} text-foreground`}
                 >
                   {theme}
                 </span>
@@ -143,12 +158,14 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
 
         <div className="flex flex-col divide-y divide-border border-y border-border">
           {data.perCard.map((entry) => (
-            <div key={entry.position} className="flex flex-col gap-2 py-5 first:pt-0 last:pb-0">
-              {/* Cùng lý do tương phản như chip: accent trên nền surface chỉ
-                  đạt 4.28:1, nên bậc của nhãn do kiểu chữ gánh, không do màu. */}
-              <p className={`${LABEL} text-foreground`}>{entry.position}</p>
+            <div key={entry.position} className="flex flex-col gap-2.5 py-6 first:pt-0 last:pb-0">
+              {/* Tên vị trí là mốc điều hướng của cả phần này — người đọc tìm
+                  "Hướng đi" trước khi đọc chữ. Bậc của nó do cỡ chữ và độ đậm
+                  gánh, không do màu: accent trên nền surface chỉ đạt 4.28:1,
+                  dưới ngưỡng 4.5:1. */}
+              <h5 className={`${HEADING} text-foreground`}>{entry.position}</h5>
               {entry.keyMessage ? (
-                <p className={`${BODY} font-medium leading-snug text-foreground`}>
+                <p className={`${KEY_MESSAGE} leading-snug text-foreground`}>
                   {entry.keyMessage}
                 </p>
               ) : null}
