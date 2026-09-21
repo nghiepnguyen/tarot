@@ -6,7 +6,7 @@
 - npm, pnpm hoặc yarn. Khuyến nghị pnpm để cài đặt nhanh và quản lý workspace tốt.
 - PostgreSQL nếu bật tính năng tài khoản và lịch sử.
 - Object storage khi triển khai production cần lưu file lớn. Hiện chưa dùng: rate limit nằm trong Postgres, ảnh card nằm trong `public/`.
-- API key của nhà cung cấp AI đang chọn nếu bật diễn giải AI: `GEMINI_API_KEY` (Google Gemini) hoặc `ANTHROPIC_API_KEY` (Claude). Model mặc định chọn ở `/admin/prompts`, danh sách cho phép nằm trong `lib/ai/models.ts`. Thiếu key, nút mở khóa AI vẫn hoạt động và nói thẳng tên biến môi trường còn thiếu thay vì crash.
+- API key của nhà cung cấp AI đang chọn nếu bật diễn giải AI: `GEMINI_API_KEY` (Google Gemini) hoặc `DEEPSEEK_API_KEY` (DeepSeek). Model mặc định chọn ở `/admin/prompts`, danh sách cho phép nằm trong `lib/ai/models.ts`. Thiếu key, nút mở khóa AI vẫn hoạt động và nói thẳng tên biến môi trường còn thiếu thay vì crash.
 
 ## Tạo project
 
@@ -39,8 +39,8 @@ AUTH_SECRET=
 # Get a key at https://aistudio.google.com/apikey
 GEMINI_API_KEY=your_gemini_api_key
 
-# Chỉ cần khi model mặc định ở /admin/prompts trỏ sang Claude.
-ANTHROPIC_API_KEY=your_anthropic_api_key
+# Chỉ cần khi model mặc định ở /admin/prompts trỏ sang DeepSeek.
+DEEPSEEK_API_KEY=your_deepseek_api_key
 
 PAYOS_CLIENT_ID=your_payos_client_id
 PAYOS_API_KEY=your_payos_api_key
@@ -188,7 +188,7 @@ components/
   ui/                   # Button, Input, Header, Footer, Toast, Section
 lib/
   admin/                # chỉnh credit, nhật ký quản trị, số liệu dashboard
-  ai/                   # prompt, danh sách model, gọi Gemini/Claude, validate bằng Zod
+  ai/                   # prompt, danh sách model, gọi Gemini/DeepSeek, validate bằng Zod
   email/                # Resend, chỉ dùng cho cảnh báo vận hành
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit, guard quyền quản trị

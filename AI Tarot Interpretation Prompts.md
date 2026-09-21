@@ -396,13 +396,15 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 
 Ở tỷ giá 25.876đ/USD, một lượt mở khóa tốn khoảng **365đ** (trước khi prompt dài ra là 146đ).
 
-`claude-haiku-4-5-20251001` là lựa chọn thứ hai, chọn được từ `/admin/prompts` mà không cần deploy: **$1,00 / 1M input** và **$5,00 / 1M output**. Một lượt đo tay ngày 21/09/2026, cùng câu hỏi và cùng ba lá: input 2.676, output 3.506, không có thinking token, `stop_reason: end_turn`, JSON qua `resultSchema` ngay lần đầu.
+`claude-haiku-4-5-20251001` từng là lựa chọn thứ hai — **$1,00 / 1M input**, **$5,00 / 1M output**. Một lượt đo tay ngày 21/09/2026, cùng câu hỏi và cùng ba lá: input 2.676, output 3.506, không có thinking token, `stop_reason: end_turn`, JSON qua `resultSchema` ngay lần đầu.
 
-Thành **khoảng 523đ mỗi lượt — đắt hơn Gemini chừng 43%**, ngược với điều dễ tưởng khi thấy "không bật thinking". Hai lý do: tokenizer của Anthropic đếm tiếng Việt tốn hơn (2.676 input so với 1.233 cho cùng một prompt), và phần chữ trả về không hề rẻ đi khi bỏ thinking — 3.506 output so với 2.208. Đổi sang Claude vì thế là quyết định về chất lượng hoặc về chuyện có đường lùi khi Gemini hỏng, không phải để tiết kiệm. COGS ở mức đó đi từ khoảng 11% lên khoảng 15% doanh thu gói Khởi động; giá 10 credit mỗi lượt vẫn không cần chỉnh.
+Thành **khoảng 523đ mỗi lượt — đắt hơn Gemini chừng 43%**, ngược với điều dễ tưởng khi thấy "không bật thinking". Hai lý do: tokenizer của Anthropic đếm tiếng Việt tốn hơn (2.676 input so với 1.233 cho cùng một prompt), và phần chữ trả về không hề rẻ đi khi bỏ thinking — 3.506 output so với 2.208. Đắt hơn mà không đọc hay hơn rõ rệt, nên **ngày 22/09/2026 model này bị gỡ khỏi `lib/ai/models.ts`** cùng với `lib/ai/claude.ts`. Giá của nó ở lại trong `lib/ai/pricing.ts`: những row `AiInterpretation` đã sinh bằng nó vẫn phải tính ra đúng tiền.
+
+`deepseek-flash` (DeepSeek-V4.1-Flash) thay chỗ đó từ 22/09/2026: **$0,30 / 1M input** và **$1,20 / 1M output** ở giờ cao điểm, cache miss — giờ thấp điểm rẻ đúng một nửa, nên giá trong bảng là trần. Một lượt đo tay cùng ngày, cùng trải bài với Gemini: 20,9s, input 2.137, output 3.338, không thinking token, **~140đ so với 251đ của Gemini**. Input cao hơn Gemini chừng 900 token ở mọi lượt và đó là giá cố định phải trả: DeepSeek không có structured outputs, nên JSON schema phải nằm trong system prompt (`lib/ai/deepseek.ts`) thay vì đi như một tham số. Đổi lại, nó viết vượt mốc số từ — `connections` 316 từ so với mốc 200–260, và cả 5 `actionSuggestions` dài 58–69 từ so với mốc 35–55. Siết lại phải bằng một bản prompt mới, không sửa v1.
 
 Một lượt đo tay không phải số đo. Bảng theo cặp (prompt, model) trên `/admin/prompts` là chỗ đọc con số thật sau khi chạy đủ lượt.
 
-Hai cột token trong database mang nghĩa của Gemini: `outputTokens` và `thinkingTokens` rời nhau, cộng lại mới ra tổng. `usage.output_tokens` của Anthropic thì đã gồm cả phần thinking, nên `lib/ai/claude.ts` trừ ra trước khi ghi — không thì phần thinking bị tính tiền hai lần.
+Hai cột token trong database mang nghĩa của Gemini: `outputTokens` và `thinkingTokens` rời nhau, cộng lại mới ra tổng. `completion_tokens` của DeepSeek (quy ước OpenAI) thì đã gồm cả phần reasoning, nên `lib/ai/deepseek.ts` trừ ra trước khi ghi — không thì phần thinking bị tính tiền hai lần. `lib/ai/claude.ts` trước đây trừ y hệt, vì Anthropic cũng đếm gộp.
 
 | Gói | Doanh thu mỗi lượt | Biên |
 |---|---|---|

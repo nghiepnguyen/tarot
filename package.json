@@ -14,12 +14,11 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "refund-order": "tsx scripts/refund-order.ts",
-    "grant-admin": "tsx scripts/grant-admin.ts",
-    "compare-interpretations": "NODE_OPTIONS='--conditions=react-server' tsx scripts/compare-interpretations.ts"
+    "refund-order": "tsx --env-file-if-exists=.env.local scripts/refund-order.ts",
+    "grant-admin": "tsx --env-file-if-exists=.env.local scripts/grant-admin.ts",
+    "compare-interpretations": "NODE_OPTIONS='--conditions=react-server' tsx --env-file-if-exists=.env.local scripts/compare-interpretations.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.127.0",
     "@google/genai": "^2.21.0",
     "@prisma/client": "^6.19.3",
     "@sentry/nextjs": "^10.75.0",

@@ -36,9 +36,9 @@ const SAMPLE_CARDS: InterpretationCardInput[] = SPREAD_POSITIONS.map((position, 
  * quả, và nó chứa cả ràng buộc an toàn. Sửa nó bằng một ô textarea trên web
  * thì bỏ qua được cả hai, nên đổi prompt vẫn đi qua code review và deploy.
  *
- * Model thì khác: đổi model không đổi hợp đồng đầu ra — cả hai nhà cung cấp
- * đều bị ép trả đúng JSON schema đó và đều parse lại bằng `resultSchema` — mà
- * lại là thứ cần lùi trong vài phút khi một nhà cung cấp hỏng hoặc đội giá.
+ * Model thì khác: đổi model không đổi hợp đồng đầu ra — mọi lượt sinh đều parse
+ * lại bằng cùng `resultSchema` — mà lại là thứ cần lùi trong vài phút khi một
+ * nhà cung cấp hỏng hoặc đội giá.
  * Nên nó nằm trong database, chọn từ một danh sách cho phép trong code.
  */
 export default async function AdminPromptsPage() {

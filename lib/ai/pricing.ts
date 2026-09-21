@@ -1,6 +1,11 @@
 /**
  * Bảng giá token theo model.
  *
+ * Đây là *lịch sử giá*, không phải danh sách model đang chạy: một model bị gỡ
+ * khỏi `lib/ai/models.ts` vẫn phải giữ giá ở đây chừng nào còn row sinh ra bằng
+ * nó trong database. Chiều ngược lại mới là ràng buộc cứng — mọi model trong
+ * `AI_MODELS` bắt buộc có giá ở đây, và `pricing.test.ts` canh đúng chiều đó.
+ *
  * Trước đây giá là hai hằng số nằm trong `lib/admin/metrics.ts`, gắn cứng vào
  * `gemini-3-flash-preview`. Nghĩa là đổi model xong thì mọi con số tiền trên
  * dashboard sai âm thầm, không có gì kêu lên. Giờ giá tra theo đúng chuỗi
@@ -27,10 +32,19 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
     usdPerOutputToken: 3.0 / 1_000_000,
     note: "Tier Standard: $0,50 / 1M input, $3,00 / 1M output.",
   },
+  // Gỡ khỏi danh sách cho phép ngày 22/09/2026, nhưng giá phải ở lại: những row
+  // `AiInterpretation` đã sinh bằng nó vẫn nằm trong database, và `/admin` tra
+  // giá theo đúng chuỗi model lưu cùng row. Xóa dòng này là mọi lượt Claude cũ
+  // lặng lẽ được tính bằng giá mặc định.
   "claude-haiku-4-5-20251001": {
     usdPerInputToken: 1.0 / 1_000_000,
     usdPerOutputToken: 5.0 / 1_000_000,
-    note: "Giá API Anthropic: $1,00 / 1M input, $5,00 / 1M output.",
+    note: "Giá API Anthropic: $1,00 / 1M input, $5,00 / 1M output. Model đã gỡ khỏi danh sách cho phép.",
+  },
+  "deepseek-flash": {
+    usdPerInputToken: 0.3 / 1_000_000,
+    usdPerOutputToken: 1.2 / 1_000_000,
+    note: "Giá giờ cao điểm, cache miss: $0,30 / 1M input, $1,20 / 1M output. Giờ thấp điểm rẻ đúng một nửa và cache hit rẻ hơn nhiều, nên số ở đây là trần chứ không phải số trung bình.",
   },
 };
 
@@ -42,7 +56,7 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
  * nào hiển thị con số tính bằng giá này phải nói rõ là ước lượng — xem
  * `/admin/prompts`.
  */
-const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["claude-haiku-4-5-20251001"];
+const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["gemini-3-flash-preview"];
 
 export function getModelPricing(model: string): ModelPricing | null {
   return MODEL_PRICING[model] ?? null;

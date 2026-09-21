@@ -7,7 +7,7 @@
  * vào hai trải bài khác nhau nên không so được gì.
  *
  *   pnpm compare-interpretations "Câu hỏi của bạn"
- *   pnpm compare-interpretations "Câu hỏi" --models=claude-haiku-4-5-20251001
+ *   pnpm compare-interpretations "Câu hỏi" --models=deepseek-flash
  *
  * Ba lá bài rút ngẫu nhiên, nhưng *cùng một bộ ba* cho mọi model — khác bài thì
  * không còn là so sánh. Kết quả ghi vào `.model-compare/` (đã gitignore).
@@ -16,6 +16,11 @@
  * thời gian. Import được là nhờ `--conditions=react-server` trong script của
  * package.json: `lib/ai/*.ts` khai `server-only`, mà gói đó ném lỗi ở mọi
  * điều kiện khác.
+ *
+ * `--env-file-if-exists=.env.local` cũng nằm trong script đó, và cũng là thứ
+ * bắt buộc: `.env.local` là quy ước của Next, không phải của Node, nên chạy
+ * thẳng bằng tsx thì không có gì nạp nó. Thiếu cờ này thì mọi model đều báo
+ * thiếu API key dù key nằm sẵn trong file — lỗi đọc ra y hệt như chưa cấu hình.
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
