@@ -4,6 +4,21 @@ import type { TarotCard } from "@/lib/tarot/cards";
 import type { Orientation } from "@/lib/tarot/draw";
 
 export const COST_PER_INTERPRETATION = 10;
+
+/**
+ * Trần thời gian cho một lượt sinh, tính từ lúc gửi request.
+ *
+ * Đây không phải chuyện hiệu năng mà là chuyện tiền. Credit trừ *trước* khi
+ * gọi model, và đường hoàn nằm trong khối `catch` của `app/actions/ai.ts`.
+ * `maxDuration` của Vercel là 60 giây; chạm trần thì function bị giết giữa
+ * chừng, `catch` không bao giờ chạy, và người dùng mất credit mà không có bài
+ * đọc nào. Cắt ở 45 giây để lỗi luôn quay về dạng một exception mình bắt
+ * được, còn dư 15 giây cho hai lệnh ghi hoàn tiền.
+ *
+ * Gói Vercel free không nâng được `maxDuration`, nên con số này là thứ duy
+ * nhất giữ cho cửa sổ đó đóng.
+ */
+export const GENERATION_TIMEOUT_MS = 45_000;
 export const DEMO_TOPUP_AMOUNT = 50;
 
 export const FREE_TRIAL_UNLOCKS = 2;

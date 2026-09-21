@@ -1,9 +1,10 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import { MissingApiKeyError } from "@/lib/ai/errors";
-import type {
-  GeneratedInterpretation,
-  InterpretationCardInput,
+import {
+  GENERATION_TIMEOUT_MS,
+  type GeneratedInterpretation,
+  type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
 import { PROVIDER_API_KEY_ENV } from "@/lib/ai/models";
 import type { PromptVersion } from "@/lib/ai/prompts";
@@ -46,6 +47,7 @@ export async function generateInterpretation(
       systemInstruction: version.systemInstruction,
       responseMimeType: "application/json",
       responseSchema: version.responseSchema,
+      abortSignal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
     },
   });
   const latencyMs = Date.now() - startedAt;

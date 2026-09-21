@@ -1,9 +1,10 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { MissingApiKeyError } from "@/lib/ai/errors";
-import type {
-  GeneratedInterpretation,
-  InterpretationCardInput,
+import {
+  GENERATION_TIMEOUT_MS,
+  type GeneratedInterpretation,
+  type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
 import { PROVIDER_API_KEY_ENV } from "@/lib/ai/models";
 import type { PromptVersion } from "@/lib/ai/prompts";
@@ -66,18 +67,24 @@ export async function generateInterpretation(
   const anthropic = getClient();
 
   const startedAt = Date.now();
-  const response = await anthropic.messages.create({
-    model,
-    max_tokens: MAX_TOKENS,
-    system: version.systemInstruction,
-    messages: [{ role: "user", content: version.buildPrompt(question, cards) }],
-    output_config: {
-      format: {
-        type: "json_schema",
-        schema: closeObjects(version.responseSchema) as Record<string, unknown>,
+  const response = await anthropic.messages.create(
+    {
+      model,
+      max_tokens: MAX_TOKENS,
+      system: version.systemInstruction,
+      messages: [{ role: "user", content: version.buildPrompt(question, cards) }],
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: closeObjects(version.responseSchema) as Record<string, unknown>,
+        },
       },
     },
-  });
+    // `maxRetries: 0` đi liền với timeout: mặc định SDK thử lại hai lần, nên
+    // một lượt chậm sẽ thành ba lần 45 giây và vượt `maxDuration` đúng theo
+    // cách mà timeout sinh ra để tránh.
+    { timeout: GENERATION_TIMEOUT_MS, maxRetries: 0 },
+  );
 
   const latencyMs = Date.now() - startedAt;
 
