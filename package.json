@@ -15,7 +15,8 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "refund-order": "tsx scripts/refund-order.ts",
-    "grant-admin": "tsx scripts/grant-admin.ts"
+    "grant-admin": "tsx scripts/grant-admin.ts",
+    "compare-interpretations": "NODE_OPTIONS='--conditions=react-server' tsx scripts/compare-interpretations.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
