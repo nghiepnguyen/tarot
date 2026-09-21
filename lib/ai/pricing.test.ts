@@ -5,6 +5,7 @@ import {
   isPricedModel,
   sumAiCostVnd,
 } from "./pricing";
+import { AI_MODELS } from "./models";
 
 const GEMINI = "gemini-3-flash-preview";
 
@@ -46,7 +47,27 @@ describe("estimateAiCostVnd", () => {
   it("still returns a number for a model with no price, so the dashboard never blanks out", () => {
     const sums = { inputTokens: 1_233, outputTokens: 2_208, thinkingTokens: 2_286 };
     expect(isPricedModel("model-chua-co-gia")).toBe(false);
-    expect(estimateAiCostVnd(sums, "model-chua-co-gia")).toBe(estimateAiCostVnd(sums, GEMINI));
+    expect(estimateAiCostVnd(sums, "model-chua-co-gia")).toBeGreaterThan(0);
+  });
+
+  it("never guesses low for a model it has no price for", () => {
+    // Ước lượng thấp đọc như tin tốt. Giá mặc định phải không rẻ hơn bất kỳ
+    // model nào đang cho phép chạy, để con số sai về phía không ai mừng hụt.
+    const sums = { inputTokens: 1_233, outputTokens: 2_208, thinkingTokens: 2_286 };
+    const fallback = estimateAiCostVnd(sums, "model-chua-co-gia");
+    for (const model of AI_MODELS) {
+      expect(fallback).toBeGreaterThanOrEqual(estimateAiCostVnd(sums, model.id));
+    }
+  });
+});
+
+describe("bảng giá và danh sách model", () => {
+  it("prices every model the admin page can pick", () => {
+    // Chọn được một model không có giá nghĩa là mọi con số tiền trên /admin
+    // lặng lẽ thành ước lượng. Danh sách cho phép và bảng giá phải đi cùng nhau.
+    for (const model of AI_MODELS) {
+      expect(isPricedModel(model.id), model.id).toBe(true);
+    }
   });
 });
 

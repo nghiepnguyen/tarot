@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MAX_ADJUST } from "@/lib/admin/credits";
+import { getAiModel } from "@/lib/ai/models";
 
 // Lý do bắt buộc ở mọi thao tác ghi vào nhật ký quản trị: một nhật ký toàn lý
 // do rỗng là nhật ký để trưng.
@@ -29,4 +30,15 @@ export const RefundOrderSchema = z.object({
 
 export const ReconcileOrderSchema = z.object({
   orderId: z.string().min(1),
+});
+
+// Model tới từ một thẻ <select>, nhưng server action là một POST ai cũng gọi
+// được (xem `app/actions/admin.ts`), nên chuỗi này vẫn phải đi qua danh sách
+// cho phép trong code — không nhận bừa tên model rồi gửi thẳng ra API.
+export const SetAiModelSchema = z.object({
+  modelId: z
+    .string()
+    .min(1)
+    .refine((id) => getAiModel(id) !== null, "Model không nằm trong danh sách cho phép."),
+  reason: ReasonField,
 });

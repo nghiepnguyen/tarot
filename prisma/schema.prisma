@@ -217,3 +217,22 @@ model AiInterpretation {
 
   @@index([promptVersion])
 }
+
+/// Cấu hình chỉnh được lúc đang chạy, dạng khóa–giá trị.
+///
+/// Chỉ dành cho những lựa chọn phải đổi được *không cần deploy*. Prompt và bộ
+/// bài không nằm ở đây có chủ đích (xem `lib/ai/prompts/types.ts`): chúng cột
+/// chặt vào JSON schema và ràng buộc an toàn. Model thì khác — đổi model không
+/// đổi hợp đồng đầu ra, mà lại là thứ cần lùi lại trong vài phút khi một nhà
+/// cung cấp hỏng.
+///
+/// Giá trị lưu dạng chuỗi và luôn phải qua một danh sách cho phép trong code
+/// trước khi dùng (`lib/ai/models.ts`): một hàng rác trong bảng này không được
+/// phép biến thành một lời gọi API tới model không ai kiểm giá.
+model AppSetting {
+  key       String   @id
+  value     String
+  /// Ai đổi lần gần nhất. Chi tiết *vì sao* nằm ở `AdminAuditLog`.
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}

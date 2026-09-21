@@ -27,6 +27,8 @@ const VALID_RESULT = {
   closingNote: "Lời kết.",
 };
 
+const MODEL = "gemini-3-flash-preview";
+
 const cards: InterpretationCardInput[] = [
   { position: "Bối cảnh", card: TAROT_CARDS[0], orientation: "upright" },
   { position: "Hiện tại", card: TAROT_CARDS[1], orientation: "reversed" },
@@ -43,13 +45,13 @@ afterEach(() => {
 
 describe("generateInterpretation", () => {
   it("throws MissingApiKeyError instead of calling Gemini when GEMINI_API_KEY is unset", async () => {
-    await expect(generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION)).rejects.toBeInstanceOf(
+    await expect(generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL)).rejects.toBeInstanceOf(
       MissingApiKeyError,
     );
   });
 
   it("uses a Vietnamese message so the UI can show it directly", async () => {
-    await expect(generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION)).rejects.toThrow(
+    await expect(generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL)).rejects.toThrow(
       "GEMINI_API_KEY chưa được cấu hình.",
     );
   });
@@ -71,7 +73,7 @@ describe("generateInterpretation usage", () => {
       },
     });
 
-    const { result, usage } = await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION);
+    const { result, usage } = await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL);
 
     expect(result.summary).toBe("Tóm tắt.");
     expect(usage.inputTokens).toBe(1233);
@@ -80,13 +82,13 @@ describe("generateInterpretation usage", () => {
     expect(usage.latencyMs).toBeTypeOf("number");
   });
 
-  it("sends the model and system instruction of the version it was handed, not a global constant", async () => {
+  it("sends the model it was handed and the system instruction of that version, not a global constant", async () => {
     generateContent.mockResolvedValue({ text: JSON.stringify(VALID_RESULT) });
 
-    await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION);
+    await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL);
 
     const [request] = generateContent.mock.calls[0];
-    expect(request.model).toBe(ACTIVE_PROMPT_VERSION.model);
+    expect(request.model).toBe(MODEL);
     expect(request.config.systemInstruction).toBe(ACTIVE_PROMPT_VERSION.systemInstruction);
     expect(request.contents).toContain("Câu hỏi?");
   });
@@ -94,7 +96,7 @@ describe("generateInterpretation usage", () => {
   it("still returns the reading when Gemini reports no usage at all", async () => {
     generateContent.mockResolvedValue({ text: JSON.stringify(VALID_RESULT) });
 
-    const { result, usage } = await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION);
+    const { result, usage } = await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL);
 
     // Một lượt sinh thiếu số đo vẫn là một lượt sinh hợp lệ: không đáng ném lỗi
     // và hoàn credit chỉ vì không đếm được token.

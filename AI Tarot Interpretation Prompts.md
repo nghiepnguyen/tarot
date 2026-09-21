@@ -396,6 +396,10 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 
 Ở tỷ giá 25.876đ/USD, một lượt mở khóa tốn khoảng **365đ** (trước khi prompt dài ra là 146đ).
 
+`claude-haiku-4-5-20251001` là lựa chọn thứ hai, chọn được từ `/admin/prompts` mà không cần deploy: **$1,00 / 1M input** và **$5,00 / 1M output**. Đắt hơn trên mỗi token, nhưng lượt sinh chạy không bật thinking, nên phần đắt nhất của bảng đo trên — 2.286 thinking token — không phát sinh. Chưa có lượt sinh thật nào để thay số đo đo tay ở đây bằng số thật; bảng theo cặp (prompt, model) trên `/admin/prompts` là chỗ đọc kết quả sau khi đổi.
+
+Hai cột token trong database mang nghĩa của Gemini: `outputTokens` và `thinkingTokens` rời nhau, cộng lại mới ra tổng. `usage.output_tokens` của Anthropic thì đã gồm cả phần thinking, nên `lib/ai/claude.ts` trừ ra trước khi ghi — không thì phần thinking bị tính tiền hai lần.
+
 | Gói | Doanh thu mỗi lượt | Biên |
 |---|---|---|
 | Khởi động — 50 credit / 19.000đ | 3.800đ | 90,4% |

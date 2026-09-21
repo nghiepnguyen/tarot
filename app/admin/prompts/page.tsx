@@ -2,7 +2,10 @@ import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
 import { Panel, EmptyRow } from "@/components/admin/Panel";
 import { ACTIVE_PROMPT_VERSION, PROMPT_VERSIONS } from "@/lib/ai/prompts";
-import { getModelPricing } from "@/lib/ai/pricing";
+import { getModelPricing, isPricedModel } from "@/lib/ai/pricing";
+import { AI_MODELS } from "@/lib/ai/models";
+import { getActiveAiModel } from "@/lib/ai/settings";
+import { AiModelForm } from "@/components/admin/AiModelForm";
 import { fetchPromptUsage, summarizePromptVersions } from "@/lib/admin/prompt-stats";
 import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
@@ -27,35 +30,45 @@ const SAMPLE_CARDS: InterpretationCardInput[] = SPREAD_POSITIONS.map((position, 
 }));
 
 /**
- * Chỉ đọc, cùng lý do với trang Bộ bài — nhưng gắt hơn.
+ * Prompt chỉ đọc, model thì sửa được.
  *
- * Prompt cột chặt vào JSON schema gửi Gemini và vào schema parse lại kết quả,
- * và nó chứa cả ràng buộc an toàn. Sửa nó bằng một ô textarea trên web thì bỏ
- * qua được cả hai, nên đổi prompt vẫn đi qua code review và deploy. Việc của
- * trang này là trả lời một câu: bản prompt đang chạy đáng giá bao nhiêu so với
- * bản trước.
+ * Prompt cột chặt vào JSON schema gửi cho model và vào schema parse lại kết
+ * quả, và nó chứa cả ràng buộc an toàn. Sửa nó bằng một ô textarea trên web
+ * thì bỏ qua được cả hai, nên đổi prompt vẫn đi qua code review và deploy.
+ *
+ * Model thì khác: đổi model không đổi hợp đồng đầu ra — cả hai nhà cung cấp
+ * đều bị ép trả đúng JSON schema đó và đều parse lại bằng `resultSchema` — mà
+ * lại là thứ cần lùi trong vài phút khi một nhà cung cấp hỏng hoặc đội giá.
+ * Nên nó nằm trong database, chọn từ một danh sách cho phép trong code.
  */
 export default async function AdminPromptsPage() {
   await requireAdmin();
 
-  const usage = await fetchPromptUsage(prisma);
+  const [usage, activeModel] = await Promise.all([fetchPromptUsage(prisma), getActiveAiModel()]);
   const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE_PROMPT_VERSION.id, usage);
-  const activePricing = getModelPricing(ACTIVE_PROMPT_VERSION.model);
+  const activePricing = getModelPricing(activeModel.id);
+  const modelOptions = AI_MODELS.map((model) => ({
+    id: model.id,
+    label: model.label,
+    note: model.note,
+    priced: isPricedModel(model.id),
+  }));
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Prompt và model</h1>
         <p className="text-sm text-muted">
-          Đọc từ <code className="font-mono text-xs">lib/ai/prompts/</code>. Đổi prompt hay đổi model
-          là thêm một version mới trong code rồi deploy — không có đường nào sửa từ đây, vì prompt
-          cột chặt vào JSON schema và chứa cả ràng buộc an toàn.
+          Prompt đọc từ <code className="font-mono text-xs">lib/ai/prompts/</code>: đổi prompt là
+          thêm một version mới trong code rồi deploy, không có đường nào sửa từ đây, vì prompt cột
+          chặt vào JSON schema và chứa cả ràng buộc an toàn. Model thì đổi được ngay tại đây, trong
+          giới hạn danh sách ở <code className="font-mono text-xs">lib/ai/models.ts</code>.
         </p>
       </div>
 
       <Panel
         title="Bản đang chạy"
-        note="Mọi lượt mở khóa từ lúc deploy gần nhất đều đi qua đúng bản này, và ghi id của nó vào AiInterpretation.promptVersion."
+        note="Mọi lượt mở khóa đều đi qua đúng cặp prompt và model này, và ghi cả hai vào AiInterpretation — nên số đo trước và sau một lần đổi model không lẫn vào nhau."
       >
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div className="flex flex-col gap-1 rounded-xl border border-border px-4 py-3">
@@ -65,7 +78,12 @@ export default async function AdminPromptsPage() {
           <div className="flex flex-col gap-1 rounded-xl border border-border px-4 py-3">
             <dt className="text-xs text-muted">Model</dt>
             <dd className="font-mono text-sm text-foreground">
-              {ACTIVE_PROMPT_VERSION.model}
+              {activeModel.id}
+              {activeModel.id === ACTIVE_PROMPT_VERSION.model ? null : (
+                <span className="ml-2 font-sans text-xs text-muted">
+                  khác mặc định của bản prompt ({ACTIVE_PROMPT_VERSION.model})
+                </span>
+              )}
               {activePricing ? null : (
                 <span className="ml-2 font-sans text-xs text-muted">chưa có trong bảng giá</span>
               )}
@@ -77,6 +95,13 @@ export default async function AdminPromptsPage() {
             ? `Giá đang dùng để tính tiền: ${activePricing.note}`
             : "Model này chưa có giá trong lib/ai/pricing.ts, nên mọi con số tiền bên dưới và trên trang Tổng quan đều là ước lượng tính bằng giá mặc định."}
         </p>
+      </Panel>
+
+      <Panel
+        title="Đổi model"
+        note="Có hiệu lực ngay với lượt mở khóa tiếp theo, không cần deploy. Lượt đã sinh giữ nguyên model của chính nó. Mỗi lần đổi ghi một dòng vào Nhật ký."
+      >
+        <AiModelForm currentId={activeModel.id} options={modelOptions} />
       </Panel>
 
       <Panel

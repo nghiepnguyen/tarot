@@ -1,23 +1,20 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
+import { MissingApiKeyError } from "@/lib/ai/errors";
 import type {
   GeneratedInterpretation,
   InterpretationCardInput,
 } from "@/lib/ai/interpretation";
+import { PROVIDER_API_KEY_ENV } from "@/lib/ai/models";
 import type { PromptVersion } from "@/lib/ai/prompts";
 
-export class MissingApiKeyError extends Error {
-  constructor() {
-    super("GEMINI_API_KEY chưa được cấu hình.");
-    this.name = "MissingApiKeyError";
-  }
-}
+export { MissingApiKeyError };
 
 let client: GoogleGenAI | undefined;
 
 function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new MissingApiKeyError();
+  if (!apiKey) throw new MissingApiKeyError(PROVIDER_API_KEY_ENV.gemini);
   client ??= new GoogleGenAI({ apiKey });
   return client;
 }
@@ -25,21 +22,25 @@ function getClient(): GoogleGenAI {
 /**
  * Sinh một bản luận giải bằng đúng `version` được truyền vào.
  *
- * Nhận version thay vì đọc hằng số toàn cục: model, system instruction, schema
- * và cách dựng prompt phải đi cùng nhau thành một bộ, và bên gọi phải ghi
+ * Nhận version thay vì đọc hằng số toàn cục: system instruction, schema và
+ * cách dựng prompt phải đi cùng nhau thành một bộ, và bên gọi phải ghi
  * `version.id` xuống database cùng kết quả — không thì về sau không tách được
  * số đo của bản prompt này khỏi bản khác.
+ *
+ * `model` truyền rời vì từ lúc có trang chọn model mặc định, một bản prompt
+ * chạy được trên nhiều model; `version.model` chỉ là mặc định lúc chưa ai chọn.
  */
 export async function generateInterpretation(
   question: string,
   cards: InterpretationCardInput[],
   version: PromptVersion,
+  model: string,
 ): Promise<GeneratedInterpretation> {
   const ai = getClient();
 
   const startedAt = Date.now();
   const response = await ai.models.generateContent({
-    model: version.model,
+    model,
     contents: version.buildPrompt(question, cards),
     config: {
       systemInstruction: version.systemInstruction,

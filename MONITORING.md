@@ -84,7 +84,8 @@ Cài `@sentry/cli` cần chạy script postinstall (tải binary) — đã bật
 
 | Chỗ | Tag `area` | Vì sao |
 |---|---|---|
-| `app/actions/ai.ts` | `ai-unlock` | Gemini hỏng thì credit được hoàn và người dùng chỉ thấy một câu xin lỗi. |
+| `app/actions/ai.ts` | `ai-unlock` | Nhà cung cấp AI hỏng thì credit được hoàn và người dùng chỉ thấy một câu xin lỗi. Extra ghi cả `model` và `provider`: từ lúc đổi được model từ trang quản trị, "AI hỏng" và "model vừa đổi hỏng" là hai chuyện khác nhau. |
+| `lib/ai/settings.ts` | `ai-model-setting` | Model đã chọn không còn trong danh sách cho phép — mọi lượt sinh lặng lẽ rơi về mặc định. |
 | `lib/payments/orders.ts` | `payos-reconcile` | PayOS không trả lời lúc đối soát; đơn nằm lại PENDING. |
 | `lib/payments/orders.ts` | `payos-amount-mismatch` | Số tiền lệch. Đã có email cảnh báo, nhưng email cũng trượt được. |
 | `lib/email/resend.ts` | `email-send` | Resend chết thì mất cả cảnh báo vận hành lẫn email xác nhận. |

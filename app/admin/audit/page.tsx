@@ -7,6 +7,7 @@ const ACTION_LABEL: Record<string, string> = {
   credit_adjust: "Chỉnh credit",
   order_refund: "Hoàn đơn",
   order_reconcile: "Đối soát đơn",
+  ai_model_change: "Đổi model AI",
 };
 
 const PAGE_SIZE = 100;

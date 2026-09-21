@@ -27,16 +27,22 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
     usdPerOutputToken: 3.0 / 1_000_000,
     note: "Tier Standard: $0,50 / 1M input, $3,00 / 1M output.",
   },
+  "claude-haiku-4-5-20251001": {
+    usdPerInputToken: 1.0 / 1_000_000,
+    usdPerOutputToken: 5.0 / 1_000_000,
+    note: "Giá API Anthropic: $1,00 / 1M input, $5,00 / 1M output.",
+  },
 };
 
 /**
  * Giá dùng khi gặp model không có trong bảng.
  *
- * Lấy đúng giá của model đang chạy: đoán cao hay đoán thấp đều sai, nhưng đoán
- * bằng model hiện tại thì sai ở mức biết trước. Chỗ nào hiển thị con số tính
- * bằng giá này phải nói rõ là ước lượng — xem `/admin/prompts`.
+ * Lấy giá của model đắt nhất đang cho phép chạy: đoán cao hay đoán thấp đều
+ * sai, nhưng đoán cao thì sai về phía không khiến ai tưởng mình đang lãi. Chỗ
+ * nào hiển thị con số tính bằng giá này phải nói rõ là ước lượng — xem
+ * `/admin/prompts`.
  */
-const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["gemini-3-flash-preview"];
+const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["claude-haiku-4-5-20251001"];
 
 export function getModelPricing(model: string): ModelPricing | null {
   return MODEL_PRICING[model] ?? null;

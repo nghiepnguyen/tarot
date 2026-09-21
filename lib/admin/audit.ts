@@ -1,4 +1,8 @@
-export type AdminAction = "credit_adjust" | "order_refund" | "order_reconcile";
+export type AdminAction =
+  | "credit_adjust"
+  | "order_refund"
+  | "order_reconcile"
+  | "ai_model_change";
 
 export interface AdminAuditEntry {
   adminUserId: string;

@@ -15,7 +15,8 @@ import {
 } from "@/lib/ai/interpretation";
 import { ACTIVE_PROMPT_VERSION } from "@/lib/ai/prompts";
 import { isPricedModel } from "@/lib/ai/pricing";
-import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/gemini";
+import { getActiveAiModel } from "@/lib/ai/settings";
+import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/generate";
 import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
 
@@ -40,6 +41,11 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   if (!(await checkRateLimit(`ai-unlock:${session.user.id}`, 20, 60 * 60 * 1000))) {
     return { ok: false, error: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút." };
   }
+
+  // Đọc model trước khi trừ credit: đây là một truy vấn đọc, và nếu nó hỏng
+  // thì hỏng lúc chưa ai mất gì. Đặt sau bước trừ thì một lỗi database ở đây
+  // thành credit bay mà không có nhánh hoàn nào chạy.
+  const model = await getActiveAiModel();
 
   const deducted = await prisma.user.updateMany({
     where: { id: session.user.id, credits: { gte: COST_PER_INTERPRETATION } },
@@ -75,15 +81,20 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
 
   try {
     const version = ACTIVE_PROMPT_VERSION;
-    const { result, usage } = await generateInterpretation(reading.question, cardInputs, version);
+    const { result, usage } = await generateInterpretation(
+      reading.question,
+      cardInputs,
+      version,
+      model,
+    );
 
     // Model chạy mà không có trong bảng giá thì mọi con số tiền trên
     // `/admin` thành ước lượng, và không có gì khác kêu lên. Kêu ở đây, lúc
     // phát sinh, chứ không đợi ai đó mở dashboard và tin nhầm.
-    if (!isPricedModel(version.model)) {
+    if (!isPricedModel(model.id)) {
       reportHandledIssue("Model AI chưa có trong bảng giá", {
         area: "ai-unlock",
-        extra: { model: version.model, promptVersion: version.id },
+        extra: { model: model.id, promptVersion: version.id },
       });
     }
 
@@ -101,7 +112,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
         actionSuggestionsList: result.actionSuggestions as unknown as Prisma.InputJsonValue,
         reflectiveQuestion: result.reflectiveQuestion,
         closingNote: result.closingNote,
-        model: version.model,
+        model: model.id,
         promptVersion: version.id,
         inputTokens: usage.inputTokens,
         outputTokens: usage.outputTokens,
@@ -114,12 +125,15 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     return { ok: true, data: result };
   } catch (error) {
     // Người dùng chỉ thấy một câu xin lỗi và được hoàn credit, nên nếu không
-    // báo về Sentry ở đây thì Gemini hỏng bao lâu cũng không ai biết.
+    // báo về Sentry ở đây thì nhà cung cấp hỏng bao lâu cũng không ai biết.
+    // Ghi cả model: từ lúc đổi được model từ trang quản trị, "AI hỏng" và
+    // "model vừa đổi hỏng" là hai chuyện khác nhau.
     reportHandledError(error, {
       area: "ai-unlock",
       extra: {
         readingId: reading.id,
-        model: ACTIVE_PROMPT_VERSION.model,
+        model: model.id,
+        provider: model.provider,
         promptVersion: ACTIVE_PROMPT_VERSION.id,
       },
       userId: session.user.id,

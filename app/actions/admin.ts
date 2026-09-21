@@ -10,7 +10,10 @@ import {
   AdjustCreditsSchema,
   ReconcileOrderSchema,
   RefundOrderSchema,
+  SetAiModelSchema,
 } from "@/lib/validation/admin";
+import { getAiModel } from "@/lib/ai/models";
+import { getActiveAiModel, setActiveAiModel } from "@/lib/ai/settings";
 import { reportHandledError } from "@/lib/monitoring/report";
 
 export type AdminActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -135,5 +138,60 @@ export async function reconcileOrderAction(formData: FormData): Promise<AdminAct
       extra: { orderId: order.id },
     });
     return { ok: false, error: "Không hỏi được PayOS. Thử lại sau." };
+  }
+}
+
+/**
+ * Đổi model sinh luận giải cho mọi lượt mở khóa kể từ lúc bấm.
+ *
+ * Không đụng vào prompt: bản prompt vẫn nằm trong code và vẫn đóng băng, chỉ
+ * model đổi. Những row đã sinh giữ nguyên model của chính chúng, nên
+ * `/admin/prompts` vẫn tách được số đo trước và sau lần đổi này — đó là lý do
+ * `AiInterpretation` lưu cả `model` lẫn `promptVersion`.
+ *
+ * Ghi nhật ký trong cùng một transaction với lựa chọn: một lần đổi model là
+ * quyết định của một con người, và hai bản ghi lệch nhau nghĩa là nửa năm sau
+ * không ai biết vì sao chi phí mỗi lượt nhảy bậc.
+ */
+export async function setAiModelAction(formData: FormData): Promise<AdminActionResult> {
+  const admin = await getAdminUser();
+  if (!admin) return DENIED;
+
+  const parsed = SetAiModelSchema.safeParse({
+    modelId: formData.get("modelId"),
+    reason: formData.get("reason"),
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
+  }
+
+  const next = getAiModel(parsed.data.modelId);
+  if (!next) return { ok: false, error: "Model không nằm trong danh sách cho phép." };
+
+  const current = await getActiveAiModel();
+  if (current.id === next.id) {
+    return { ok: false, error: `Model đang dùng đã là ${next.label}.` };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await setActiveAiModel(tx, next.id, admin.id);
+      await writeAuditLog(tx, {
+        adminUserId: admin.id,
+        action: "ai_model_change",
+        reason: `${current.id} → ${next.id}. ${parsed.data.reason}`,
+      });
+    });
+
+    revalidatePath("/admin/prompts");
+    revalidatePath("/admin/audit");
+    return { ok: true, message: `Từ giờ mọi lượt mở khóa dùng ${next.label}.` };
+  } catch (error) {
+    reportHandledError(error, {
+      area: "admin-ai-model",
+      userId: admin.id,
+      extra: { from: current.id, to: next.id },
+    });
+    return { ok: false, error: "Không đổi được model. Thử lại sau." };
   }
 }
