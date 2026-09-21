@@ -262,6 +262,7 @@ describe("reconcileStaleOrders", () => {
       paid: 0,
       closed: 1,
       stillPending: 0,
+      stoppedEarly: false,
     });
     expect(fake.order("order_fresh")?.status).toBe("PENDING");
     expect(fake.order("order_stale")?.status).toBe("EXPIRED");
@@ -283,8 +284,37 @@ describe("reconcileStaleOrders", () => {
       paid: 1,
       closed: 0,
       stillPending: 0,
+      stoppedEarly: false,
     });
     expect(fake.user("user_1")?.credits).toBe(50);
+  });
+
+  it("stops before the function times out instead of being killed mid-sweep", async () => {
+    const orders = [0, 1, 2].map((i) =>
+      makeOrder({
+        ...BASE,
+        id: `order_slow_${i}`,
+        providerOrderId: `170000000010${i}`,
+        createdAt: new Date(Date.now() - 30 * MINUTE),
+        expiresAt: new Date(Date.now() + 5 * MINUTE),
+      }),
+    );
+    const fake = createFakePrisma(orders, [{ id: "user_1", credits: 0 }]);
+    prismaRef.current = fake.db;
+    // Mỗi lượt hỏi PayOS ăn 20ms đồng hồ thật; ngân sách 10ms nên chỉ đủ đơn đầu.
+    getPaymentLink.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return { orderCode: 1700000000100, status: "PENDING", amount: 19_000, amountPaid: 0 };
+    });
+
+    await expect(reconcileStaleOrders(25, 5 * MINUTE, 10)).resolves.toEqual({
+      checked: 1,
+      paid: 0,
+      closed: 0,
+      stillPending: 1,
+      stoppedEarly: true,
+    });
+    expect(getPaymentLink).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -4,6 +4,13 @@ import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report"
 
 const RESEND_API = "https://api.resend.com/emails";
 
+/**
+ * Hạn chờ cho một lượt gọi Resend. `fetch` của Node không có hạn chờ tổng, mà
+ * cảnh báo vận hành lại được gửi ngay trong cron và trong luồng webhook: Resend
+ * treo thì kéo theo cả lượt chạy treo.
+ */
+const RESEND_TIMEOUT_MS = 8_000;
+
 export interface SendEmailInput {
   to: string;
   subject: string;
@@ -49,6 +56,7 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
         subject: input.subject,
         text: input.text,
       }),
+      signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
     });
 
     if (!response.ok) {

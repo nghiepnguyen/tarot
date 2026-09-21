@@ -188,7 +188,19 @@ export interface ReconcileSweepResult {
   paid: number;
   closed: number;
   stillPending: number;
+  /** Hết ngân sách thời gian trước khi duyệt hết danh sách. */
+  stoppedEarly: boolean;
 }
+
+/**
+ * Trần thời gian cho một lượt quét.
+ *
+ * Route chạy trên Vercel với `maxDuration = 60`. Hết giờ thì function bị giết
+ * giữa chừng: check-in Sentry không được đóng và lượt chạy hiện ra dưới dạng
+ * cron timeout. Tự dừng sớm và trả về kết quả một phần thì hơn — quét này chạy
+ * mỗi ngày và idempotent, đơn còn sót sẽ được lượt sau nhặt.
+ */
+export const RECONCILE_BUDGET_MS = 35 * 1000;
 
 /**
  * Quét các đơn còn PENDING quá lâu và đối soát từng cái với PayOS. Chạy theo
@@ -200,15 +212,30 @@ export interface ReconcileSweepResult {
 export async function reconcileStaleOrders(
   limit = 50,
   graceMs = RECONCILE_GRACE_MS,
+  budgetMs = RECONCILE_BUDGET_MS,
 ): Promise<ReconcileSweepResult> {
+  const startedAt = Date.now();
   const orders = await prisma.order.findMany({
     where: { status: "PENDING", createdAt: { lte: new Date(Date.now() - graceMs) } },
     orderBy: { createdAt: "asc" },
     take: limit,
   });
 
-  const result: ReconcileSweepResult = { checked: 0, paid: 0, closed: 0, stillPending: 0 };
+  const result: ReconcileSweepResult = {
+    checked: 0,
+    paid: 0,
+    closed: 0,
+    stillPending: 0,
+    stoppedEarly: false,
+  };
   for (const order of orders) {
+    if (Date.now() - startedAt >= budgetMs) {
+      result.stoppedEarly = true;
+      console.warn(
+        `[payos] Dừng đối soát sớm sau ${result.checked}/${orders.length} đơn: hết ngân sách thời gian.`,
+      );
+      break;
+    }
     const status = await reconcileOrder(order);
     result.checked += 1;
     if (status === "PAID") result.paid += 1;

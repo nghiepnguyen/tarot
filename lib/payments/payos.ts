@@ -3,6 +3,16 @@ import crypto from "crypto";
 
 const PAYOS_API_BASE = "https://api-merchant.payos.vn";
 
+/**
+ * Hạn chờ cho mỗi lượt gọi PayOS.
+ *
+ * `fetch` của Node không có hạn chờ tổng: một kết nối treo chỉ đứt sau 5 phút
+ * (headers timeout của undici). Job đối soát chạy trên Vercel với trần 60
+ * giây, nên một cuộc gọi treo là đủ để function bị giết giữa chừng — không kịp
+ * đóng check-in, và Sentry báo cron timeout.
+ */
+const PAYOS_TIMEOUT_MS = 8_000;
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Thiếu biến môi trường ${name} cho PayOS.`);
@@ -78,6 +88,7 @@ export async function createPaymentLink(
     method: "POST",
     headers: payosHeaders(),
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(PAYOS_TIMEOUT_MS),
   });
 
   const json = await response.json();
@@ -111,7 +122,12 @@ export interface PaymentLinkInfo {
 export async function getPaymentLink(id: string): Promise<PaymentLinkInfo | null> {
   const response = await fetch(
     `${PAYOS_API_BASE}/v2/payment-requests/${encodeURIComponent(id)}`,
-    { method: "GET", headers: payosHeaders(), cache: "no-store" },
+    {
+      method: "GET",
+      headers: payosHeaders(),
+      cache: "no-store",
+      signal: AbortSignal.timeout(PAYOS_TIMEOUT_MS),
+    },
   );
 
   const json = await response.json();

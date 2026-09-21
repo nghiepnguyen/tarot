@@ -12,7 +12,10 @@ const CRON_MONITOR = {
   // 20:00 UTC, tức 3 giờ sáng giờ Việt Nam.
   schedule: "0 20 * * *",
   timezone: "UTC",
-  maxRuntimeMinutes: 5,
+  // Vercel giết function ở `maxDuration` (60 giây), và lúc đó không còn ai gửi
+  // check-in đóng — lượt chạy hiện ra là "timeout" chứ không phải "error". Để
+  // sát trần function thì Sentry báo sau 2 phút thay vì 5.
+  maxRuntimeMinutes: 2,
   checkinMarginMinutes: 60,
 };
 

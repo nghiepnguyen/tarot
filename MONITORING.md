@@ -99,6 +99,10 @@ Chỉ chạy khi có biến `VERCEL`, nên `pnpm dev` và test không ghi vào m
 
 `checkinMargin` để 60 phút vì cron trên gói Hobby của Vercel không chạy đúng phút đã khai, nó được kích trong khoảng một giờ quanh mốc. Biên hẹp hơn thì Sentry báo "missed" gần như mỗi ngày và cảnh báo thành tiếng ồn.
 
+`maxRuntime` để 2 phút, sát trần `maxDuration = 60` của route. Vercel giết function đúng ở trần đó, và function chết thì không còn ai gửi check-in đóng — lượt chạy hiện ra trong Sentry là **timeout** chứ không phải **error**. Thấy "A timeout check-in was detected" thì tìm chỗ chạy quá lâu, đừng tìm exception.
+
+Trần 60 giây được giữ từ hai phía: mỗi lượt gọi PayOS và Resend có `AbortSignal.timeout` 8 giây (`fetch` của Node không có hạn chờ tổng, kết nối treo chỉ đứt sau 5 phút), và `reconcileStaleOrders` tự dừng sau `RECONCILE_BUDGET_MS` (35 giây) rồi trả về `stoppedEarly: true`. Quét này idempotent và chạy mỗi ngày nên đơn còn sót sẽ được lượt sau nhặt.
+
 `timezone` phải truyền tường minh là `"UTC"` — Vercel Cron luôn hiểu lịch theo UTC, còn Sentry thiếu trường này thì hiện "At 20:00 (undefined)" và người đọc tự đoán. `0 20 * * *` UTC là 3 giờ sáng giờ Việt Nam.
 
 ### Vì sao không dùng bản tự động của SDK
