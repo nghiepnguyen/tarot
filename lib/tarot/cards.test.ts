@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { getCardById, TAROT_CARDS } from "./cards";
 
@@ -30,6 +32,26 @@ describe("TAROT_CARDS", () => {
       expect(card.basicMeaning.length).toBeGreaterThan(0);
       expect(card.reversedMeaning.length).toBeGreaterThan(0);
       expect(card.keywords.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("gives every card a meaning of its own", () => {
+    // Ẩn Phụ từng sinh bằng công thức rank × chất, nên "three" ở bốn chất chỉ
+    // khác nhau ở câu mở đầu — Three of Swords mang nghĩa "phát triển, hợp
+    // tác" trong khi lá bài vẽ ba lưỡi kiếm xuyên qua một trái tim. Người dùng
+    // nhìn thấy lá bài trong lúc đọc luận giải, nên chênh đó lộ ra ngay.
+    const basics = TAROT_CARDS.map((card) => card.basicMeaning);
+    const reversed = TAROT_CARDS.map((card) => card.reversedMeaning);
+    expect(new Set(basics).size).toBe(basics.length);
+    expect(new Set(reversed).size).toBe(reversed.length);
+  });
+
+  it("points every card at an image that exists on disk", () => {
+    // `image` dựng từ id, nên gõ sai một id là hỏng một ảnh — mà lỗi đó chỉ
+    // hiện ra dưới dạng một ô trống lúc người dùng lật bài.
+    for (const card of TAROT_CARDS) {
+      const file = path.join(process.cwd(), "public", card.image);
+      expect(existsSync(file), card.image).toBe(true);
     }
   });
 });
