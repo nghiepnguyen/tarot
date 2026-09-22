@@ -88,6 +88,7 @@ Cài `@sentry/cli` cần chạy script postinstall (tải binary) — đã bật
 | `lib/ai/settings.ts` | `ai-model-setting` | Model đã chọn không còn trong danh sách cho phép — mọi lượt sinh lặng lẽ rơi về mặc định. |
 | `lib/payments/orders.ts` | `payos-reconcile` | PayOS không trả lời lúc đối soát; đơn nằm lại PENDING. |
 | `lib/payments/orders.ts` | `payos-amount-mismatch` | Số tiền lệch. Đã có email cảnh báo, nhưng email cũng trượt được. |
+| `app/actions/reviews.ts` | `interpretation-review` | Đánh giá là dữ liệu chỉ có một lần: người ta chấm xong là đóng trang. Ghi hỏng mà im lặng thì mất hẳn, và không có đường nào lấy lại. Email hỏng thì *không* báo ở đây — `email-send` lo phần đó, vì điểm đã nằm trong database trước khi thư được gửi. |
 | `lib/email/resend.ts` | `email-send` | Resend chết thì mất cả cảnh báo vận hành lẫn email xác nhận. |
 
 Tag `handled: true` để lọc riêng khỏi lỗi làm sập request. Extra chỉ chứa id và số — không đưa câu hỏi, email hay nội dung thư vào đó.

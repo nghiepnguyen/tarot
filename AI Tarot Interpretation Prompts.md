@@ -432,6 +432,18 @@ GROUP BY 1 ORDER BY 1 DESC;
 
 Chỗ tốn tiền đáng để mắt không phải biên lợi nhuận mà là free trial: mỗi tài khoản mới được 2 lượt miễn phí, nay tốn khoảng 730đ, không thu lại gì, và không có gì chặn việc đăng ký email mới để lấy tiếp.
 
+### Chấm mù: ai viết hay hơn, để người đọc trả lời
+
+Số đo ở trên nói được giá và độ trễ. Nó không nói được bản nào *đọc hay hơn*, mà đó mới là câu hỏi khi hai model chênh nhau chưa tới 150đ một lượt. Đọc tay thì mỗi lần được một trải bài, và người đọc biết mình đang đọc model nào.
+
+Nên từ 22/09/2026 có ba mảnh ghép:
+
+- **Bút danh.** Mỗi model ký một tên cố định trong `lib/ai/models.ts` — Gemini là **Minh Trí**, DeepSeek là **Duy Thâm** — in ở đầu bài dạng `Tarot Reader: …`. Tên nhà cung cấp không bao giờ ra tới giao diện. Bút danh phải cố định theo model (không đổi theo lượt) thì mới cộng điểm theo model được, và phải không gợi gì về nhà cung cấp thì điểm mới là điểm mù. Hai điều kiện đó có test canh.
+- **Chế độ ngẫu nhiên.** `/admin/prompts` chọn "Ngẫu nhiên" thì mỗi lượt mở khóa bốc một model, xác suất đều, gieo một lần ngay trước khi trừ credit. Đều là điều kiện để so: hai cỡ mẫu lệch nhau thì hai điểm trung bình không so được. Row `AiInterpretation` vẫn ghi model thật.
+- **Ba tiêu chí, chấm rời.** Độ chính xác, độ rõ ràng, tính hữu ích — mỗi thứ 1–5 sao. Rời vì một bài đọc rõ ràng mà không gợi được hành động nào là một kết quả có thật, và một điểm tổng duy nhất sẽ giấu mất nó. Đúng thứ DeepSeek nhiều khả năng lệch: nó viết vượt mốc số từ ở `connections` và `actionSuggestions`, mà dài hơn không có nghĩa là hữu ích hơn.
+
+Điểm đọc ở `/admin/prompts`, theo đúng cặp (prompt, model), luôn kèm số lượt đã chấm — 5,0 sao trên một lượt và 4,1 sao trên hai trăm lượt nhìn giống hệt nhau nếu chỉ đọc trung bình. Cơ chế vận hành và cái bẫy thiếu API key ở mục "Chấm điểm bản diễn giải" trong `SETUP.md`.
+
 Nội dung hiển thị nên được kiểm thử với các trường hợp: câu hỏi ngắn, câu hỏi dài, lá ngược, ba lá có ý nghĩa căng thẳng, câu hỏi về người thứ ba, câu hỏi yêu cầu dự đoán chắc chắn, câu hỏi tài chính rủi ro và câu hỏi có dấu hiệu khủng hoảng.
 
 ## References

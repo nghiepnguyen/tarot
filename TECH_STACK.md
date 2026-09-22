@@ -26,7 +26,9 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 
 ## AI
 
-- Dùng một AI provider có API server-side để tạo diễn giải nâng cao.
+- Hai nhà cung cấp chạy song song sau một cửa duy nhất (`lib/ai/generate.ts`): Google Gemini (`@google/genai`) và DeepSeek (`fetch` thẳng, giao thức OpenAI — hãng không có SDK JavaScript chính chủ). Thêm nhà cung cấp thứ ba là thêm một `case`, và TypeScript báo ngay nếu quên nối dây.
+- Model mặc định đổi được từ `/admin/prompts` mà không cần deploy, trong giới hạn danh sách cho phép ở `lib/ai/models.ts`. Có thêm chế độ **Ngẫu nhiên**: mỗi lượt bốc một model, mỗi model ký tên bằng một bút danh cố định, và người đọc chấm điểm ba tiêu chí mà không thấy tên nhà cung cấp — xem mục chấm mù trong `FEATURES.md`.
+- Giá token khai theo model ở `lib/ai/pricing.ts`. Bảng đó là *lịch sử giá*: model đã gỡ vẫn phải giữ giá chừng nào còn row sinh ra bằng nó.
 - Prompt nên nhận các biến: câu hỏi, tên lá, vị trí, xuôi/ngược, chủ đề và giọng văn.
 - Structured output nên được validate bằng Zod trước khi hiển thị.
 - Không gửi thông tin thanh toán hoặc dữ liệu không cần thiết vào prompt.
@@ -36,7 +38,7 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 
 - Cổng thanh toán: PayOS (QR chuyển khoản, phù hợp app indie tại Việt Nam) đã tích hợp cho nạp credit; cân nhắc Stripe nếu sản phẩm mở rộng ra quốc tế.
 - Xác nhận giao dịch bằng webhook server-side, không chỉ dựa vào redirect từ trình duyệt. Webhook có thể không bao giờ tới, nên có thêm ba đường đối soát chủ động — xem mục "Đối soát đơn hàng" trong `SETUP.md`.
-- Email: Resend, gọi thẳng REST API bằng `fetch` (không thêm dependency, khớp cách viết client PayOS). Hiện chỉ dùng cho cảnh báo vận hành về sự cố thanh toán; chưa gửi email nào cho khách.
+- Email: Resend, gọi thẳng REST API bằng `fetch` (không thêm dependency, khớp cách viết client PayOS). Dùng cho cảnh báo vận hành về sự cố thanh toán, email xác nhận đăng ký và đặt lại mật khẩu cho khách, và thư báo mỗi lượt người đọc chấm điểm một bản diễn giải. `sendEmail` không bao giờ ném lỗi — chỗ gọi tự quyết định hỏng thì làm gì.
 - Giai đoạn đầu có thể dùng form đặt lịch và email notification; sau đó tích hợp Google Calendar hoặc hệ thống booking chuyên dụng.
 
 ## Đo lường

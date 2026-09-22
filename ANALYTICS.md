@@ -14,6 +14,7 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `components/tarot/OrderReturn.tsx` | Server component gom mọi việc khi PayOS trả người dùng về; dùng chung cho `/credits` và `/profile`. |
 | `components/tarot/OrderStatusWatcher.tsx` | Đối soát đơn còn `PENDING` sau khi PayOS trả về; bắn `purchase_pending` / `purchase_unsettled`. |
 | `components/tarot/PendingOrdersReconciler.tsx` | Đối soát đơn treo của chính người dùng khi họ mở lại trang nạp credit. Không bắn event. |
+| `components/tarot/InterpretationReviewBox.tsx` | Hộp chấm điểm cuối mỗi bản diễn giải; bắn `interpretation_review_submit`. Điểm thật nằm ở database và email, GA4 chỉ để đếm *có bao nhiêu người chịu chấm*. |
 | `components/ui/CreditBadge.tsx` | Badge credit ở header, đồng thời là lối vào `/credits`; bắn `nav_click`. |
 | `components/analytics/LoginPromptLink.tsx` | Link "Đăng nhập" có tracking, dùng trong server component. |
 | `components/analytics/ConsentBanner.tsx` | Banner xin đồng ý, neo ở đáy màn hình. |
@@ -69,10 +70,13 @@ Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner ne
 | `ai_unlock_success` | Server action trả về diễn giải | `reading_id`, `is_free_trial`, `credits_spent` |
 | `ai_unlock_error` | Server action trả lỗi | `reading_id`, `error` |
 | `ai_unlock_retry` | Bấm "Thử lại" sau lỗi | `reading_id` |
+| `interpretation_review_submit` | Gửi (hoặc cập nhật) đánh giá ở cuối bản diễn giải | `interpretation_id`, `reader` (bút danh), `accuracy`, `clarity`, `actionability`, `has_comment` |
 | `topup_prompt_click` | Bấm link nạp thêm khi hết credit | `reading_id`, `has_purchased` |
 | `nav_click` | Vào trang nạp credit từ header hoặc menu | `destination`, `source` (`credit_badge` hoặc `user_menu`) |
 
 `ai_unlock_view` là mẫu số để tính tỉ lệ chuyển đổi: `ai_unlock_success / ai_unlock_view`.
+
+`interpretation_review_submit` bắn cả lần chấm đầu lẫn mỗi lần sửa, nên nó **không** đếm được số bài đã có đánh giá — chỗ đọc con số đó là cột "Chấm" trên `/admin/prompts`, một dòng một bài. Ở đây nó trả lời câu khác: bao nhiêu phần người đọc chịu dừng lại chấm, tính trên `ai_unlock_success`. Tham số `reader` là bút danh (`Minh Trí` / `Duy Thâm`), không phải tên model — GA4 là dữ liệu bên thứ ba, và bút danh đã đủ để tách hai nhóm.
 
 ### Thanh toán
 

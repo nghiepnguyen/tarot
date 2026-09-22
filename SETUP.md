@@ -189,7 +189,7 @@ components/
 lib/
   admin/                # chỉnh credit, nhật ký quản trị, số liệu dashboard
   ai/                   # prompt, danh sách model, gọi Gemini/DeepSeek, validate bằng Zod
-  email/                # Resend, chỉ dùng cho cảnh báo vận hành
+  email/                # Resend: cảnh báo vận hành, thư cho khách, thư báo đánh giá
   analytics/            # measurement ID và trackEvent()
   auth/                 # rate limit, guard quyền quản trị
   db/                   # Prisma client
@@ -242,6 +242,7 @@ Reading không có route riêng, kết quả render ngay trong trang. Chưa có 
 - Kiểm tra webhook thanh toán có verify chữ ký và idempotency.
 - Sau khi set `CRON_SECRET`, gọi thử `curl -H "Authorization: Bearer $CRON_SECRET" https://tarot.thanhnghiep.top/api/cron/reconcile-orders` và xác nhận trả về `{"ok":true,...}` chứ không phải 401/503.
 - Bật rate limit cho API bốc bài và AI.
+- Nếu định bật chế độ **Ngẫu nhiên** ở `/admin/prompts`: đặt API key của *mọi* nhà cung cấp trong `lib/ai/models.ts` trước khi bật, xem mục "Chấm điểm bản diễn giải" ở dưới.
 - Giới hạn kích thước input, sanitize nội dung và validate response AI bằng schema.
 - Không log câu hỏi hoặc dữ liệu nhạy cảm nếu không cần thiết.
 - Thiết lập backup database và chính sách retention.
@@ -374,13 +375,27 @@ Session là JWT, mang theo một bản cache của `role`. Nó được làm m�
 
 ### Những gì làm được
 
-`/admin` (tổng quan, lọc 7/30/90 ngày), `/admin/users` (tra theo email, chi tiết từng người, chỉnh credit), `/admin/orders` (lọc theo trạng thái, hoàn credit, đối soát lại), `/admin/transactions`, `/admin/audit`, `/admin/deck` (chỉ đọc).
+`/admin` (tổng quan, lọc 7/30/90 ngày), `/admin/users` (tra theo email, chi tiết từng người, chỉnh credit), `/admin/orders` (lọc theo trạng thái, hoàn credit, đối soát lại), `/admin/transactions`, `/admin/audit`, `/admin/deck` (chỉ đọc), `/admin/prompts` (đổi model đang chạy, xem số đo và điểm người đọc chấm theo từng cặp prompt–model).
 
 Chỉnh credit và hoàn đơn đều bắt buộc ghi lý do, và ghi một dòng `AdminAuditLog` trong cùng transaction với thay đổi. `AdminAuditLog` cố tình không có khoá ngoại: xoá tài khoản cascade sang đơn và giao dịch, mà dòng nhật ký thì phải sống lâu hơn đối tượng của nó.
 
 Số tiền trên dashboard lấy từ bảng `Order`, không lấy từ GA4: event `purchase` đếm thiếu những đơn được cứu ở đường đối soát thứ ba. Phễu bắt đầu từ reading đã lưu — người chưa đăng nhập không vào database.
 
 Nếu `/admin` chậm: `Reading`, `AiInterpretation` và `CreditTransaction` chưa có index `createdAt` đứng riêng (`[userId, createdAt]` không phục vụ được range scan toàn cục). Đó là chỗ phải thêm trước tiên.
+
+## Chấm điểm bản diễn giải
+
+Cuối mỗi bản diễn giải có hộp chấm ba tiêu chí — độ chính xác, độ rõ ràng, tính hữu ích — mỗi tiêu chí 1–5 sao kèm ô nhận xét. Điểm ghi vào bảng `InterpretationReview`, một dòng cho một `AiInterpretation` (`@unique`), sửa lại được bằng upsert.
+
+Mỗi lượt gửi bắn một email về `thanhnghiep.top@gmail.com` — địa chỉ này là hằng số trong `lib/ai/reviews.ts`, không phải biến môi trường: đổi chỗ nhận ý kiến khách là việc nên đi qua code review, và để trong env thì môi trường nào thiếu biến sẽ lặng lẽ nuốt thư. Thư mang cả bút danh lẫn tên model thật, câu hỏi và id bài đọc; bản sửa có tiền tố `[Sửa]`.
+
+Thư đi **sau** khi điểm đã nằm trong database, và kết quả gửi không ảnh hưởng gì tới người vừa chấm. Nghĩa là thiếu `RESEND_API_KEY` hoặc `ALERT_EMAIL_FROM` thì không mất dữ liệu — chỉ là không ai nhận được thông báo. Chỗ đọc số liệu đầy đủ luôn là `/admin/prompts`, không phải hòm thư.
+
+### Chế độ chấm mù
+
+`/admin/prompts` có lựa chọn **Ngẫu nhiên** bên cạnh các model: mỗi lượt mở khóa bốc một model trong danh sách, xác suất đều. Mỗi model ký tên bằng bút danh cố định (`AiModel.persona`), và người đọc chỉ thấy bút danh đó, nên điểm họ chấm là điểm chấm mù.
+
+Bật chế độ này thì **mọi** nhà cung cấp trong `lib/ai/models.ts` phải có API key trên môi trường đang chạy. Thiếu một key nghĩa là phần số lượt bốc trúng model đó báo lỗi và hoàn credit — nhìn từ bảng số đo thì giống hệt một model chập chờn, chứ không giống một biến môi trường còn thiếu. Trang quản trị cảnh báo ngay tại ô chọn (chỉ nêu *tên* biến, không bao giờ nêu giá trị), nhưng không chặn: local và preview thiếu key là chuyện bình thường.
 
 ## Chạy e2e
 
