@@ -43,6 +43,7 @@
 ## Phase 2 — Tài khoản và lịch sử
 
 - Đăng ký, đăng nhập và đăng xuất. Đăng ký phải xác nhận email: tài khoản chưa bấm link trong thư thì chưa đăng nhập được và chưa có credit.
+- Đăng nhập bằng tài khoản Google. Email trùng thì gắn vào tài khoản sẵn có, không đẻ tài khoản thứ hai; người mới được tặng credit dùng thử ngay, không phải qua bước xác nhận email.
 - Quên mật khẩu: nhận link đặt lại qua email, link sống 1 giờ và dùng một lần. Đổi mật khẩu xong thì mọi thiết bị đang đăng nhập bị đăng xuất trong vòng 5 phút.
 - Lưu lịch sử các lần trải bài.
 - Xem lại câu hỏi, ba lá bài và diễn giải cơ bản.

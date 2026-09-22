@@ -224,6 +224,7 @@ export async function loginAction(
       });
       if (
         user &&
+        user.passwordHash &&
         !user.emailVerifiedAt &&
         (await bcrypt.compare(validatedFields.data.password, user.passwordHash))
       ) {
@@ -232,12 +233,29 @@ export async function loginAction(
           needsVerification: true,
         };
       }
+      // Tài khoản chỉ đăng nhập bằng Google cũng rơi vào câu này, dù mật khẩu
+      // "không đúng" ở đó nghĩa là "chưa từng có". Nói thẳng ra thì form này
+      // thành chỗ dò xem địa chỉ nào đăng ký bằng Google. Đường ra cho người
+      // gõ nhầm chỗ là nút Google ngay bên trên, hoặc "Quên mật khẩu?" —
+      // `consumePasswordResetToken` đặt mật khẩu cho cả tài khoản chưa có.
       return { message: "Email hoặc mật khẩu không đúng." };
     }
     throw error;
   }
 
   redirect("/?auth=login");
+}
+
+/**
+ * Đẩy người dùng sang Google. Không nhận tham số và không có gì để kiểm tra:
+ * `signIn` ném ra một redirect, mọi quyết định thật nằm ở callback `signIn`
+ * trong `auth.ts` lúc Google gọi ngược về.
+ *
+ * `?auth=google` để trang chủ bắn event đăng nhập, cùng cơ chế với
+ * `?auth=login` của form mật khẩu.
+ */
+export async function signInWithGoogleAction() {
+  await signIn("google", { redirectTo: "/?auth=google" });
 }
 
 export async function logoutAction() {

@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { isGoogleLoginEnabled } from "@/lib/auth/google";
 
 export const metadata: Metadata = {
   title: "Đăng ký",
@@ -15,7 +16,7 @@ export default function SignupPage() {
       <Header />
       <main id="main-content" className="flex flex-1 items-center justify-center">
         <Section className="flex items-center justify-center">
-          <SignupForm />
+          <SignupForm googleEnabled={isGoogleLoginEnabled()} />
         </Section>
       </main>
       <Footer />

@@ -36,6 +36,10 @@ DATABASE_URL=postgresql://tarot:tarot@localhost:5432/tarot
 # Generate with: openssl rand -base64 32
 AUTH_SECRET=
 
+# Google OAuth. Thiếu thì nút "Đăng nhập với Google" không hiện.
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+
 # Get a key at https://aistudio.google.com/apikey
 GEMINI_API_KEY=your_gemini_api_key
 
@@ -307,6 +311,36 @@ Vài điểm dễ vướng:
 - **Gửi hỏng vẫn đi tiếp tới `/verify-email/sent?status=failed`.** Tài khoản đã tạo rồi nên đăng ký lại sẽ vướng "email đã đăng ký"; trang đó có nút gửi lại, đó mới là đường thoát.
 - **Form gửi lại luôn báo "đã gửi"** kể cả khi email không có tài khoản hoặc đã xác nhận rồi. Trả lời khác nhau là biến nó thành công cụ dò xem địa chỉ nào có tài khoản.
 - **Người dùng cũ** (tạo trước migration `add_email_verification`) được backfill `emailVerifiedAt = createdAt`. Không có bước đó thì cột NULL sẽ khoá đăng nhập của toàn bộ tài khoản hiện có.
+
+## Đăng nhập bằng Google
+
+Nút "Đăng nhập với Google" ở `/login` và `/signup` đẩy người dùng qua OAuth của Google; đường quay về đi vào callback `signIn` rồi `jwt` trong `auth.ts`, và toàn bộ phần chạm database gói trong `linkGoogleAccount` (`lib/auth/google.ts`).
+
+Không dùng adapter database của Auth.js. Session vẫn là JWT và bảng `User` vẫn là chỗ duy nhất định nghĩa một người dùng — chỉ thêm hai cột: `googleId` (chính là `sub` trong id token của Google) và `passwordHash` giờ cho phép NULL, vì tài khoản chỉ đăng nhập bằng Google không có mật khẩu nào để băm.
+
+Ba tình huống khi Google gọi ngược về:
+
+| Tài khoản trùng | Việc xảy ra |
+| --- | --- |
+| Không có | Tạo mới, `emailVerifiedAt` đặt ngay, cộng credit dùng thử |
+| Có, đã xác nhận email | Gắn `googleId` vào tài khoản đó. Không cộng credit lần hai |
+| Có, chưa bấm link xác nhận | Gắn `googleId`, đặt `emailVerifiedAt`, cộng credit dùng thử |
+
+Vài điểm dễ vướng:
+
+- **`profile.email_verified` là chốt duy nhất.** Callback `signIn` từ chối mọi lần đăng nhập Google không có nó. Bỏ chốt đó đi thì ai dựng được một tài khoản Google mang địa chỉ người khác cũng chiếm được tài khoản tương ứng ở đây, vì việc gắn dựa hẳn vào email trùng.
+- **Không gửi email xác nhận cho người đăng nhập Google.** Google đã làm đúng việc mà link xác nhận làm; bắt xác nhận thêm lần nữa chỉ là một bước thừa giữa người dùng và credit của họ.
+- **Credit dùng thử vẫn chỉ cộng một lần**, và điều kiện `freeCreditsGrantedAt: null` nằm ngay trong mệnh đề `where` của lệnh ghi — giống hệt `consumeVerificationToken`, để hai lần đăng nhập song song không cộng hai lần.
+- **Tài khoản chỉ có Google mà đăng nhập bằng mật khẩu sẽ thấy "Email hoặc mật khẩu không đúng".** Nói thẳng "tài khoản này dùng Google" là biến form đăng nhập thành công cụ dò xem địa chỉ nào đăng ký bằng đường nào. Đường ra là nút Google ngay bên dưới form, hoặc "Quên mật khẩu?" — đường đó đặt được mật khẩu cho cả tài khoản chưa từng có.
+- **Email trong database không chạy theo Google.** Tra `googleId` trước rồi mới tới email, nên người đổi địa chỉ Gmail chính vẫn về đúng tài khoản cũ, nhưng cột `User.email` giữ nguyên: đó là thứ hoá đơn và mọi đường liên lạc khác đang dùng.
+- **Thiếu `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` thì provider không được đăng ký** và nút không hiện. Đăng nhập bằng email/mật khẩu không bị ảnh hưởng.
+
+Lúc tạo OAuth client ở [Google Cloud Console](https://console.cloud.google.com/apis/credentials) (loại **Web application**), Authorized redirect URI phải khớp đúng từng ký tự:
+
+```
+http://localhost:3000/api/auth/callback/google
+https://tarot.thanhnghiep.top/api/auth/callback/google
+```
 
 ## Đặt lại mật khẩu
 

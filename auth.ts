@@ -1,7 +1,9 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
+import { isGoogleLoginEnabled, linkGoogleAccount } from "@/lib/auth/google";
 import { LoginSchema } from "@/lib/validation/auth";
 
 /**
@@ -43,6 +45,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (!user) return null;
 
+        // Tài khoản chỉ có Google thì `passwordHash` là null và không có mật
+        // khẩu nào khớp được. Phải chặn trước `bcrypt.compare`: hàm đó ném lỗi
+        // khi nhận null chứ không trả false.
+        if (!user.passwordHash) return null;
+
         const passwordsMatch = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!passwordsMatch) return null;
 
@@ -60,9 +67,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    // Thiếu `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` thì không đăng ký provider:
+    // `/api/auth/signin/google` trả 404 thay vì 500, và giao diện hỏi cùng một
+    // biến môi trường trước khi vẽ nút (xem `isGoogleLoginEnabled`).
+    ...(isGoogleLoginEnabled()
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    /**
+     * Chốt duy nhất của đường Google, và nó chỉ hỏi một câu: Google có xác
+     * nhận địa chỉ email này là của người đang đăng nhập không?
+     *
+     * Câu đó quyết định tất cả, vì `linkGoogleAccount` gắn danh tính Google
+     * vào tài khoản trùng email. Không có `email_verified`, bất kỳ ai dựng
+     * được một tài khoản Google mang địa chỉ người khác cũng đăng nhập được
+     * vào tài khoản của người đó ở đây.
+     */
+    async signIn({ account, profile }) {
+      if (account?.provider !== "google") return true;
+      return profile?.email_verified === true && typeof profile.email === "string";
+    },
+    async jwt({ token, user, account, profile }) {
+      // Với Google, `user.id` là `sub` bên Google chứ không phải id trong
+      // database — nên phải đi qua `linkGoogleAccount` để lấy đúng tài khoản
+      // (tạo mới, hoặc gắn vào tài khoản email sẵn có). Từ dòng return trở đi
+      // token không còn khác gì token của người đăng nhập bằng mật khẩu: các
+      // lần làm mới sau đó dùng chung một đường ở dưới.
+      if (user && account?.provider === "google") {
+        const linked = await linkGoogleAccount({
+          googleId: String(profile?.sub ?? account.providerAccountId),
+          email: String(profile?.email),
+          name: typeof profile?.name === "string" ? profile.name : null,
+        });
+        token.id = linked.id;
+        token.pwdAt = linked.passwordChangedAt?.getTime() ?? 0;
+        token.role = linked.role;
+        token.pwdCheckedAt = Date.now();
+        return token;
+      }
+
       if (user) {
         token.id = user.id as string;
         token.pwdAt = user.passwordChangedAt?.getTime() ?? 0;

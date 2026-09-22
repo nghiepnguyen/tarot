@@ -15,10 +15,19 @@ enum Role {
 model User {
   id                   String             @id @default(cuid())
   email                String             @unique
-  passwordHash         String
+  // Null với tài khoản chỉ đăng nhập bằng Google: chưa bao giờ có mật khẩu để
+  // băm. Mọi chỗ so khớp mật khẩu phải tự loại null trước khi gọi bcrypt —
+  // `bcrypt.compare` ném lỗi chứ không trả false khi nhận null.
+  passwordHash         String?
   name                 String?
+  // `sub` của Google: định danh một tài khoản Google, ổn định kể cả khi người
+  // ta đổi tên hiển thị. Null nghĩa là chưa từng đăng nhập bằng Google. Gắn
+  // vào một tài khoản sẵn có khi email trùng — Google đã xác nhận địa chỉ đó,
+  // xem `lib/auth/google.ts`.
+  googleId             String?            @unique
   // Null nghĩa là chưa bấm link trong email xác nhận. Tài khoản tồn tại nhưng
-  // không đăng nhập được và chưa được tặng credit dùng thử.
+  // không đăng nhập được và chưa được tặng credit dùng thử. Đăng nhập Google
+  // cũng đặt mốc này: Google đã xác nhận email hộ, không cần gửi link nữa.
   emailVerifiedAt      DateTime?
   // Mốc đổi mật khẩu gần nhất. Session là JWT không tra database, nên đây là
   // thứ duy nhất cho phép hạ những phiên đã phát trước lần đổi đó.

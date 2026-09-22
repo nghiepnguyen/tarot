@@ -104,13 +104,15 @@ Chọn gói và bấm thanh toán là hai bước tách biệt, nên `select_cre
 
 | Event | Bắn khi | Tham số |
 |---|---|---|
-| `login_submit` / `signup_submit` | Submit form | — |
+| `login_submit` / `signup_submit` | Submit form | `method: "google"` khi bấm nút Google, không có tham số khi submit form mật khẩu |
 | `login_failed` / `signup_failed` | Form trả về lỗi | `reason` (`validation` hoặc `server`), `fields` |
-| `login` / `sign_up` | Đăng nhập/đăng ký thành công | `method: "credentials"` |
+| `login` / `sign_up` | Đăng nhập/đăng ký thành công | `method: "credentials"` hoặc `"google"` |
 | `logout` | Submit form đăng xuất | — |
 | `login_prompt_click` | Bấm link đăng nhập trong CTA | `placement` |
 
 `loginAction` và `signupAction` `redirect()` khi thành công, nên form không còn sống để tự báo cáo. Hai action redirect về `/?auth=login` và `/?auth=signup`; `AuthSuccessTracker` bắn event rồi xóa param bằng `history.replaceState`. Đổi giá trị param ở một nơi thì phải đổi ở cả hai.
+
+Đăng nhập Google về `/?auth=google` và luôn bắn `login`, kể cả lần đầu tiên của một người mới: đích redirect được chốt lúc bấm nút, còn chuyện tài khoản đã có hay vừa được tạo thì mãi tới callback `jwt` mới biết. Nghĩa là `sign_up` chỉ đếm người đăng ký bằng email — đọc hai con số đó cạnh nhau phải nhớ điều này.
 
 ### Lịch sử và điều hướng
 

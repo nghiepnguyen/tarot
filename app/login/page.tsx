@@ -4,6 +4,7 @@ import { Footer } from "@/components/ui/Footer";
 import { Section } from "@/components/ui/Section";
 import { CircleCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { isGoogleLoginEnabled } from "@/lib/auth/google";
 import { AuthSuccessTracker } from "@/components/analytics/AuthSuccessTracker";
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default async function LoginPage({
               </span>
             </p>
           ) : null}
-          <LoginForm />
+          <LoginForm googleEnabled={isGoogleLoginEnabled()} />
         </Section>
       </main>
       <Footer />

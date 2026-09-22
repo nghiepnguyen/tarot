@@ -58,6 +58,9 @@ export default async function Home({
       {authResult === "login" || authResult === "signup" ? (
         <AuthSuccessTracker method={authResult} />
       ) : null}
+      {authResult === "google" ? (
+        <AuthSuccessTracker method="login" provider="google" />
+      ) : null}
       <Header />
       <main id="main-content" className="flex flex-1 flex-col">
         <Section>

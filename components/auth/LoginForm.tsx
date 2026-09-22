@@ -6,9 +6,14 @@ import { loginAction } from "@/app/actions/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { trackEvent } from "@/lib/analytics/gtag";
 
-export function LoginForm() {
+/**
+ * `googleEnabled` do trang truyền xuống: chỉ component server đọc được biến
+ * môi trường, và nút dẫn tới một provider chưa cấu hình thì chỉ dẫn tới lỗi.
+ */
+export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const [state, action, pending] = useActionState(loginAction, undefined);
 
   // Thành công thì server redirect, state không bao giờ quay lại — nên ở đây
@@ -84,6 +89,8 @@ export function LoginForm() {
           {pending ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>
       </form>
+
+      {googleEnabled ? <GoogleSignInButton label="Đăng nhập với Google" /> : null}
 
       <p className="text-center text-sm text-muted">
         Chưa có tài khoản?{" "}

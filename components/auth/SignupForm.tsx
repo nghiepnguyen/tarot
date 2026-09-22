@@ -6,9 +6,11 @@ import { signupAction } from "@/app/actions/auth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { trackEvent } from "@/lib/analytics/gtag";
 
-export function SignupForm() {
+/** `googleEnabled`: xem ghi chú cùng tên trong `LoginForm`. */
+export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
   const [state, action, pending] = useActionState(signupAction, undefined);
 
   // Thành công thì server redirect sang /verify-email/sent, state không bao giờ
@@ -82,6 +84,8 @@ export function SignupForm() {
           {pending ? "Đang tạo tài khoản..." : "Đăng ký"}
         </Button>
       </form>
+
+      {googleEnabled ? <GoogleSignInButton label="Đăng ký với Google" /> : null}
 
       <p className="text-center text-sm text-muted">
         Đã có tài khoản?{" "}
