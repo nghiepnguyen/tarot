@@ -9,11 +9,15 @@ import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
+import { buildReadingTeaser } from "@/lib/tarot/teaser";
+import type { DrawnCard } from "@/lib/tarot/draw";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
 
 interface AiUnlockPanelProps {
   readingId: string;
   initialData?: DisplayInterpretation | null;
+  /** Ba lá vừa lật, dùng dựng mấy dòng gợi mở ở trạng thái chưa mở khóa. */
+  cards?: DrawnCard[];
 }
 
 // Cỡ chữ gốc của cả phần diễn giải; mọi dòng bên trong đo bằng `em` theo nó,
@@ -58,7 +62,7 @@ function SectionHeading({
   );
 }
 
-export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
+export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelProps) {
   const [data, setData] = useState<DisplayInterpretation | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null);
@@ -75,6 +79,7 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
     };
   }, [data]);
 
+  const teaser = cards ? buildReadingTeaser(cards) : [];
   const remainingUnlocks = creditStatus ? Math.floor(creditStatus.credits / COST_PER_INTERPRETATION) : null;
   const outOfCredits = creditStatus !== null && creditStatus.credits < COST_PER_INTERPRETATION;
   const isOnFreeTrial = !outOfCredits && creditStatus !== null && !creditStatus.hasPurchased;
@@ -256,9 +261,24 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
       <div className="flex flex-col gap-1">
         <h4 className="text-base font-medium text-foreground">Diễn giải chuyên sâu</h4>
         <p className="max-w-xs text-sm text-muted">
-          Ứng dụng phân tích chi tiết từng lá bài và mối liên hệ giữa chúng.
+          Ba lá đọc liền thành một mạch và nối về đúng câu hỏi bạn vừa hỏi.
         </p>
       </div>
+
+      {/* Mấy dòng này dựng từ chính ba lá vừa lật, không gọi model — người dùng
+          chưa trả credit thì chưa được tốn tiền. Chúng nói về hình dạng của cả
+          trải bài, phần duy nhất màn hình này chưa có: ý nghĩa từng lá đã in
+          ngay phía trên rồi. */}
+      {teaser.length > 0 ? (
+        <ul className="flex w-full flex-col gap-2 rounded-xl border border-border bg-sage-tint/40 p-4 text-left">
+          {teaser.map((line) => (
+            <li key={line} className="flex gap-2 text-sm leading-relaxed text-muted">
+              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {isOnFreeTrial ? (
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">

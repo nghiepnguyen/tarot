@@ -31,7 +31,7 @@ export function ReadingView({ question, cards, readingId, onReset }: ReadingView
 
       <div className="w-full max-w-xl">
         {readingId ? (
-          <AiUnlockPanel readingId={readingId} />
+          <AiUnlockPanel readingId={readingId} cards={cards} />
         ) : (
           <p className="rounded-2xl border border-border bg-surface p-5 text-center text-sm text-muted">
             <LoginPromptLink placement="reading_view" />{" "}

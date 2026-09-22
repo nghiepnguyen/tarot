@@ -74,6 +74,15 @@ export function HistoryList({ readings }: HistoryListProps) {
           .map((stored) => cardLookup(stored.cardId)?.name)
           .filter((name): name is string => Boolean(name));
 
+        // Dựng lại ba lá cho panel gợi mở. Một lá không tra được (id cũ đã đổi)
+        // thì bỏ luôn cả trải bài: `buildReadingTeaser` cần đủ ba lá đúng thứ
+        // tự vị trí, thiếu một lá thì nó trả mảng rỗng và panel chỉ mất mấy
+        // dòng gợi mở, không hỏng.
+        const drawnCards = reading.cards.flatMap((stored) => {
+          const card = cardLookup(stored.cardId);
+          return card ? [{ card, orientation: stored.orientation }] : [];
+        });
+
         return (
           <details
             key={reading.id}
@@ -143,7 +152,11 @@ export function HistoryList({ readings }: HistoryListProps) {
                 })}
               </div>
 
-              <AiUnlockPanel readingId={reading.id} initialData={reading.aiInterpretation} />
+              <AiUnlockPanel
+                readingId={reading.id}
+                initialData={reading.aiInterpretation}
+                cards={drawnCards}
+              />
             </div>
           </details>
         );
