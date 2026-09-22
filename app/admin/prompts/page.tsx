@@ -3,8 +3,8 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { Panel, EmptyRow } from "@/components/admin/Panel";
 import { ACTIVE_PROMPT_VERSION, PROMPT_VERSIONS } from "@/lib/ai/prompts";
 import { getModelPricing, isPricedModel } from "@/lib/ai/pricing";
-import { AI_MODELS } from "@/lib/ai/models";
-import { getActiveAiModel } from "@/lib/ai/settings";
+import { AI_MODELS, RANDOM_AI_MODEL_LABEL, RANDOM_AI_MODEL_VALUE } from "@/lib/ai/models";
+import { getActiveAiSelection, getMissingApiKeyEnvs } from "@/lib/ai/settings";
 import { AiModelForm } from "@/components/admin/AiModelForm";
 import { fetchPromptUsage, summarizePromptVersions } from "@/lib/admin/prompt-stats";
 import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
@@ -14,6 +14,7 @@ import type { InterpretationCardInput } from "@/lib/ai/interpretation";
 const vnd = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 const num = (value: number | null) => (value === null ? "—" : value.toLocaleString("vi-VN"));
 const secs = (ms: number | null) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}s`);
+const stars = (value: number | null) => (value === null ? "—" : value.toFixed(1));
 const day = (value: Date | null) =>
   value === null ? "—" : value.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 
@@ -44,15 +45,38 @@ const SAMPLE_CARDS: InterpretationCardInput[] = SPREAD_POSITIONS.map((position, 
 export default async function AdminPromptsPage() {
   await requireAdmin();
 
-  const [usage, activeModel] = await Promise.all([fetchPromptUsage(prisma), getActiveAiModel()]);
+  const [usage, selection] = await Promise.all([
+    fetchPromptUsage(prisma),
+    getActiveAiSelection(),
+  ]);
   const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE_PROMPT_VERSION.id, usage);
-  const activePricing = getModelPricing(activeModel.id);
-  const modelOptions = AI_MODELS.map((model) => ({
-    id: model.id,
-    label: model.label,
-    note: model.note,
-    priced: isPricedModel(model.id),
-  }));
+  const isRandom = selection.kind === "random";
+  const activeId = isRandom ? RANDOM_AI_MODEL_VALUE : selection.model.id;
+  // Ở chế độ ngẫu nhiên không có "model đang chạy" để tra giá: lượt tới có thể
+  // là bất kỳ model nào trong danh sách.
+  const activePricing = isRandom ? null : getModelPricing(selection.model.id);
+  // Key đọc ở đây, trên máy chủ, và chỉ *tên biến* đi xuống trình duyệt: người
+  // chọn model phải biết ngay máy chủ này có gọi nổi model đó không, chứ không
+  // phát hiện ra ở lượt mở khóa đầu tiên của một người dùng thật.
+  const modelOptions = [
+    ...AI_MODELS.map((model) => ({
+      id: model.id,
+      label: `${model.label} — ${model.persona}`,
+      note: model.note,
+      priced: isPricedModel(model.id),
+      missingKeys: getMissingApiKeyEnvs([model]),
+    })),
+    {
+      id: RANDOM_AI_MODEL_VALUE,
+      label: `${RANDOM_AI_MODEL_LABEL} (${AI_MODELS.map((m) => m.persona).join(" / ")})`,
+      note: "Mỗi lượt mở khóa bốc một model, xác suất đều. Người đọc chỉ thấy bút danh, nên điểm họ chấm ở cuối bài là điểm chấm mù — đó là cách duy nhất so được chất lượng hai model trên cùng một tập câu hỏi thật.",
+      priced: AI_MODELS.every((model) => isPricedModel(model.id)),
+      missingKeys: getMissingApiKeyEnvs(AI_MODELS),
+    },
+  ];
+  const activeMissingKeys = getMissingApiKeyEnvs(
+    isRandom ? AI_MODELS : [selection.model],
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -78,22 +102,37 @@ export default async function AdminPromptsPage() {
           <div className="flex flex-col gap-1 rounded-xl border border-border px-4 py-3">
             <dt className="text-xs text-muted">Model</dt>
             <dd className="font-mono text-sm text-foreground">
-              {activeModel.id}
-              {activeModel.id === ACTIVE_PROMPT_VERSION.model ? null : (
+              {isRandom ? RANDOM_AI_MODEL_VALUE : selection.model.id}
+              {isRandom ? (
+                <span className="ml-2 font-sans text-xs text-muted">
+                  mỗi lượt bốc một model trong {AI_MODELS.length}
+                </span>
+              ) : null}
+              {isRandom || selection.model.id === ACTIVE_PROMPT_VERSION.model ? null : (
                 <span className="ml-2 font-sans text-xs text-muted">
                   khác mặc định của bản prompt ({ACTIVE_PROMPT_VERSION.model})
                 </span>
               )}
-              {activePricing ? null : (
+              {isRandom || activePricing ? null : (
                 <span className="ml-2 font-sans text-xs text-muted">chưa có trong bảng giá</span>
               )}
             </dd>
           </div>
         </dl>
+        {activeMissingKeys.length > 0 ? (
+          <p className="text-xs text-red-600">
+            Máy chủ này chưa có {activeMissingKeys.join(", ")}.{" "}
+            {isRandom
+              ? "Lượt nào bốc trúng model thiếu key sẽ báo lỗi và hoàn credit — nhìn từ bảng số đo thì trông như model đó chập chờn, không như một biến môi trường còn thiếu."
+              : "Mọi lượt mở khóa đang báo lỗi và hoàn credit."}
+          </p>
+        ) : null}
         <p className="text-xs text-muted">
-          {activePricing
-            ? `Giá đang dùng để tính tiền: ${activePricing.note}`
-            : "Model này chưa có giá trong lib/ai/pricing.ts, nên mọi con số tiền bên dưới và trên trang Tổng quan đều là ước lượng tính bằng giá mặc định."}
+          {isRandom
+            ? `Đang bốc ngẫu nhiên giữa ${AI_MODELS.map((model) => `${model.label} (${model.persona})`).join(" và ")}. Mỗi lượt sinh vẫn ghi đúng model đã chạy, nên bảng bên dưới tách được số đo của từng model.`
+            : activePricing
+              ? `Giá đang dùng để tính tiền: ${activePricing.note}`
+              : "Model này chưa có giá trong lib/ai/pricing.ts, nên mọi con số tiền bên dưới và trên trang Tổng quan đều là ước lượng tính bằng giá mặc định."}
         </p>
       </Panel>
 
@@ -101,7 +140,7 @@ export default async function AdminPromptsPage() {
         title="Đổi model"
         note="Có hiệu lực ngay với lượt mở khóa tiếp theo, không cần deploy. Lượt đã sinh giữ nguyên model của chính nó. Mỗi lần đổi ghi một dòng vào Nhật ký."
       >
-        <AiModelForm currentId={activeModel.id} options={modelOptions} />
+        <AiModelForm currentId={activeId} options={modelOptions} />
       </Panel>
 
       <Panel
@@ -122,6 +161,10 @@ export default async function AdminPromptsPage() {
                   <th className="py-2 text-right font-normal">Output+think TB</th>
                   <th className="py-2 text-right font-normal">p50</th>
                   <th className="py-2 text-right font-normal">p95</th>
+                  <th className="py-2 text-right font-normal">Chấm</th>
+                  <th className="py-2 text-right font-normal">Acc</th>
+                  <th className="py-2 text-right font-normal">Cla</th>
+                  <th className="py-2 text-right font-normal">Act</th>
                   <th className="py-2 text-right font-normal">Chi phí/lượt</th>
                   <th className="py-2 text-right font-normal">Tổng chi phí</th>
                   <th className="py-2 text-right font-normal">Chạy tới</th>
@@ -151,6 +194,12 @@ export default async function AdminPromptsPage() {
                     <td className="py-2 text-right tabular-nums">{secs(row.latencyP50Ms)}</td>
                     <td className="py-2 text-right tabular-nums">{secs(row.latencyP95Ms)}</td>
                     <td className="py-2 text-right tabular-nums">
+                      {row.reviews.toLocaleString("vi-VN")}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">{stars(row.avgAccuracy)}</td>
+                    <td className="py-2 text-right tabular-nums">{stars(row.avgClarity)}</td>
+                    <td className="py-2 text-right tabular-nums">{stars(row.avgActionability)}</td>
+                    <td className="py-2 text-right tabular-nums">
                       {row.avgCostVnd === null ? "—" : vnd(row.avgCostVnd)}
                     </td>
                     <td className="py-2 text-right tabular-nums">{vnd(row.costVnd)}</td>
@@ -166,7 +215,11 @@ export default async function AdminPromptsPage() {
           <span className="font-mono">promptVersion</span>. Lúc thêm cột chỉ backfill được những row
           có token usage — số còn lại không có bằng chứng nào chỉ ra prompt nào đã sinh ra chúng, và
           cũng không có số đo nào để so sánh. Dấu <span className="font-mono">*</span> nghĩa là model
-          chưa có trong bảng giá, tiền chỉ là ước lượng.
+          chưa có trong bảng giá, tiền chỉ là ước lượng. <span className="font-mono">Chấm</span> là
+          số lượt người đọc đã chấm điểm, còn <span className="font-mono">Acc</span>/
+          <span className="font-mono">Cla</span>/<span className="font-mono">Act</span> là điểm
+          trung bình trên chính những lượt đó — độ chính xác, độ rõ ràng, tính hữu ích, thang 5
+          sao. Đọc hai con số cùng nhau: 5,0 trên một lượt chấm không nói gì.
         </p>
       </Panel>
 

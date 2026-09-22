@@ -214,8 +214,45 @@ model AiInterpretation {
   thinkingTokens        Int?
   latencyMs             Int?
   createdAt             DateTime @default(now())
+  review                InterpretationReview?
 
   @@index([promptVersion])
+}
+
+/// Người đọc chấm điểm chính bản diễn giải vừa đọc.
+///
+/// Sinh ra cùng chế độ chọn model ngẫu nhiên: mỗi model ký tên bằng một bút
+/// danh (`lib/ai/models.ts`), nên người chấm không biết mình đang chấm nhà
+/// cung cấp nào. Đó là điểm của cả cơ chế — ba con số ở đây chỉ có nghĩa khi
+/// người chấm không nhìn thấy nhãn.
+///
+/// Gắn vào `AiInterpretation` chứ không vào `Reading`: thứ được chấm là bản
+/// chữ do một cặp (prompt, model) cụ thể sinh ra, và `/admin/prompts` cộng
+/// điểm theo đúng cặp đó.
+///
+/// `@unique` trên `interpretationId`: một bản diễn giải một đánh giá. Nhưng
+/// sửa được — người ta bấm vội rồi đọc kỹ lại — nên đường ghi là upsert và
+/// `updatedAt` là thứ phân biệt bản đầu với bản sửa.
+///
+/// `userId` để trần, không khoá ngoại: row này đã cascade theo
+/// `AiInterpretation` → `Reading` → `User` rồi, thêm một quan hệ nữa chỉ để
+/// lặp lại cùng một vòng đời.
+model InterpretationReview {
+  id               String           @id @default(cuid())
+  interpretationId String           @unique
+  interpretation   AiInterpretation @relation(fields: [interpretationId], references: [id], onDelete: Cascade)
+  userId           String
+  /// Ba tiêu chí, mỗi tiêu chí 1–5 sao. Khoảng giá trị do `lib/ai/reviews.ts`
+  /// canh trước khi ghi: Postgres không có kiểu "1 đến 5".
+  accuracy         Int
+  clarity          Int
+  actionability    Int
+  /// Nhận xét tự do, không bắt buộc.
+  comment          String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([createdAt])
 }
 
 /// Cấu hình chỉnh được lúc đang chạy, dạng khóa–giá trị.

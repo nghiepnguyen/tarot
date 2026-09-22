@@ -6,6 +6,7 @@ import { Link2, ListChecks, MessageCircleQuestion, Quote, Sparkles } from "lucid
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
+import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
@@ -131,6 +132,16 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
             <h4>Diễn giải chuyên sâu</h4>
           </div>
 
+          {/* Bút danh của model đã viết bài này. Người đọc chấm điểm ở cuối
+              thẻ, nên tên người viết phải nằm ở đầu — chấm xong mới biết mình
+              vừa chấm ai thì con số không còn nghĩa. Bài sinh bằng model đã gỡ
+              khỏi danh sách không có bút danh, và dòng này biến mất hẳn. */}
+          {data.reader ? (
+            <p className="text-[0.75em] tracking-wide text-muted">
+              Tarot Reader: <span className="font-medium text-foreground">{data.reader}</span>
+            </p>
+          ) : null}
+
           {data.summary ? (
             <p className={`${LEAD} font-medium leading-snug text-foreground`}>
               {data.summary}
@@ -216,6 +227,12 @@ export function AiUnlockPanel({ readingId, initialData }: AiUnlockPanelProps) {
             <p className={`${BODY} italic leading-relaxed text-muted`}>{data.closingNote}</p>
           </div>
         ) : null}
+
+        <InterpretationReviewBox
+          interpretationId={data.id}
+          reader={data.reader}
+          initialReview={data.review}
+        />
       </Card>
     );
   }

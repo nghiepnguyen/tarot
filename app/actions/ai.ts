@@ -15,7 +15,7 @@ import {
 } from "@/lib/ai/interpretation";
 import { ACTIVE_PROMPT_VERSION } from "@/lib/ai/prompts";
 import { isPricedModel } from "@/lib/ai/pricing";
-import { getActiveAiModel } from "@/lib/ai/settings";
+import { resolveAiModelForUnlock } from "@/lib/ai/settings";
 import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/generate";
 import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
@@ -30,12 +30,18 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
 
   const reading = await prisma.reading.findFirst({
     where: { id: readingId, userId: session.user.id },
-    include: { aiInterpretation: true },
+    include: { aiInterpretation: { include: { review: true } } },
   });
   if (!reading) return { ok: false, error: "Không tìm thấy lần trải bài này." };
 
   if (reading.aiInterpretation) {
-    return { ok: true, data: toDisplayInterpretation(reading.aiInterpretation) };
+    return {
+      ok: true,
+      data: toDisplayInterpretation(
+        reading.aiInterpretation,
+        reading.aiInterpretation.review,
+      ),
+    };
   }
 
   if (!(await checkRateLimit(`ai-unlock:${session.user.id}`, 20, 60 * 60 * 1000))) {
@@ -45,7 +51,10 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   // Đọc model trước khi trừ credit: đây là một truy vấn đọc, và nếu nó hỏng
   // thì hỏng lúc chưa ai mất gì. Đặt sau bước trừ thì một lỗi database ở đây
   // thành credit bay mà không có nhánh hoàn nào chạy.
-  const model = await getActiveAiModel();
+  //
+  // Ở chế độ ngẫu nhiên, đây cũng là chỗ con xúc xắc gieo — mỗi lượt mở khóa
+  // một lần, và `model.id` ghi xuống database ngay bên dưới như mọi lượt khác.
+  const model = await resolveAiModelForUnlock();
 
   const deducted = await prisma.user.updateMany({
     where: { id: session.user.id, credits: { gte: COST_PER_INTERPRETATION } },
@@ -98,7 +107,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
       });
     }
 
-    await prisma.aiInterpretation.create({
+    const created = await prisma.aiInterpretation.create({
       data: {
         readingId: reading.id,
         summary: result.summary,
@@ -122,7 +131,9 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     });
 
     revalidatePath("/history");
-    return { ok: true, data: result };
+    // Trả về bản đã ghi, không phải `result` thô: giao diện cần `id` của row để
+    // hộp chấm điểm ghi ngược về, và bút danh của model vừa chạy.
+    return { ok: true, data: toDisplayInterpretation(created) };
   } catch (error) {
     // Người dùng chỉ thấy một câu xin lỗi và được hoàn credit, nên nếu không
     // báo về Sentry ở đây thì nhà cung cấp hỏng bao lâu cũng không ai biết.

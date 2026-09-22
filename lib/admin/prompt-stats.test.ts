@@ -15,11 +15,43 @@ function row(overrides: Partial<PromptUsageRow> = {}): PromptUsageRow {
     thinkingTokens: 22_860,
     latencyP50Ms: 28_000,
     latencyP95Ms: 41_000,
+    reviews: 0,
+    avgAccuracy: null,
+    avgClarity: null,
+    avgActionability: null,
     firstAt: new Date("2026-09-13T00:00:00Z"),
     lastAt: new Date("2026-09-19T00:00:00Z"),
     ...overrides,
   };
 }
+
+describe("điểm người đọc chấm", () => {
+  it("carries the average and the number of ratings it was averaged over", () => {
+    const [summary] = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE, [
+      row({ runs: 40, reviews: 12, avgAccuracy: 4.25, avgClarity: 3.5, avgActionability: 4 }),
+    ]);
+
+    expect(summary.reviews).toBe(12);
+    expect(summary.avgAccuracy).toBe(4.25);
+    expect(summary.avgClarity).toBe(3.5);
+    expect(summary.avgActionability).toBe(4);
+  });
+
+  it("leaves the scores null when nobody rated, rather than reading as zero stars", () => {
+    // 0 sao đọc như một điểm kém; sự thật chỉ là chưa ai chấm.
+    const [summary] = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE, [row({ runs: 40 })]);
+
+    expect(summary.reviews).toBe(0);
+    expect(summary.avgAccuracy).toBeNull();
+  });
+
+  it("gives a version that has never run zero ratings, not a missing field", () => {
+    const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE, []);
+
+    expect(summaries.every((summary) => summary.reviews === 0)).toBe(true);
+    expect(summaries.every((summary) => summary.avgClarity === null)).toBe(true);
+  });
+});
 
 describe("summarizePromptVersions", () => {
   it("averages tokens per run and folds thinking into output", () => {

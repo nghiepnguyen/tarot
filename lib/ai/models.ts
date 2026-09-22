@@ -19,6 +19,15 @@ export interface AiModel {
   provider: AiProvider;
   /** Tên hiện trên giao diện quản trị. */
   label: string;
+  /**
+   * Bút danh ký dưới mỗi bản diễn giải, hiện cho người đọc thay cho tên model.
+   *
+   * Không phải để cho vui: chế độ chọn model ngẫu nhiên chỉ có nghĩa khi người
+   * chấm điểm không biết mình đang chấm nhà cung cấp nào. "Gemini 3 Flash" nói
+   * quá nhiều, "Minh Trí" thì không nói gì — và nó *phải* cố định theo model,
+   * không đổi theo lượt, thì `/admin/prompts` mới cộng điểm theo model được.
+   */
+  persona: string;
   /** Một câu cho người chọn biết đổi sang model này nghĩa là gì. */
   note: string;
 }
@@ -28,12 +37,14 @@ export const AI_MODELS: readonly AiModel[] = [
     id: "gemini-3-flash-preview",
     provider: "gemini",
     label: "Gemini 3 Flash (preview)",
+    persona: "Minh Trí",
     note: "Model gốc của bản prompt v1. Có thinking token, nên phần suy nghĩ thường đắt hơn phần chữ.",
   },
   {
     id: "deepseek-flash",
     provider: "deepseek",
     label: "DeepSeek V4.1-Flash",
+    persona: "Duy Thâm",
     note: "Rẻ hơn Gemini chừng 44% mỗi lượt và không có thinking token. Đổi lại, hình JSON chỉ do prompt giữ chứ không có structured outputs, và nó viết dài hơn mốc số từ của prompt.",
   },
 ];
@@ -41,6 +52,32 @@ export const AI_MODELS: readonly AiModel[] = [
 export function getAiModel(id: string): AiModel | null {
   return AI_MODELS.find((model) => model.id === id) ?? null;
 }
+
+/**
+ * Bút danh của model đã sinh ra một bản diễn giải, tra từ chuỗi model đã lưu.
+ *
+ * Trả `null` cho model không còn trong danh sách — những row sinh bằng
+ * `claude-haiku-4-5-20251001` chẳng hạn. Giao diện bỏ hẳn dòng "Tarot Reader"
+ * trong trường hợp đó, chứ không bịa một cái tên cho một model đã gỡ.
+ */
+export function getModelPersona(modelId: string): string | null {
+  return getAiModel(modelId)?.persona ?? null;
+}
+
+/**
+ * Giá trị đặc biệt của cài đặt `ai.model`: mỗi lượt mở khóa bốc một model.
+ *
+ * Nằm trong cùng một ô chọn với các model thật, không phải một công tắc riêng,
+ * vì đây là *một* câu hỏi: lượt tiếp theo chạy bằng gì. Hai chỗ lưu trạng thái
+ * thì sẽ có lúc chúng nói ngược nhau, và không ai đọc ra được `/admin` đang
+ * hứa gì.
+ *
+ * Để ở đây chứ không ở `lib/ai/settings.ts` vì lớp kiểm dữ liệu
+ * (`lib/validation/admin.ts`) cũng cần nó, mà `settings.ts` khai `server-only`.
+ */
+export const RANDOM_AI_MODEL_VALUE = "random";
+
+export const RANDOM_AI_MODEL_LABEL = "Ngẫu nhiên";
 
 /** Biến môi trường chứa API key của từng nhà cung cấp. */
 export const PROVIDER_API_KEY_ENV: Record<AiProvider, string> = {

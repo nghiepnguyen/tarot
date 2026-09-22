@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { MAX_ADJUST } from "@/lib/admin/credits";
-import { getAiModel } from "@/lib/ai/models";
+import { getAiModel, RANDOM_AI_MODEL_VALUE } from "@/lib/ai/models";
 
 // Lý do bắt buộc ở mọi thao tác ghi vào nhật ký quản trị: một nhật ký toàn lý
 // do rỗng là nhật ký để trưng.
@@ -35,10 +35,17 @@ export const ReconcileOrderSchema = z.object({
 // Model tới từ một thẻ <select>, nhưng server action là một POST ai cũng gọi
 // được (xem `app/actions/admin.ts`), nên chuỗi này vẫn phải đi qua danh sách
 // cho phép trong code — không nhận bừa tên model rồi gửi thẳng ra API.
+//
+// `random` là giá trị hợp lệ thứ hai bên cạnh các id model: nó không phải tên
+// một model mà là lệnh bốc một model trong chính danh sách ấy, nên nó không
+// mở thêm cửa nào ra ngoài.
 export const SetAiModelSchema = z.object({
   modelId: z
     .string()
     .min(1)
-    .refine((id) => getAiModel(id) !== null, "Model không nằm trong danh sách cho phép."),
+    .refine(
+      (id) => id === RANDOM_AI_MODEL_VALUE || getAiModel(id) !== null,
+      "Model không nằm trong danh sách cho phép.",
+    ),
   reason: ReasonField,
 });

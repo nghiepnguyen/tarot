@@ -83,7 +83,7 @@ export default async function HistoryPage({
     prisma.reading.findMany({
       where,
       orderBy: { createdAt: "desc" as const },
-      include: { aiInterpretation: true },
+      include: { aiInterpretation: { include: { review: true } } },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
@@ -134,7 +134,7 @@ export default async function HistoryPage({
                   cards: r.cards as unknown as StoredCard[],
                   createdAt: r.createdAt.toISOString(),
                   aiInterpretation: r.aiInterpretation
-                    ? toDisplayInterpretation(r.aiInterpretation)
+                    ? toDisplayInterpretation(r.aiInterpretation, r.aiInterpretation.review)
                     : null,
                 }))}
               />

@@ -12,8 +12,12 @@ import {
   RefundOrderSchema,
   SetAiModelSchema,
 } from "@/lib/validation/admin";
-import { getAiModel } from "@/lib/ai/models";
-import { getActiveAiModel, setActiveAiModel } from "@/lib/ai/settings";
+import {
+  getAiModel,
+  RANDOM_AI_MODEL_LABEL,
+  RANDOM_AI_MODEL_VALUE,
+} from "@/lib/ai/models";
+import { getActiveAiSelection, setActiveAiModel } from "@/lib/ai/settings";
 import { reportHandledError } from "@/lib/monitoring/report";
 
 export type AdminActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -165,32 +169,46 @@ export async function setAiModelAction(formData: FormData): Promise<AdminActionR
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
   }
 
-  const next = getAiModel(parsed.data.modelId);
-  if (!next) return { ok: false, error: "Model không nằm trong danh sách cho phép." };
+  // `random` không phải một model, nên nó không tra được trong registry; hai
+  // nhánh chỉ khác nhau ở id lưu xuống và ở câu chữ báo lại.
+  const isRandom = parsed.data.modelId === RANDOM_AI_MODEL_VALUE;
+  const next = isRandom ? null : getAiModel(parsed.data.modelId);
+  if (!isRandom && !next) {
+    return { ok: false, error: "Model không nằm trong danh sách cho phép." };
+  }
 
-  const current = await getActiveAiModel();
-  if (current.id === next.id) {
-    return { ok: false, error: `Model đang dùng đã là ${next.label}.` };
+  const nextId = isRandom ? RANDOM_AI_MODEL_VALUE : next!.id;
+  const nextLabel = isRandom ? RANDOM_AI_MODEL_LABEL : next!.label;
+
+  const current = await getActiveAiSelection();
+  const currentId = current.kind === "random" ? RANDOM_AI_MODEL_VALUE : current.model.id;
+  if (currentId === nextId) {
+    return { ok: false, error: `Model đang dùng đã là ${nextLabel}.` };
   }
 
   try {
     await prisma.$transaction(async (tx) => {
-      await setActiveAiModel(tx, next.id, admin.id);
+      await setActiveAiModel(tx, nextId, admin.id);
       await writeAuditLog(tx, {
         adminUserId: admin.id,
         action: "ai_model_change",
-        reason: `${current.id} → ${next.id}. ${parsed.data.reason}`,
+        reason: `${currentId} → ${nextId}. ${parsed.data.reason}`,
       });
     });
 
     revalidatePath("/admin/prompts");
     revalidatePath("/admin/audit");
-    return { ok: true, message: `Từ giờ mọi lượt mở khóa dùng ${next.label}.` };
+    return {
+      ok: true,
+      message: isRandom
+        ? "Từ giờ mỗi lượt mở khóa bốc ngẫu nhiên một model."
+        : `Từ giờ mọi lượt mở khóa dùng ${nextLabel}.`,
+    };
   } catch (error) {
     reportHandledError(error, {
       area: "admin-ai-model",
       userId: admin.id,
-      extra: { from: current.id, to: next.id },
+      extra: { from: currentId, to: nextId },
     });
     return { ok: false, error: "Không đổi được model. Thử lại sau." };
   }

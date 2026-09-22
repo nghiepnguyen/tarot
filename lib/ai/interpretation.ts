@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { AiInterpretation } from "@prisma/client";
+import { getModelPersona } from "@/lib/ai/models";
 import type { TarotCard } from "@/lib/tarot/cards";
 import type { Orientation } from "@/lib/tarot/draw";
 
@@ -109,6 +110,49 @@ export interface GeneratedInterpretation {
   usage: InterpretationUsage;
 }
 
+/** Thang sao của mỗi tiêu chí. 1 là thấp nhất, không có 0. */
+export const MIN_STARS = 1;
+export const MAX_STARS = 5;
+
+/**
+ * Ba tiêu chí người đọc chấm, theo đúng thứ tự hiện trên màn hình.
+ *
+ * Để ở đây chứ không ở `lib/ai/reviews.ts` vì hộp chấm điểm là client
+ * component, mà `reviews.ts` khai `server-only`. Khoá trùng tên cột trong
+ * `InterpretationReview`, nên thêm tiêu chí thứ tư là một migration chứ không
+ * phải một dòng trong mảng này.
+ */
+export const REVIEW_CRITERIA = [
+  {
+    key: "accuracy",
+    label: "Độ chính xác",
+    english: "Accuracy",
+    hint: "Bài đọc có bám đúng lá bài và câu hỏi của bạn không?",
+  },
+  {
+    key: "clarity",
+    label: "Độ rõ ràng & Dễ hiểu",
+    english: "Clarity",
+    hint: "Chữ nghĩa có dễ theo không, hay phải đọc lại mới hiểu?",
+  },
+  {
+    key: "actionability",
+    label: "Tính hữu ích & Giải pháp",
+    english: "Actionability",
+    hint: "Đọc xong bạn có biết mình làm gì tiếp theo không?",
+  },
+] as const;
+
+export type ReviewCriterionKey = (typeof REVIEW_CRITERIA)[number]["key"];
+
+/** Điểm một người đã chấm cho một bản diễn giải. */
+export interface InterpretationReviewInput {
+  accuracy: number;
+  clarity: number;
+  actionability: number;
+  comment?: string | null;
+}
+
 /**
  * Shape used for rendering. Readings generated before summary/themes/
  * closingNote existed have those columns as null in the database, so the
@@ -116,6 +160,15 @@ export interface GeneratedInterpretation {
  * erroring — old interpretations just show less than new ones.
  */
 export interface DisplayInterpretation {
+  /** Id của chính row `AiInterpretation` — hộp chấm điểm ghi ngược về đây. */
+  id: string;
+  /**
+   * Bút danh của model đã viết bài này, hoặc `null` với model đã gỡ khỏi danh
+   * sách. Người đọc thấy tên này thay cho tên model, xem `AiModel.persona`.
+   */
+  reader?: string | null;
+  /** Điểm người này đã chấm, nếu đã chấm. Hộp chấm điểm mở sẵn với điểm cũ. */
+  review?: InterpretationReviewInput | null;
   summary?: string | null;
   overview: string;
   themes?: string[] | null;
@@ -126,8 +179,14 @@ export interface DisplayInterpretation {
   closingNote?: string | null;
 }
 
-export function toDisplayInterpretation(row: AiInterpretation): DisplayInterpretation {
+export function toDisplayInterpretation(
+  row: AiInterpretation,
+  review?: InterpretationReviewInput | null,
+): DisplayInterpretation {
   return {
+    id: row.id,
+    reader: getModelPersona(row.model),
+    review: review ?? null,
     summary: row.summary,
     overview: row.overview,
     themes: row.themes as unknown as string[] | null,

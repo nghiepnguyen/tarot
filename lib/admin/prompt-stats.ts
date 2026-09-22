@@ -12,6 +12,11 @@ export interface PromptUsageRow {
   thinkingTokens: number | null;
   latencyP50Ms: number | null;
   latencyP95Ms: number | null;
+  /** Số lượt người đọc đã chấm điểm, trong số `runs` lượt sinh. */
+  reviews: number;
+  avgAccuracy: number | null;
+  avgClarity: number | null;
+  avgActionability: number | null;
   firstAt: Date;
   lastAt: Date;
 }
@@ -33,6 +38,17 @@ export interface PromptVersionSummary {
   latencyP95Ms: number | null;
   costVnd: number;
   avgCostVnd: number | null;
+  /**
+   * Điểm người đọc chấm, trung bình trên những lượt *có* chấm.
+   *
+   * `reviews` đi kèm và phải hiện cùng: 5,0 sao trên một lượt chấm và 4,1 sao
+   * trên hai trăm lượt là hai thứ khác hẳn nhau, mà nhìn riêng con số trung
+   * bình thì chúng giống hệt.
+   */
+  reviews: number;
+  avgAccuracy: number | null;
+  avgClarity: number | null;
+  avgActionability: number | null;
   firstAt: Date | null;
   lastAt: Date | null;
 }
@@ -81,6 +97,10 @@ export function summarizePromptVersions(
       ),
       latencyP50Ms: row.latencyP50Ms,
       latencyP95Ms: row.latencyP95Ms,
+      reviews: row.reviews,
+      avgAccuracy: row.avgAccuracy,
+      avgClarity: row.avgClarity,
+      avgActionability: row.avgActionability,
       costVnd,
       avgCostVnd: measured && row.runs > 0 ? Math.round(costVnd / row.runs) : null,
       firstAt: row.firstAt,
@@ -101,6 +121,10 @@ export function summarizePromptVersions(
       avgOutputTokens: null,
       latencyP50Ms: null,
       latencyP95Ms: null,
+      reviews: 0,
+      avgAccuracy: null,
+      avgClarity: null,
+      avgActionability: null,
       costVnd: 0,
       avgCostVnd: null,
       firstAt: null,
@@ -124,18 +148,27 @@ export function summarizePromptVersions(
  * cần nhìn là cái đuôi p95 sắp chạm trần, không phải con số giữa.
  */
 export async function fetchPromptUsage(db: PrismaClient): Promise<PromptUsageRow[]> {
+  // LEFT JOIN, không INNER: hầu hết lượt sinh không ai chấm, và một bảng chỉ
+  // đếm những lượt có điểm thì "lượt" và "lượt được chấm" lẫn vào nhau.
+  // `avg` của Postgres bỏ qua NULL, nên cột điểm là null khi chưa ai chấm chứ
+  // không phải 0 — 0 sao đọc như một điểm kém, mà sự thật là chưa có điểm.
   return db.$queryRaw<PromptUsageRow[]>`
-    SELECT "promptVersion"                                                     AS "versionId",
-           "model",
+    SELECT i."promptVersion"                                                   AS "versionId",
+           i."model",
            count(*)::int                                                       AS "runs",
-           sum("inputTokens")::double precision                                AS "inputTokens",
-           sum("outputTokens")::double precision                               AS "outputTokens",
-           sum("thinkingTokens")::double precision                             AS "thinkingTokens",
-           percentile_cont(0.5) WITHIN GROUP (ORDER BY "latencyMs")::int       AS "latencyP50Ms",
-           percentile_cont(0.95) WITHIN GROUP (ORDER BY "latencyMs")::int      AS "latencyP95Ms",
-           min("createdAt")                                                    AS "firstAt",
-           max("createdAt")                                                    AS "lastAt"
-    FROM "AiInterpretation"
-    GROUP BY "promptVersion", "model"
+           sum(i."inputTokens")::double precision                              AS "inputTokens",
+           sum(i."outputTokens")::double precision                             AS "outputTokens",
+           sum(i."thinkingTokens")::double precision                           AS "thinkingTokens",
+           percentile_cont(0.5) WITHIN GROUP (ORDER BY i."latencyMs")::int     AS "latencyP50Ms",
+           percentile_cont(0.95) WITHIN GROUP (ORDER BY i."latencyMs")::int    AS "latencyP95Ms",
+           count(r."id")::int                                                  AS "reviews",
+           avg(r."accuracy")::double precision                                 AS "avgAccuracy",
+           avg(r."clarity")::double precision                                  AS "avgClarity",
+           avg(r."actionability")::double precision                            AS "avgActionability",
+           min(i."createdAt")                                                  AS "firstAt",
+           max(i."createdAt")                                                  AS "lastAt"
+    FROM "AiInterpretation" i
+    LEFT JOIN "InterpretationReview" r ON r."interpretationId" = i."id"
+    GROUP BY i."promptVersion", i."model"
   `;
 }
