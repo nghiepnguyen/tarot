@@ -136,6 +136,21 @@ describe("buildReadingTeaser", () => {
     }
   });
 
+  // `AiUnlockPanel` dùng chính chuỗi làm React key, nên hai dòng trùng nhau là
+  // một lỗi render chứ không chỉ là văn vụng.
+  it("never emits the same line twice in one spread", () => {
+    const spreads: DrawnCard[][] = [
+      spread([["swords", "reversed"], ["swords", "reversed"], ["swords", "reversed"]], [0, 1, 2]),
+      spread([["major-arcana", "upright"], ["major-arcana", "upright"], ["major-arcana", "upright"]]),
+      spread([["cups", "reversed"], ["cups", "upright"], ["wands", "reversed"]], [0, 1, 0]),
+      spread([["pentacles", "upright"], ["pentacles", "reversed"], ["major-arcana", "upright"]], [0, 1, 0]),
+    ];
+    for (const cards of spreads) {
+      const lines = buildReadingTeaser(cards);
+      expect(new Set(lines).size).toBe(lines.length);
+    }
+  });
+
   it("is deterministic, so the same spread never teases two different things", () => {
     const cards = spread([
       ["swords", "reversed"],
