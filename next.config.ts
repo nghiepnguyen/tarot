@@ -10,6 +10,13 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
+  // Nhúng metadata vào từng module của mình để `thirdPartyErrorFilterIntegration`
+  // trong instrumentation-client.ts nhận ra frame nào là code của app. Đổi chuỗi
+  // này thì phải đổi `filterKeys` bên đó theo. Option top-level, không phải
+  // `webpack.moduleMetadata` (đã deprecated): Next 16 build bằng Turbopack và
+  // bản top-level chạy cho cả hai bundler.
+  applicationKey: "tarot-web",
+
   // Không có token thì bỏ hẳn bước upload source map thay vì để plugin cảnh
   // báo giữa build: người khác clone repo về vẫn build được, chỉ là stack
   // trace trong Sentry còn ở dạng đã minify.
