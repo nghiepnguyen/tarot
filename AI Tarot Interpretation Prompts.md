@@ -12,7 +12,7 @@ AI **không được khẳng định tương lai là chắc chắn**, không đ�
 
 Prompt đang chạy trên production nằm ở `lib/ai/prompts/` — mỗi bản một file đóng băng, bản đang chạy là `ACTIVE_PROMPT_VERSION` trong `lib/ai/prompts/index.ts` — gọi qua `lib/ai/gemini.ts`. Đó là một prompt chung, không phân nhánh theo chủ đề, và trả về schema của mục 6.2 chứ không phải 6.1.
 
-Chưa triển khai: định tuyến theo chủ đề (mục 4), trường `user_context` (mục 2), bước kiểm duyệt sau sinh nội dung (mục 7) và `content_flags`. Những mục đó là thiết kế cho giai đoạn sau; giữ lại ở đây để khi làm không phải dựng lại từ đầu. Khi sửa giọng văn hoặc độ dài, sửa ở `lib/ai/interpretation.ts` trước rồi cập nhật tài liệu này cho khớp.
+Chưa triển khai: định tuyến theo chủ đề (mục 4), trường `user_context` (mục 2), bước kiểm duyệt sau sinh nội dung (mục 7) và `content_flags`. Những mục đó là thiết kế cho giai đoạn sau; giữ lại ở đây để khi làm không phải dựng lại từ đầu. Khi sửa giọng văn hoặc độ dài, thêm một file version mới trong `lib/ai/prompts/` rồi cập nhật tài liệu này cho khớp — version đã phát hành thì đóng băng, không sửa tại chỗ.
 
 ## 2. Dữ liệu đầu vào chuẩn hóa
 
@@ -244,11 +244,11 @@ TRẢI BÀI:
    Từ khóa nền: {{card_3_core_meaning}}
 
 YÊU CẦU PHÂN TÍCH:
-Bám sát mốc số từ dưới đây — đây là bản đọc dài, không phải bản tóm tắt.
+Bám sát mốc số từ dưới đây — vượt mốc là viết sai, kể cả khi còn ý muốn nói.
 - Mở bằng một tóm tắt 2–3 câu, khoảng 40–60 từ, chạm thẳng vào mạch chính bằng một hình ảnh gợi mở, không liệt kê tên lá.
-- Một đoạn tổng quan khoảng 250–320 từ: bức tranh ba lá vẽ ra, đặt cạnh câu hỏi, rồi lần theo mạch chuyển động từ lá đầu đến lá cuối. Nêu điều đang chín muồi và điều còn đang chờ.
-- Giải thích từng lá theo đúng vị trí, khoảng 200–260 từ mỗi lá. Bắt đầu từ hình ảnh và biểu tượng thật trên lá, nói rõ chiều xuôi hay ngược đổi nghĩa ra sao, gắn vào vai trò của vị trí đó, rồi nối về câu hỏi và chủ đề. Mỗi lá phải có sắc thái riêng, không lặp giọng của lá khác.
-- Phân tích quan hệ giữa ba lá trong khoảng 200–260 từ: điểm cộng hưởng, điểm giằng co, điều một lá soi sáng hoặc cảnh báo cho lá kia, và mạch chuyển dịch xuyên suốt.
+- Một đoạn tổng quan khoảng 175–225 từ: bức tranh ba lá vẽ ra, đặt cạnh câu hỏi, rồi lần theo mạch chuyển động từ lá đầu đến lá cuối. Nêu điều đang chín muồi và điều còn đang chờ. Đây là bức tranh chung — chi tiết từng lá để dành cho phần sau.
+- Giải thích từng lá theo đúng vị trí, khoảng 100–130 từ mỗi lá. Bắt đầu từ một hình ảnh thật trên lá, nói rõ chiều xuôi hay ngược đổi nghĩa ra sao, gắn vào vai trò của vị trí đó, rồi nối về câu hỏi và chủ đề. Chọn một biểu tượng đắt nhất thay vì kể hết, bỏ câu dẫn dắt. Mỗi lá phải có sắc thái riêng, không lặp giọng của lá khác.
+- Phân tích quan hệ giữa ba lá trong khoảng 140–180 từ: điểm cộng hưởng, điểm giằng co, điều một lá soi sáng hoặc cảnh báo cho lá kia, và mạch chuyển dịch xuyên suốt. Chỉ nói phần chỉ thấy được khi đặt ba lá cạnh nhau, không mô tả lại từng lá.
 - Nêu hai khả năng diễn giải có điều kiện, không khẳng định tương lai.
 - Đưa ra ba câu hỏi phản tư mở, chạm vào điểm căng thẳng thật sự của trải bài, không trả lời được bằng có hoặc không.
 - Đưa ra ba hành động nhỏ, an toàn và thực tế trong 7 đến 14 ngày; mỗi hành động 2–3 câu, khoảng 35–55 từ, nói rõ vì sao nó vang lên từ chính trải bài này.
@@ -307,21 +307,21 @@ Quy ước backend: `cards` phải có đúng ba phần tử; `reflection_questi
 
 ### 6.2. Schema đang chạy thật
 
-Đây là schema production, định nghĩa ở `INTERPRETATION_RESPONSE_SCHEMA` và kiểm tra lại bằng `InterpretationResultSchema` (Zod) trong `lib/ai/interpretation.ts`. Mốc số từ ghi kèm là những gì user prompt đang yêu cầu.
+Đây là schema production, định nghĩa ở `INTERPRETATION_RESPONSE_SCHEMA` và kiểm tra lại bằng `InterpretationResultSchema` (Zod) trong `lib/ai/interpretation.ts`. Mốc số từ ghi kèm là những gì user prompt đang yêu cầu — hiện là bản `v2-2026-09-22`.
 
 ```json
 {
   "summary": "2–3 câu, khoảng 40–60 từ.",
-  "overview": "Khoảng 250–320 từ.",
+  "overview": "Khoảng 175–225 từ.",
   "themes": ["3–5 chủ đề, mỗi chủ đề là một cụm từ cô đọng, gợi hình."],
   "perCard": [
     {
       "position": "Giữ nguyên tên vị trí từ prompt.",
       "keyMessage": "Một câu chốt sắc, 12–20 từ.",
-      "text": "Khoảng 200–260 từ."
+      "text": "Khoảng 100–130 từ."
     }
   ],
-  "connections": "Khoảng 200–260 từ.",
+  "connections": "Khoảng 140–180 từ.",
   "actionSuggestions": ["3–5 gợi ý, mỗi gợi ý 2–3 câu, khoảng 35–55 từ."],
   "reflectiveQuestion": "Một câu hỏi mở, không trả lời được bằng có hoặc không.",
   "closingNote": "3–4 câu, khoảng 60–90 từ."
@@ -331,6 +331,8 @@ Quy ước backend: `cards` phải có đúng ba phần tử; `reflection_questi
 Quy ước: `perCard` phải có đúng ba phần tử và giữ nguyên tên vị trí; `themes` và `actionSuggestions` là mảng mở, model tự quyết số lượng nhưng phải có ít nhất một phần tử — mốc 3–5 nằm ở prompt, không ép ở schema. Nếu Zod parse hỏng, `generateInterpretation` ném lỗi và không có bản repair. `unlockInterpretation` đã trừ credit từ trước khi gọi model, nên nó hoàn lại credit và ghi một `creditTransaction` đối ứng; người dùng kết thúc với số dư như cũ.
 
 Bản đọc dài gấp đôi cũng tốn thời gian sinh gấp đôi. Server action mở khóa hiện không khai báo `maxDuration`, nên nếu gặp timeout trên Vercel thì đó là chỗ cần chỉnh trước tiên. Diễn giải đã lưu trước thay đổi này vẫn ngắn như cũ; không có migration nào chạy lại chúng.
+
+Bản `v2-2026-09-22` cắt ba trường dài nhất sau phản hồi rằng bản đọc dài đến mức người đọc bỏ giữa chừng: `perCard.text` 200–260 xuống 100–130 từ cho cả ba vị trí, `overview` 250–320 xuống 175–225, `connections` 200–260 xuống 140–180. Mỗi trường bị cắt kèm một câu chống chồng lấn — overview không nói trước chi tiết từng lá, connections chỉ nói phần thấy được khi đặt ba lá cạnh nhau — vì cách rẻ nhất để model lấp cho đủ mốc cũ là kể lại nội dung của trường bên cạnh. Các trường ngắn giữ nguyên v1. Tổng bản đọc ngắn đi khoảng 500–600 từ. Diễn giải sinh bằng v1 vẫn nằm nguyên trong database với `promptVersion` cũ; `/admin/prompts` tách số liệu theo từng id.
 
 ## 7. Prompt kiểm duyệt trước khi hiển thị
 
@@ -400,7 +402,7 @@ Con số 28 giây là lý do hai trang chứa panel mở khóa — `/` và `/his
 
 Thành **khoảng 523đ mỗi lượt — đắt hơn Gemini chừng 43%**, ngược với điều dễ tưởng khi thấy "không bật thinking". Hai lý do: tokenizer của Anthropic đếm tiếng Việt tốn hơn (2.676 input so với 1.233 cho cùng một prompt), và phần chữ trả về không hề rẻ đi khi bỏ thinking — 3.506 output so với 2.208. Đắt hơn mà không đọc hay hơn rõ rệt, nên **ngày 22/09/2026 model này bị gỡ khỏi `lib/ai/models.ts`** cùng với `lib/ai/claude.ts`. Giá của nó ở lại trong `lib/ai/pricing.ts`: những row `AiInterpretation` đã sinh bằng nó vẫn phải tính ra đúng tiền.
 
-`deepseek-flash` (DeepSeek-V4.1-Flash) thay chỗ đó từ 22/09/2026: **$0,30 / 1M input** và **$1,20 / 1M output** ở giờ cao điểm, cache miss — giờ thấp điểm rẻ đúng một nửa, nên giá trong bảng là trần. Một lượt đo tay cùng ngày, cùng trải bài với Gemini: 20,9s, input 2.137, output 3.338, không thinking token, **~140đ so với 251đ của Gemini**. Input cao hơn Gemini chừng 900 token ở mọi lượt và đó là giá cố định phải trả: DeepSeek không có structured outputs, nên JSON schema phải nằm trong system prompt (`lib/ai/deepseek.ts`) thay vì đi như một tham số. Đổi lại, nó viết vượt mốc số từ — `connections` 316 từ so với mốc 200–260, và cả 5 `actionSuggestions` dài 58–69 từ so với mốc 35–55. Siết lại phải bằng một bản prompt mới, không sửa v1.
+`deepseek-flash` (DeepSeek-V4.1-Flash) thay chỗ đó từ 22/09/2026: **$0,30 / 1M input** và **$1,20 / 1M output** ở giờ cao điểm, cache miss — giờ thấp điểm rẻ đúng một nửa, nên giá trong bảng là trần. Một lượt đo tay cùng ngày, cùng trải bài với Gemini: 20,9s, input 2.137, output 3.338, không thinking token, **~140đ so với 251đ của Gemini**. Input cao hơn Gemini chừng 900 token ở mọi lượt và đó là giá cố định phải trả: DeepSeek không có structured outputs, nên JSON schema phải nằm trong system prompt (`lib/ai/deepseek.ts`) thay vì đi như một tham số. Đổi lại, nó viết vượt mốc số từ — `connections` 316 từ so với mốc 200–260, và cả 5 `actionSuggestions` dài 58–69 từ so với mốc 35–55. Siết lại phải bằng một bản prompt mới, không sửa v1 — `v2-2026-09-22` hạ mốc `connections` xuống 140–180 từ, nhưng `actionSuggestions` vẫn giữ mốc 35–55 từ mà DeepSeek đã vượt, và mốc thấp hơn chưa chắc làm nó tuân thủ hơn.
 
 Một lượt đo tay không phải số đo. Bảng theo cặp (prompt, model) trên `/admin/prompts` là chỗ đọc con số thật sau khi chạy đủ lượt.
 

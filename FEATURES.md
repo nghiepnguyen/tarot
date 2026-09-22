@@ -62,7 +62,7 @@
 - Số tiền PayOS báo phải khớp giá gói đã chốt lúc tạo đơn. Lệch thì không cộng credit và gửi email cảnh báo qua Resend, vì không đường tự động nào gỡ được tình huống đó.
 - Hoàn tiền: tiền hoàn thủ công trên dashboard PayOS, credit thu hồi bằng nút trong `/admin/orders` hoặc `pnpm refund-order <orderId>`. Hai đường chạy chung một đoạn logic; đường qua web ký tên người bấm vào nhật ký quản trị.
 - Tạo prompt từ câu hỏi, ba lá bài và vị trí từng lá.
-- Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh. Prompt yêu cầu giọng huyền bí và đặt mốc số từ cho từng phần, nên bản đọc dài gấp khoảng hai lần so với trước 13/09/2026.
+- Sinh diễn giải dài theo cấu trúc: tổng quan, từng lá, mối liên hệ, gợi ý hành động và câu hỏi tự phản tỉnh. Prompt yêu cầu giọng huyền bí và đặt mốc số từ cho từng phần. Bản `v2-2026-09-22` cắt ba phần dài nhất sau phản hồi rằng bản đọc dài đến mức người đọc bỏ giữa chừng: từng lá (Bối cảnh / Hiện tại / Hướng đi) từ 200–260 xuống 100–130 từ, tổng quan từ 250–320 xuống 175–225, mối liên hệ từ 200–260 xuống 140–180; các phần ngắn giữ nguyên mốc của v1.
 - Một lượt sinh mất khoảng 28 giây, nên `/` và `/history` đều khai báo `maxDuration = 60`; thiếu nó thì server action bị cắt giữa chừng. Chi phí khoảng 365đ mỗi lượt, biên vẫn trên 87% ở mọi gói — số đo và cách tính ở mục 9 của `AI Tarot Interpretation Prompts.md`.
 - Hiển thị trạng thái đang tạo, retry và lỗi tạm thời. Vì 28 giây là quá lâu để nhìn một nút xám, panel đổi hẳn sang màn chờ có ba lưng bài thở lệch nhịp và năm dòng trạng thái xoay vòng; thanh tiến trình cố tình không hiện phần trăm vì model không trả tín hiệu tiến độ.
 - Lưu kết quả AI theo reading ID để không tạo trùng.
