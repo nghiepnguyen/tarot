@@ -7,6 +7,7 @@ import { ShuffleDeck } from "@/components/tarot/ShuffleDeck";
 import { QuestionForm } from "@/components/tarot/QuestionForm";
 import { ReadingView } from "@/components/tarot/ReadingView";
 import { Button } from "@/components/ui/Button";
+import { BottomBar } from "@/components/ui/BottomBar";
 import { useToast } from "@/components/ui/Toast";
 import { drawSpreadPool, DECK_SPREAD_SIZE, SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import type { DrawnCard } from "@/lib/tarot/draw";
@@ -243,7 +244,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
           onSelectSlot={handleSelectSlot}
         />
 
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
+        <BottomBar>
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-6 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-8">
             {/* Trạng thái đọc lên cho screen reader khi số lá đổi: lá bài chỉ
                 báo trạng thái bằng vị trí và số thứ tự trên mặt lá. */}
@@ -273,7 +274,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
               </Button>
             </div>
           </div>
-        </div>
+        </BottomBar>
       </div>
     );
   }
