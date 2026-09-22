@@ -5,7 +5,26 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit } from "@/lib/auth/rate-limit";
+import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { Orientation } from "@/lib/tarot/draw";
+
+const CARD_IDS = new Set(TAROT_CARDS.map((card) => card.id));
+
+/**
+ * `cards` tới từ trình duyệt, nên không tin được. Một `cardId` bịa lọt vào
+ * database sẽ ném khi mở khóa diễn giải (`ai.ts` tra lá bài theo id) — sau khi
+ * đã trừ credit. Chặn ngay tại cửa vào rẻ hơn nhiều so với gỡ một hàng hỏng
+ * sau này.
+ */
+function isValidCard(card: StoredCard): boolean {
+  return (
+    typeof card?.cardId === "string" &&
+    CARD_IDS.has(card.cardId) &&
+    (card.orientation === "upright" || card.orientation === "reversed") &&
+    typeof card.position === "string" &&
+    card.position.length > 0
+  );
+}
 
 export interface StoredCard {
   cardId: string;
@@ -25,7 +44,7 @@ export async function saveReadingAction(
   }
 
   const trimmedQuestion = question.trim().slice(0, 300);
-  if (!trimmedQuestion || cards.length !== 3) return null;
+  if (!trimmedQuestion || cards.length !== 3 || !cards.every(isValidCard)) return null;
 
   const reading = await prisma.reading.create({
     data: {

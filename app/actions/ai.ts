@@ -82,13 +82,17 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
   });
 
   const storedCards = reading.cards as unknown as StoredCard[];
-  const cardInputs: InterpretationCardInput[] = storedCards.map((stored) => {
-    const card = TAROT_CARDS.find((c) => c.id === stored.cardId);
-    if (!card) throw new Error(`Không tìm thấy lá bài "${stored.cardId}".`);
-    return { position: stored.position, card, orientation: stored.orientation };
-  });
 
   try {
+    // Dựng đầu vào cho model *bên trong* `try`: một `cardId` không tra được
+    // sẽ ném ở đây, và credit vừa trừ ngay phía trên phải đi qua nhánh hoàn
+    // ở `catch`. Để ngoài `try` thì lỗi này thành credit bay không hoàn.
+    const cardInputs: InterpretationCardInput[] = storedCards.map((stored) => {
+      const card = TAROT_CARDS.find((c) => c.id === stored.cardId);
+      if (!card) throw new Error(`Không tìm thấy lá bài "${stored.cardId}".`);
+      return { position: stored.position, card, orientation: stored.orientation };
+    });
+
     const version = ACTIVE_PROMPT_VERSION;
     const { result, usage } = await generateInterpretation(
       reading.question,
