@@ -50,7 +50,8 @@ export function FlipCard({ position, drawn, delay }: FlipCardProps) {
 
       <div className="max-w-[11rem]">
         <p className="text-sm font-medium text-foreground">
-          {card.name}
+          {/* Tên lá là tiếng Anh, in nghiêng cho tách khỏi chữ tiếng Việt. */}
+          <span className="italic">{card.name}</span>
           <span className="ml-1 text-sm font-normal text-muted">
             ({isReversed ? "ngược" : "xuôi"})
           </span>

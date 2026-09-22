@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import { Link2, ListChecks, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +11,7 @@ import { InterpretationReviewBox } from "@/components/tarot/InterpretationReview
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { buildReadingTeaser } from "@/lib/tarot/teaser";
-import type { DrawnCard } from "@/lib/tarot/draw";
+import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
 
 interface AiUnlockPanelProps {
@@ -80,6 +81,17 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
   }, [data]);
 
   const teaser = cards ? buildReadingTeaser(cards) : [];
+
+  // Ba lá vào đúng ô diễn giải của nó. `perCard[i].position` là tên vị trí do
+  // model giữ lại, còn `cards` về theo thứ tự bốc, khớp `SPREAD_POSITIONS` theo
+  // chỉ số — nên tra theo tên trước, hụt thì lùi về chỉ số. Thiếu `cards` (một
+  // vài đường gọi cũ không truyền) thì phần chữ vẫn chạy y như trước, chỉ không
+  // có ảnh.
+  const cardByPosition = new Map<string, DrawnCard>();
+  cards?.forEach((drawn, i) => {
+    const position = SPREAD_POSITIONS[i];
+    if (position) cardByPosition.set(position, drawn);
+  });
   const remainingUnlocks = creditStatus ? Math.floor(creditStatus.credits / COST_PER_INTERPRETATION) : null;
   const outOfCredits = creditStatus !== null && creditStatus.credits < COST_PER_INTERPRETATION;
   const isOnFreeTrial = !outOfCredits && creditStatus !== null && !creditStatus.hasPurchased;
@@ -173,21 +185,60 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
         </div>
 
         <div className="flex flex-col divide-y divide-border border-y border-border">
-          {data.perCard.map((entry) => (
-            <div key={entry.position} className="flex flex-col gap-2.5 py-6 first:pt-0 last:pb-0">
-              {/* Tên vị trí là mốc điều hướng của cả phần này — người đọc tìm
-                  "Hướng đi" trước khi đọc chữ. Bậc của nó do cỡ chữ và độ đậm
-                  gánh, không do màu: accent trên nền surface chỉ đạt 4.28:1,
-                  dưới ngưỡng 4.5:1. */}
-              <h5 className={`${HEADING} text-foreground`}>{entry.position}</h5>
-              {entry.keyMessage ? (
-                <p className={`${KEY_MESSAGE} leading-snug text-foreground`}>
-                  {entry.keyMessage}
-                </p>
-              ) : null}
-              <p className={`${BODY} leading-relaxed text-muted`}>{entry.text}</p>
-            </div>
-          ))}
+          {data.perCard.map((entry, index) => {
+            const drawn = cardByPosition.get(entry.position) ?? cards?.[index];
+            const isReversed = drawn?.orientation === "reversed";
+            return (
+              <div
+                key={entry.position}
+                // Ảnh lá cạnh chữ để mỗi phần có mỏ neo thị giác riêng, không
+                // còn là một khối chữ liền. Trên điện thoại ảnh vẫn đứng cạnh
+                // chữ (không xuống dòng) — nó đã nhỏ, xuống hàng chỉ tổ tốn
+                // chiều cao.
+                className="flex gap-4 py-6 first:pt-0 last:pb-0 sm:gap-5"
+              >
+                {drawn ? (
+                  <figure className="flex shrink-0 flex-col items-center gap-1.5">
+                    <div
+                      className="relative w-16 overflow-hidden rounded-lg border border-border bg-surface shadow-[0_8px_24px_-16px_rgba(51,41,31,0.35)] sm:w-20"
+                      style={{ aspectRatio: "24 / 41" }}
+                    >
+                      <Image
+                        src={drawn.card.image}
+                        alt={`${drawn.card.name}, ${isReversed ? "ngược" : "xuôi"}`}
+                        fill
+                        sizes="80px"
+                        className="object-contain"
+                        // Lá ngược lật đúng chiều nó nằm trên bàn, khớp với
+                        // FlipCard ở phần trên trang.
+                        style={{ transform: isReversed ? "rotate(180deg)" : undefined }}
+                      />
+                    </div>
+                    {/* Tên lá là tiếng Anh giữa văn bản tiếng Việt, nên in
+                        nghiêng cho tách khỏi phần chữ quanh nó. */}
+                    <figcaption className="w-16 text-center text-[0.6em] leading-tight text-muted sm:w-20">
+                      <span className="italic text-foreground">{drawn.card.name}</span>
+                      <span className="mt-0.5 block">({isReversed ? "ngược" : "xuôi"})</span>
+                    </figcaption>
+                  </figure>
+                ) : null}
+
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  {/* Tên vị trí là mốc điều hướng của cả phần này — người đọc
+                      tìm "Hướng đi" trước khi đọc chữ. Bậc của nó do cỡ chữ và
+                      độ đậm gánh, không do màu: accent trên nền surface chỉ đạt
+                      4.28:1, dưới ngưỡng 4.5:1. */}
+                  <h5 className={`${HEADING} text-foreground`}>{entry.position}</h5>
+                  {entry.keyMessage ? (
+                    <p className={`${KEY_MESSAGE} leading-snug text-foreground`}>
+                      {entry.keyMessage}
+                    </p>
+                  ) : null}
+                  <p className={`${BODY} leading-relaxed text-muted`}>{entry.text}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="flex flex-col gap-2.5">

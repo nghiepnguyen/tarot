@@ -139,7 +139,8 @@ export function HistoryList({ readings }: HistoryListProps) {
                         {stored.position}
                       </span>
                       <p className="text-sm font-medium text-foreground">
-                        {card.name}{" "}
+                        {/* Tên lá tiếng Anh, in nghiêng như các nơi khác. */}
+                        <span className="italic">{card.name}</span>{" "}
                         <span className="text-sm font-normal text-muted">
                           ({isReversed ? "ngược" : "xuôi"})
                         </span>
