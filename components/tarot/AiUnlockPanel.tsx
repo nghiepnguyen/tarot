@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useTransition } from "react";
-import { Link2, ListChecks, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { Link2, ListChecks, LockKeyhole, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
+import { Button, buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
@@ -12,6 +12,8 @@ import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { buildReadingTeaser } from "@/lib/tarot/teaser";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
+import { SAVE_READING_LIMIT_PER_HOUR } from "@/lib/tarot/limits";
+import type { SaveFailureReason } from "@/components/tarot/TarotExperience";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
 
 interface AiUnlockPanelProps {
@@ -79,8 +81,6 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
       cancelled = true;
     };
   }, [data]);
-
-  const teaser = cards ? buildReadingTeaser(cards) : [];
 
   // Ba lá vào đúng ô diễn giải của nó. `perCard[i].position` là tên vị trí do
   // model giữ lại, còn `cards` về theo thứ tự bốc, khớp `SPREAD_POSITIONS` theo
@@ -304,33 +304,7 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
   }
 
   return (
-    <Card className="flex flex-col items-center gap-4 text-center">
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-tint">
-        <Sparkles className="h-5 w-5 text-accent" aria-hidden="true" />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <h4 className="text-base font-medium text-foreground">Diễn giải chuyên sâu</h4>
-        <p className="max-w-xs text-sm text-muted">
-          Ba lá đọc liền thành một mạch và nối về đúng câu hỏi bạn vừa hỏi.
-        </p>
-      </div>
-
-      {/* Mấy dòng này dựng từ chính ba lá vừa lật, không gọi model — người dùng
-          chưa trả credit thì chưa được tốn tiền. Chúng nói về hình dạng của cả
-          trải bài, phần duy nhất màn hình này chưa có: ý nghĩa từng lá đã in
-          ngay phía trên rồi. */}
-      {teaser.length > 0 ? (
-        <ul className="flex w-full flex-col gap-2 rounded-xl border border-border bg-sage-tint/40 p-4 text-left">
-          {teaser.map((line) => (
-            <li key={line} className="flex gap-2 text-sm leading-relaxed text-muted">
-              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
+    <LockedDeepReading cards={cards}>
       {isOnFreeTrial ? (
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
           {`Miễn phí ${remainingUnlocks}/${FREE_TRIAL_UNLOCKS} lượt còn lại`}
@@ -380,6 +354,105 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
           </button>
         </div>
       ) : null}
+    </LockedDeepReading>
+  );
+}
+
+// Vỏ chung của thẻ diễn giải lúc chưa mở: tiêu đề, lời giới thiệu và mấy dòng
+// gợi mở. Phần hành động (mở khóa, nạp credit, đăng nhập) do chỗ gọi truyền vào.
+function LockedDeepReading({ cards, children }: { cards?: DrawnCard[]; children: ReactNode }) {
+  const teaser = cards ? buildReadingTeaser(cards) : [];
+  return (
+    <Card className="flex flex-col items-center gap-4 text-center">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-tint">
+        <Sparkles className="h-5 w-5 text-accent" aria-hidden="true" />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <h4 className="text-base font-medium text-foreground">Diễn giải chuyên sâu</h4>
+        <p className="max-w-xs text-sm text-muted">
+          Ba lá đọc liền thành một mạch và nối về đúng câu hỏi bạn vừa hỏi.
+        </p>
+      </div>
+
+      {/* Mấy dòng này dựng từ chính ba lá vừa lật, không gọi model — người dùng
+          chưa trả credit thì chưa được tốn tiền. Chúng nói về hình dạng của cả
+          trải bài, phần duy nhất màn hình này chưa có: ý nghĩa từng lá đã in
+          ngay phía trên rồi. */}
+      {teaser.length > 0 ? (
+        <ul className="flex w-full flex-col gap-2 rounded-xl border border-border bg-sage-tint/40 p-4 text-left">
+          {teaser.map((line) => (
+            <li key={line} className="flex gap-2 text-sm leading-relaxed text-muted">
+              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent" />
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {children}
     </Card>
+  );
+}
+
+// Khách chưa đăng nhập thấy đúng thẻ người đã đăng nhập thấy — cùng tiêu đề,
+// cùng mấy dòng gợi mở dựng từ ba lá vừa lật — chỉ khác nút cuối dẫn tới
+// đăng nhập. Trước đây chỗ này chỉ là một dòng chữ nhắc đăng nhập, không cho
+// thấy người dùng sắp nhận được gì.
+export function LoginToUnlockPanel({ cards }: { cards: DrawnCard[] }) {
+  return (
+    <LockedDeepReading cards={cards}>
+      <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
+        {`Tài khoản mới được miễn phí ${FREE_TRIAL_UNLOCKS} lượt`}
+      </span>
+
+      <Link
+        href="/login"
+        onClick={() => trackEvent("login_prompt_click", { placement: "reading_view" })}
+        className={buttonClasses("primary", "shadow-md shadow-accent/25")}
+      >
+        <LockKeyhole className="h-4 w-4 shrink-0" aria-hidden="true" />
+        Đăng nhập để mở khóa diễn giải chuyên sâu
+      </Link>
+    </LockedDeepReading>
+  );
+}
+
+const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
+  network: "Chưa lưu được trải bài này do lỗi kết nối. Bạn thử lại nhé.",
+  rate_limited: `Bạn đã lưu hơn ${SAVE_READING_LIMIT_PER_HOUR} trải bài trong một giờ qua. Đợi một lúc rồi thử lại nhé.`,
+  invalid: "Trải bài này không lưu được. Bạn bấm “Trải bài mới” để bốc lại nhé.",
+  // ReadingView chuyển sang lời mời đăng nhập trước khi tới đây; giữ cho đủ kiểu.
+  unauthenticated: "Phiên đăng nhập đã hết hạn. Bạn đăng nhập lại nhé.",
+};
+
+// Người đã đăng nhập mà bài chưa lưu được thì chưa có readingId để mở khóa.
+// Cho họ thấy đúng lý do — mời họ đăng nhập lần nữa chỉ khiến họ tưởng mình
+// bị đăng xuất.
+export function UnsavedReadingPanel({
+  cards,
+  isSaving,
+  failureReason,
+  onRetry,
+}: {
+  cards: DrawnCard[];
+  isSaving: boolean;
+  failureReason: SaveFailureReason | null;
+  onRetry: () => void;
+}) {
+  return (
+    <LockedDeepReading cards={cards}>
+      {failureReason && !isSaving ? (
+        <p className="max-w-xs text-sm text-red-600">{SAVE_FAILURE_MESSAGES[failureReason]}</p>
+      ) : null}
+      {/* Bài hỏng thì bấm lại cũng không bao giờ lưu được — nút "Trải bài
+          mới" ngay bên dưới là lối ra duy nhất. */}
+      {failureReason === "invalid" ? null : (
+        <Button variant="primary" onClick={onRetry} disabled={isSaving}>
+          <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {isSaving ? "Đang lưu trải bài…" : "Thử lại"}
+        </Button>
+      )}
+    </LockedDeepReading>
   );
 }

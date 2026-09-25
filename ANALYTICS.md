@@ -16,7 +16,6 @@ Google Analytics 4, property `G-YR3ZHD8JBV`. Production: <https://tarot.thanhngh
 | `components/tarot/PendingOrdersReconciler.tsx` | Đối soát đơn treo của chính người dùng khi họ mở lại trang nạp credit. Không bắn event. |
 | `components/tarot/InterpretationReviewBox.tsx` | Hộp chấm điểm cuối mỗi bản diễn giải; bắn `interpretation_review_submit`. Điểm thật nằm ở database và email, GA4 chỉ để đếm *có bao nhiêu người chịu chấm*. |
 | `components/ui/CreditBadge.tsx` | Badge credit ở header, đồng thời là lối vào `/credits`; bắn `nav_click`. |
-| `components/analytics/LoginPromptLink.tsx` | Link "Đăng nhập" có tracking, dùng trong server component. |
 | `components/analytics/ConsentBanner.tsx` | Banner xin đồng ý, neo ở đáy màn hình. |
 | `components/analytics/CookieSettingsButton.tsx` | Link "Tùy chọn cookie" ở footer để mở lại banner. |
 | `components/analytics/useConsent.ts` | `useSyncExternalStore` đọc trạng thái đồng ý. |
@@ -60,6 +59,7 @@ Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner ne
 | `reading_reveal` | Bấm "Mở lá bài" | `cards` (ba `cardId`, phân tách bằng dấu phẩy), `reversed_count`, `is_logged_in` |
 | `reading_reset` | Bấm "Trải bài mới" hoặc "Chọn câu hỏi khác" | `from_status` |
 | `reading_restored` | Reading của khách vãng lai được lưu lại sau khi đăng nhập | `reading_id` |
+| `reading_save_retry` | Người đã đăng nhập bấm "Thử lại" khi trải bài chưa lưu được | `reason` (`network`, `rate_limited`) |
 
 ### Diễn giải chuyên sâu (AI)
 

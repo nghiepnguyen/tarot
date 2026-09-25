@@ -1,17 +1,28 @@
 import { Button } from "@/components/ui/Button";
 import { FlipCard } from "@/components/tarot/FlipCard";
-import { AiUnlockPanel } from "@/components/tarot/AiUnlockPanel";
+import { AiUnlockPanel, LoginToUnlockPanel, UnsavedReadingPanel } from "@/components/tarot/AiUnlockPanel";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
-import { LoginPromptLink } from "@/components/analytics/LoginPromptLink";
+import type { SaveState } from "@/components/tarot/TarotExperience";
 
 interface ReadingViewProps {
   question: string;
   cards: DrawnCard[];
   readingId: string | null;
+  isLoggedIn: boolean;
+  saveState: SaveState;
+  onRetrySave: () => void;
   onReset: () => void;
 }
 
-export function ReadingView({ question, cards, readingId, onReset }: ReadingViewProps) {
+export function ReadingView({
+  question,
+  cards,
+  readingId,
+  isLoggedIn,
+  saveState,
+  onRetrySave,
+  onReset,
+}: ReadingViewProps) {
   return (
     <div className="flex w-full flex-col items-center gap-10">
       <p className="max-w-xl text-center text-sm text-muted">
@@ -32,11 +43,18 @@ export function ReadingView({ question, cards, readingId, onReset }: ReadingView
       <div className="w-full max-w-xl">
         {readingId ? (
           <AiUnlockPanel readingId={readingId} cards={cards} />
+        ) : isLoggedIn &&
+          !(saveState.status === "failed" && saveState.reason === "unauthenticated") ? (
+          // Phiên hết hạn giữa chừng thì server trả `unauthenticated` dù trang
+          // vẫn tưởng đã đăng nhập — lúc đó mời đăng nhập mới là đúng.
+          <UnsavedReadingPanel
+            cards={cards}
+            isSaving={saveState.status === "saving"}
+            failureReason={saveState.status === "failed" ? saveState.reason : null}
+            onRetry={onRetrySave}
+          />
         ) : (
-          <p className="rounded-2xl border border-border bg-surface p-5 text-center text-sm text-muted">
-            <LoginPromptLink placement="reading_view" />{" "}
-            để lưu lịch sử và mở khóa diễn giải chuyên sâu cho lần trải bài này.
-          </p>
+          <LoginToUnlockPanel cards={cards} />
         )}
       </div>
 

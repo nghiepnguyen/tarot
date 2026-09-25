@@ -14,9 +14,18 @@ import type { DrawnCard } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { saveReadingAction } from "@/app/actions/readings";
-import type { StoredCard } from "@/app/actions/readings";
+import type { SaveReadingResult, StoredCard } from "@/app/actions/readings";
 
 type Status = "question" | "shuffling" | "picking" | "revealed";
+// Chỉ có nghĩa với người đã đăng nhập: khách không lưu được bài là chuyện
+// bình thường, còn người đã đăng nhập mà hụt thì phải thấy đúng lý do chứ
+// không phải lời mời đăng nhập. `network` là khi action ném (mất mạng, lỗi
+// server) — thứ duy nhất bấm lại ngay có khả năng thành công.
+export type SaveFailureReason = Extract<SaveReadingResult, { ok: false }>["reason"] | "network";
+export type SaveState =
+  | { status: "idle" }
+  | { status: "saving" }
+  | { status: "failed"; reason: SaveFailureReason };
 
 const PENDING_READING_KEY = "tarot:pendingReading";
 
@@ -60,6 +69,14 @@ function toDrawnCards(cards: StoredCard[]): DrawnCard[] {
     .filter((drawn): drawn is DrawnCard => drawn !== null);
 }
 
+function toStoredCards(cards: DrawnCard[]): StoredCard[] {
+  return cards.map((drawn, i) => ({
+    cardId: drawn.card.id,
+    orientation: drawn.orientation,
+    position: SPREAD_POSITIONS[i],
+  }));
+}
+
 function readRestorableReading(): PendingReading | null {
   const pending = loadPendingReading();
   if (!pending) return null;
@@ -76,8 +93,36 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
   const [pool, setPool] = useState<DrawnCard[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [readingId, setReadingId] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const prefersReducedMotion = useReducedMotion();
   const { showToast } = useToast();
+
+  // Lưu thất bại thì giữ bài trong sessionStorage — khách đăng nhập xong sẽ
+  // được khôi phục, người đã đăng nhập có thể bấm thử lại.
+  const persistReading = async (pending: PendingReading) => {
+    let result: SaveReadingResult | null = null;
+    try {
+      result = await saveReadingAction(pending.question, pending.cards);
+    } catch {
+      // Lỗi mạng hay lỗi server: xử lý như lưu hụt bên dưới.
+    }
+    if (result?.ok) {
+      setReadingId(result.id);
+      setSaveState({ status: "idle" });
+      clearPendingReading();
+      return result;
+    }
+    setReadingId(null);
+    setSaveState(
+      isLoggedIn
+        ? { status: "failed", reason: result ? result.reason : "network" }
+        : { status: "idle" },
+    );
+    // Bài hỏng thì giữ lại chỉ để lần tải trang sau khôi phục rồi hụt tiếp.
+    if (result?.reason === "invalid") clearPendingReading();
+    else savePendingReading(pending);
+    return null;
+  };
 
   // sessionStorage is a browser-only external store: it must not be read
   // during the initial render (server-rendered HTML always starts at
@@ -95,19 +140,13 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
     setSelectedSlots([0, 1, 2]);
     setStatus("revealed");
 
+    if (isLoggedIn) setSaveState({ status: "saving" });
     startTransition(async () => {
-      try {
-        const saved = await saveReadingAction(pending.question, pending.cards);
-        if (saved) {
-          setReadingId(saved.id);
-          clearPendingReading();
-          trackEvent("reading_restored", { reading_id: saved.id });
-        }
-      } catch {
-        // Still anonymous or a transient failure — keep the pending reading
-        // so the next mount (e.g. after a successful login) can retry.
-      }
+      const saved = await persistReading(pending);
+      if (saved) trackEvent("reading_restored", { reading_id: saved.id });
     });
+    // persistReading chỉ đọc isLoggedIn, vốn cố định suốt vòng đời trang.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStartDraw = () => {
@@ -158,30 +197,20 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
       cards: cards.map((drawn) => drawn.card.id).join(","),
       reversed_count: cards.filter((drawn) => drawn.orientation === "reversed").length,
     });
-    const storedCards = cards.map((drawn, i) => ({
-      cardId: drawn.card.id,
-      orientation: drawn.orientation,
-      position: SPREAD_POSITIONS[i],
-    }));
-
     startTransition(async () => {
-      try {
-        const saved = await saveReadingAction(question, storedCards);
-        if (saved) {
-          setReadingId(saved.id);
-          clearPendingReading();
-        } else {
-          // Anonymous users or a transient save failure shouldn't block the
-          // reading the user is about to see on screen. Keep the question
-          // and cards around so they can be restored after login/signup.
-          setReadingId(null);
-          savePendingReading({ question, cards: storedCards });
-        }
-      } catch {
-        setReadingId(null);
-        savePendingReading({ question, cards: storedCards });
-      }
+      await persistReading({ question, cards: toStoredCards(cards) });
       setStatus("revealed");
+    });
+  };
+
+  const handleRetrySave = () => {
+    const cards = selectedSlots.map((i) => pool[i]);
+    trackEvent("reading_save_retry", {
+      reason: saveState.status === "failed" ? saveState.reason : undefined,
+    });
+    setSaveState({ status: "saving" });
+    startTransition(async () => {
+      await persistReading({ question, cards: toStoredCards(cards) });
     });
   };
 
@@ -191,6 +220,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
     setPool([]);
     setSelectedSlots([]);
     setReadingId(null);
+    setSaveState({ status: "idle" });
     setStatus("question");
     clearPendingReading();
   };
@@ -202,6 +232,9 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
         question={question}
         cards={cards}
         readingId={readingId}
+        isLoggedIn={isLoggedIn}
+        saveState={saveState}
+        onRetrySave={handleRetrySave}
         onReset={handleReset}
       />
     );

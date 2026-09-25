@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit } from "@/lib/auth/rate-limit";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
+import { SAVE_READING_LIMIT_PER_HOUR } from "@/lib/tarot/limits";
 import type { Orientation } from "@/lib/tarot/draw";
 
 const CARD_IDS = new Set(TAROT_CARDS.map((card) => card.id));
@@ -32,19 +33,36 @@ export interface StoredCard {
   position: string;
 }
 
+/**
+ * Trả về lý do thay vì chỉ `null`: phía client phải phân biệt được khách chưa
+ * đăng nhập (mời đăng nhập), chạm giới hạn (bấm lại vô ích cho tới khi hết
+ * cửa sổ) và bài hỏng (bấm lại cũng không bao giờ lưu được).
+ */
+export type SaveReadingResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: "unauthenticated" | "rate_limited" | "invalid" };
+
 export async function saveReadingAction(
   question: string,
   cards: StoredCard[],
-): Promise<{ id: string } | null> {
+): Promise<SaveReadingResult> {
   const session = await auth();
-  if (!session?.user) return null;
+  if (!session?.user) return { ok: false, reason: "unauthenticated" };
 
-  if (!(await checkRateLimit(`save-reading:${session.user.id}`, 30, 60 * 60 * 1000))) {
-    return null;
+  if (
+    !(await checkRateLimit(
+      `save-reading:${session.user.id}`,
+      SAVE_READING_LIMIT_PER_HOUR,
+      60 * 60 * 1000,
+    ))
+  ) {
+    return { ok: false, reason: "rate_limited" };
   }
 
   const trimmedQuestion = question.trim().slice(0, 300);
-  if (!trimmedQuestion || cards.length !== 3 || !cards.every(isValidCard)) return null;
+  if (!trimmedQuestion || cards.length !== 3 || !cards.every(isValidCard)) {
+    return { ok: false, reason: "invalid" };
+  }
 
   const reading = await prisma.reading.create({
     data: {
@@ -55,7 +73,7 @@ export async function saveReadingAction(
   });
 
   revalidatePath("/history");
-  return { id: reading.id };
+  return { ok: true, id: reading.id };
 }
 
 export async function deleteReadingAction(readingId: string) {
