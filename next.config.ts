@@ -2,7 +2,18 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Tracer kéo nguyên thư mục `@prisma/client/runtime` vào từng function, gồm
+  // bản wasm của cả năm loại database (~60MB) chỉ dùng cho driver adapter hoặc
+  // edge. App chạy library engine trên Node nên không đụng tới file nào trong
+  // số này. Bắt đầu dùng driver adapter (vd. `@prisma/adapter-neon`) thì phải
+  // bỏ dòng wasm ra.
+  outputFileTracingExcludes: {
+    "/*": [
+      "node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/runtime/*.wasm-base64.*",
+      "node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/runtime/*.map",
+      "node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/*.wasm",
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {
