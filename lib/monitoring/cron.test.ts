@@ -4,6 +4,7 @@ import { withCronCheckIn } from "./cron";
 
 vi.mock("@sentry/nextjs", () => ({
   captureCheckIn: vi.fn(() => "checkin_1"),
+  flush: vi.fn(async () => true),
 }));
 
 const CONFIG = {
@@ -15,9 +16,11 @@ const CONFIG = {
 };
 
 const captureCheckIn = vi.mocked(Sentry.captureCheckIn);
+const flush = vi.mocked(Sentry.flush);
 
 afterEach(() => {
   captureCheckIn.mockClear();
+  flush.mockClear();
 });
 
 describe("withCronCheckIn", () => {
@@ -70,10 +73,41 @@ describe("withCronCheckIn", () => {
     });
   });
 
+  // Route Turbopack không được Sentry bọc, nên không ai flush sau khi response
+  // đi. Không flush thì Vercel đóng băng function trước khi check-in đóng tới
+  // Sentry, và lượt chạy tốt hiện ra là timeout.
+  it("flushes the closing check-in before returning", async () => {
+    let flushedAfterClose = false;
+    flush.mockImplementationOnce(async () => {
+      flushedAfterClose = captureCheckIn.mock.calls.length === 2;
+      return true;
+    });
+
+    await withCronCheckIn(CONFIG, async () => "done", { isVercel: true });
+
+    expect(flush).toHaveBeenCalledTimes(1);
+    expect(flushedAfterClose).toBe(true);
+  });
+
+  it("flushes the error check-in too before rethrowing", async () => {
+    await expect(
+      withCronCheckIn(
+        CONFIG,
+        async () => {
+          throw new Error("boom");
+        },
+        { isVercel: true },
+      ),
+    ).rejects.toThrow("boom");
+
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
   it("stays out of the real monitor when not running on Vercel", async () => {
     const result = await withCronCheckIn(CONFIG, async () => "local", { isVercel: false });
 
     expect(result).toBe("local");
     expect(captureCheckIn).not.toHaveBeenCalled();
+    expect(flush).not.toHaveBeenCalled();
   });
 });

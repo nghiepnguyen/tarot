@@ -23,6 +23,12 @@ export interface CronMonitorConfig {
 }
 
 /**
+ * Chờ gửi check-in đóng tối đa bấy nhiêu. Cộng vào thời gian chạy của route,
+ * nên phải nằm gọn trong phần còn thừa của `maxDuration` sau ngân sách job.
+ */
+const CHECK_IN_FLUSH_TIMEOUT_MS = 2000;
+
+/**
  * Chạy một cron job và báo check-in cho Sentry.
  *
  * Gọi thẳng `captureCheckIn` thay vì dùng `_experimental.vercelCronsMonitoring`
@@ -37,6 +43,13 @@ export interface CronMonitorConfig {
  *
  * Lỗi được đóng check-in bằng `error` rồi ném lại: người gọi vẫn thấy lỗi như
  * thường, Sentry chỉ biết thêm rằng lượt chạy này hỏng.
+ *
+ * Check-in đóng phải được flush trước khi trả về. `captureCheckIn` chỉ xếp
+ * hàng một request gửi đi; bản build Turbopack không bọc route handler bằng
+ * `wrapRouteHandlerWithSentry`, nên sau khi response đi rồi không ai flush hộ.
+ * Vercel đóng băng function ngay khi trả response, request `ok` chết giữa
+ * đường, và Sentry chỉ thấy `in_progress` rồi báo "A timeout check-in was
+ * detected" cho một lượt chạy hoàn toàn bình thường.
  */
 export async function withCronCheckIn<T>(
   config: CronMonitorConfig,
@@ -71,5 +84,9 @@ export async function withCronCheckIn<T>(
       monitorConfig,
     );
     throw error;
+  } finally {
+    // Không throw: flush hết giờ thì trả `false`, và kết quả của job vẫn phải
+    // tới tay người gọi dù Sentry có chậm.
+    await Sentry.flush(CHECK_IN_FLUSH_TIMEOUT_MS);
   }
 }

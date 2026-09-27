@@ -103,6 +103,8 @@ Chỉ chạy khi có biến `VERCEL`, nên `pnpm dev` và test không ghi vào m
 
 `maxRuntime` để 2 phút, sát trần `maxDuration = 60` của route. Vercel giết function đúng ở trần đó, và function chết thì không còn ai gửi check-in đóng — lượt chạy hiện ra trong Sentry là **timeout** chứ không phải **error**. Thấy "A timeout check-in was detected" thì tìm chỗ chạy quá lâu, đừng tìm exception.
 
+Nguyên nhân thứ hai cũng ra đúng dòng đó: check-in đóng không kịp rời function. `captureCheckIn` chỉ xếp hàng request gửi đi, và bản build Turbopack **không** bọc route handler bằng `wrapRouteHandlerWithSentry`, nên sau khi response đi không ai flush hộ. Vercel đóng băng function ngay lúc đó, Sentry chỉ nhận `in_progress`. Vì vậy `withCronCheckIn` tự `await Sentry.flush(2000)` trong `finally` trước khi trả về — 2 giây này cộng vào thời gian chạy của route, nên ngân sách job phải chừa chỗ cho nó.
+
 Trần 60 giây được giữ từ hai phía: mỗi lượt gọi PayOS và Resend có `AbortSignal.timeout` 8 giây (`fetch` của Node không có hạn chờ tổng, kết nối treo chỉ đứt sau 5 phút), và `reconcileStaleOrders` tự dừng sau `RECONCILE_BUDGET_MS` (35 giây) rồi trả về `stoppedEarly: true`. Quét này idempotent và chạy mỗi ngày nên đơn còn sót sẽ được lượt sau nhặt.
 
 `timezone` phải truyền tường minh là `"UTC"` — Vercel Cron luôn hiểu lịch theo UTC, còn Sentry thiếu trường này thì hiện "At 20:00 (undefined)" và người đọc tự đoán. `0 20 * * *` UTC là 3 giờ sáng giờ Việt Nam.
