@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { Sparkles, WalletCards } from "lucide-react";
+import { WalletCards } from "lucide-react";
 import { Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { trackEvent } from "@/lib/analytics/gtag";
@@ -21,7 +20,8 @@ interface QuestionFormProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
-  isLoggedIn?: boolean;
+  /** Canh nút bốc bài theo lề trái từ lg, khi form nằm ở cột trái. */
+  alignStart?: boolean;
 }
 
 export function QuestionForm({
@@ -29,7 +29,7 @@ export function QuestionForm({
   onChange,
   onSubmit,
   disabled,
-  isLoggedIn = false,
+  alignStart = false,
 }: QuestionFormProps) {
   const prefersReducedMotion = useReducedMotion();
   const canSubmit = !disabled && question.trim().length > 0;
@@ -39,8 +39,8 @@ export function QuestionForm({
       <Textarea
         value={question}
         onChange={(e) => onChange(e.target.value.slice(0, MAX_LENGTH))}
-        placeholder="Nhập một câu hỏi về tình cảm, công việc, tài chính hoặc định hướng cá nhân..."
-        rows={3}
+        placeholder="Nhập câu hỏi mở, tập trung vào bản thân và hướng đến hành động thay vì hỏi kết quả cố định hoặc phán xét người khác."
+        rows={4}
         maxLength={MAX_LENGTH}
         aria-label="Câu hỏi của bạn"
       />
@@ -68,7 +68,7 @@ export function QuestionForm({
           the button is the only way forward from here, and it sat inert
           long enough that people stopped looking at it. */}
       <motion.div
-        className="mt-2 flex w-full justify-center"
+        className={`mt-2 flex w-full justify-center ${alignStart ? "lg:justify-start" : ""}`}
         animate={canSubmit && !prefersReducedMotion ? { scale: [1, 1.05, 1] } : { scale: 1 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
       >
@@ -83,21 +83,6 @@ export function QuestionForm({
         </Button>
       </motion.div>
 
-      {isLoggedIn ? null : (
-        <div className="flex items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-sage-tint px-4 py-3 text-center text-sm text-foreground">
-          <Sparkles className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-          <span>
-            <Link
-              href="/login"
-              onClick={() => trackEvent("login_prompt_click", { placement: "question_form" })}
-              className="inline-flex min-h-11 items-center px-1 font-semibold text-foreground underline decoration-accent decoration-2 underline-offset-4 transition-colors duration-200 hover:text-accent"
-            >
-              Đăng nhập
-            </Link>{" "}
-            để dùng tính năng diễn giải chuyên sâu
-          </span>
-        </div>
-      )}
     </div>
   );
 }

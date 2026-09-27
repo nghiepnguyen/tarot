@@ -60,6 +60,71 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Nền trơn một màu thì phẳng. Hai lớp cố định phía sau nội dung: quầng sáng
+   sage/rose rất nhạt ở hai góc, và một lưới sao bốn cánh li ti. Sao vẽ bằng
+   mask + background-color nên tự theo màu chữ của theme sáng/tối, không cần
+   hai bản SVG. Cả hai `position: fixed` nên cuộn trang không phải vẽ lại. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(50rem 36rem at 100% 100%, color-mix(in oklab, var(--rose) 16%, transparent), transparent 70%);
+}
+
+body::after {
+  background-color: var(--foreground);
+  opacity: 0.045;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M30 22l1.2 6.8L38 30l-6.8 1.2L30 38l-1.2-6.8L22 30l6.8-1.2z'/%3E%3Cpath d='M88 80l.7 3.3 3.3.7-3.3.7-.7 3.3-.7-3.3-3.3-.7 3.3-.7z'/%3E%3Ccircle cx='82' cy='26' r='1'/%3E%3Ccircle cx='24' cy='92' r='.8'/%3E%3Ccircle cx='58' cy='62' r='.6'/%3E%3Ccircle cx='108' cy='110' r='.7'/%3E%3C/svg%3E")
+    0 0 / 120px 120px repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M30 22l1.2 6.8L38 30l-6.8 1.2L30 38l-1.2-6.8L22 30l6.8-1.2z'/%3E%3Cpath d='M88 80l.7 3.3 3.3.7-3.3.7-.7 3.3-.7-3.3-3.3-.7 3.3-.7z'/%3E%3Ccircle cx='82' cy='26' r='1'/%3E%3Ccircle cx='24' cy='92' r='.8'/%3E%3Ccircle cx='58' cy='62' r='.6'/%3E%3Ccircle cx='108' cy='110' r='.7'/%3E%3C/svg%3E")
+    0 0 / 120px 120px repeat;
+}
+
+/* Viền sáng của thẻ quà cho khách: một dải conic lớn xoay chậm phía sau, thẻ
+   bên trong che hết chỉ chừa 1px viền. Chỉ xoay bằng transform nên không vẽ
+   lại layout; tắt chuyển động thì dải đứng yên, viền vẫn còn. */
+.gift-glow {
+  background: color-mix(in oklab, var(--accent) 35%, var(--border));
+}
+
+.gift-glow::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--earth) 40deg,
+    var(--accent) 80deg,
+    transparent 140deg,
+    transparent 360deg
+  );
+  animation: gift-spin 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes gift-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Lưới trám chéo trên mặt sau lá bài: hai dải lặp 45°/-45°, rẻ hơn nhiều so
+   với một <pattern> SVG khi lưới chọn bài vẽ cùng lúc tới 78 lá. */
+.card-lattice {
+  background-image:
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--accent-foreground) 14%, transparent), transparent 65%),
+    repeating-linear-gradient(45deg, color-mix(in oklab, var(--accent-foreground) 11%, transparent) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, color-mix(in oklab, var(--accent-foreground) 11%, transparent) 0 1px, transparent 1px 7px);
+}
+
 /* Trang giới thiệu dài, các phần tới cùng lúc thì không có thứ tự đọc nào cả.
    Một lần hiện nhẹ khi phần đó vào khung nhìn đủ để tách nhịp. Chạy bằng
    scroll-driven animation của CSS: không JS, không listener scroll. Trình duyệt
