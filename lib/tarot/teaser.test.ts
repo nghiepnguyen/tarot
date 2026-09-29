@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TAROT_CARDS } from "./cards";
-import { buildReadingTeaser } from "./teaser";
+import { buildReadingTeaser, quoteQuestion } from "./teaser";
 import type { DrawnCard, Orientation } from "./draw";
 
 function pick(category: string, index = 0) {
@@ -77,7 +77,7 @@ describe("buildReadingTeaser", () => {
         ["swords", "upright"],
       ]),
     );
-    expect(mixed.some((line) => line.includes("bộ "))).toBe(false);
+    expect(mixed.some((line) => line.includes("cùng thuộc bộ"))).toBe(false);
     expect(mixed).toHaveLength(2);
   });
 
@@ -89,7 +89,7 @@ describe("buildReadingTeaser", () => {
         ["cups", "upright"],
       ]),
     );
-    expect(lines.some((line) => line.includes("bộ "))).toBe(false);
+    expect(lines.some((line) => line.includes("cùng thuộc bộ"))).toBe(false);
   });
 
   it("describes reversals by position, and says so when there are none", () => {
@@ -158,5 +158,49 @@ describe("buildReadingTeaser", () => {
       ["cups", "upright"],
     ]);
     expect(buildReadingTeaser(cards)).toEqual(buildReadingTeaser(cards));
+  });
+
+  describe("with the question", () => {
+    const twoCups = spread(
+      [
+        ["cups", "upright"],
+        ["cups", "upright"],
+        ["wands", "upright"],
+      ],
+      [0, 1, 0],
+    );
+
+    it("says the cards answer head-on when the question's topic matches the dominant suit", () => {
+      const lines = buildReadingTeaser(twoCups, "Người ấy có còn yêu tôi không?");
+      expect(lines.some((line) => line.includes("Bạn hỏi về tình cảm, và bài đáp đúng"))).toBe(true);
+    });
+
+    it("points out the mismatch when the dominant suit speaks of something else", () => {
+      const lines = buildReadingTeaser(twoCups, "Tôi có nên nghỉ việc ở công ty này?");
+      expect(lines.some((line) => line.includes("Bạn hỏi về công việc, nhưng"))).toBe(true);
+    });
+
+    it("stays quiet when it cannot tell the topic, or no suit dominates", () => {
+      expect(buildReadingTeaser(twoCups, "Tháng tới sẽ ra sao?")).toEqual(buildReadingTeaser(twoCups));
+      const mixed = spread([
+        ["cups", "upright"],
+        ["wands", "upright"],
+        ["swords", "upright"],
+      ]);
+      expect(buildReadingTeaser(mixed, "Người ấy có yêu tôi?")).toEqual(buildReadingTeaser(mixed));
+    });
+
+    it("does not read \"yêu cầu\" as a love question", () => {
+      const lines = buildReadingTeaser(twoCups, "Sếp yêu cầu tôi chuyển bộ phận, có nên không?");
+      expect(lines.some((line) => line.includes("Bạn hỏi về công việc"))).toBe(true);
+    });
+  });
+
+  it("shortens a long question by characters, never splitting a Vietnamese letter", () => {
+    expect(quoteQuestion("  Ngắn thôi  ")).toBe("Ngắn thôi");
+    const long = "Mối quan hệ này ".repeat(10);
+    const quoted = quoteQuestion(long);
+    expect(quoted.endsWith("…")).toBe(true);
+    expect(Array.from(quoted).length).toBeLessThanOrEqual(61);
   });
 });

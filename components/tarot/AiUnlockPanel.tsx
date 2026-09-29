@@ -10,7 +10,7 @@ import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
-import { buildReadingTeaser } from "@/lib/tarot/teaser";
+import { buildReadingTeaser, quoteQuestion } from "@/lib/tarot/teaser";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
 import { SAVE_READING_LIMIT_PER_HOUR } from "@/lib/tarot/limits";
 import type { SaveFailureReason } from "@/components/tarot/TarotExperience";
@@ -21,6 +21,8 @@ interface AiUnlockPanelProps {
   initialData?: DisplayInterpretation | null;
   /** Ba lá vừa lật, dùng dựng mấy dòng gợi mở ở trạng thái chưa mở khóa. */
   cards?: DrawnCard[];
+  /** Câu hỏi của trải bài, để mấy dòng gợi mở nói thẳng về nó. */
+  question?: string;
 }
 
 // Cỡ chữ gốc của cả phần diễn giải; mọi dòng bên trong đo bằng `em` theo nó,
@@ -65,7 +67,7 @@ function SectionHeading({
   );
 }
 
-export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelProps) {
+export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnlockPanelProps) {
   const [data, setData] = useState<DisplayInterpretation | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null);
@@ -304,7 +306,7 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
   }
 
   return (
-    <LockedDeepReading cards={cards}>
+    <LockedDeepReading cards={cards} question={question}>
       {isOnFreeTrial ? (
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
           {`Miễn phí ${remainingUnlocks}/${FREE_TRIAL_UNLOCKS} lượt còn lại`}
@@ -360,8 +362,17 @@ export function AiUnlockPanel({ readingId, initialData, cards }: AiUnlockPanelPr
 
 // Vỏ chung của thẻ diễn giải lúc chưa mở: tiêu đề, lời giới thiệu và mấy dòng
 // gợi mở. Phần hành động (mở khóa, nạp credit, đăng nhập) do chỗ gọi truyền vào.
-function LockedDeepReading({ cards, children }: { cards?: DrawnCard[]; children: ReactNode }) {
-  const teaser = cards ? buildReadingTeaser(cards) : [];
+function LockedDeepReading({
+  cards,
+  question,
+  children,
+}: {
+  cards?: DrawnCard[];
+  question?: string;
+  children: ReactNode;
+}) {
+  const teaser = cards ? buildReadingTeaser(cards, question) : [];
+  const quoted = question?.trim() ? quoteQuestion(question) : null;
   return (
     <Card className="flex flex-col items-center gap-4 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-tint">
@@ -371,7 +382,14 @@ function LockedDeepReading({ cards, children }: { cards?: DrawnCard[]; children:
       <div className="flex flex-col gap-1">
         <h4 className="text-base font-medium text-foreground">Diễn giải chuyên sâu</h4>
         <p className="max-w-xs text-sm text-muted">
-          Ba lá đọc liền thành một mạch và nối về đúng câu hỏi bạn vừa hỏi.
+          {quoted ? (
+            <>
+              Từng lá đã hiện nghĩa. Còn điều ba lá thì thầm với nhau về{" "}
+              <span className="text-foreground">“{quoted}”</span> vẫn đang khép lại.
+            </>
+          ) : (
+            "Từng lá đã hiện nghĩa. Còn điều ba lá thì thầm với nhau — về đúng câu hỏi của bạn — vẫn đang khép lại."
+          )}
         </p>
       </div>
 
@@ -399,9 +417,9 @@ function LockedDeepReading({ cards, children }: { cards?: DrawnCard[]; children:
 // cùng mấy dòng gợi mở dựng từ ba lá vừa lật — chỉ khác nút cuối dẫn tới
 // đăng nhập. Trước đây chỗ này chỉ là một dòng chữ nhắc đăng nhập, không cho
 // thấy người dùng sắp nhận được gì.
-export function LoginToUnlockPanel({ cards }: { cards: DrawnCard[] }) {
+export function LoginToUnlockPanel({ cards, question }: { cards: DrawnCard[]; question?: string }) {
   return (
-    <LockedDeepReading cards={cards}>
+    <LockedDeepReading cards={cards} question={question}>
       <span className="rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted">
         {`Tài khoản mới được miễn phí ${FREE_TRIAL_UNLOCKS} lượt`}
       </span>
@@ -431,17 +449,19 @@ const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
 // bị đăng xuất.
 export function UnsavedReadingPanel({
   cards,
+  question,
   isSaving,
   failureReason,
   onRetry,
 }: {
   cards: DrawnCard[];
+  question?: string;
   isSaving: boolean;
   failureReason: SaveFailureReason | null;
   onRetry: () => void;
 }) {
   return (
-    <LockedDeepReading cards={cards}>
+    <LockedDeepReading cards={cards} question={question}>
       {failureReason && !isSaving ? (
         <p className="max-w-xs text-sm text-red-600">{SAVE_FAILURE_MESSAGES[failureReason]}</p>
       ) : null}

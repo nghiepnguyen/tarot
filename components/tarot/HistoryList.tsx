@@ -157,6 +157,7 @@ export function HistoryList({ readings }: HistoryListProps) {
                 readingId={reading.id}
                 initialData={reading.aiInterpretation}
                 cards={drawnCards}
+                question={reading.question}
               />
             </div>
           </details>

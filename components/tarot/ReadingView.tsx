@@ -42,19 +42,20 @@ export function ReadingView({
 
       <div className="w-full max-w-xl">
         {readingId ? (
-          <AiUnlockPanel readingId={readingId} cards={cards} />
+          <AiUnlockPanel readingId={readingId} cards={cards} question={question} />
         ) : isLoggedIn &&
           !(saveState.status === "failed" && saveState.reason === "unauthenticated") ? (
           // Phiên hết hạn giữa chừng thì server trả `unauthenticated` dù trang
           // vẫn tưởng đã đăng nhập — lúc đó mời đăng nhập mới là đúng.
           <UnsavedReadingPanel
             cards={cards}
+            question={question}
             isSaving={saveState.status === "saving"}
             failureReason={saveState.status === "failed" ? saveState.reason : null}
             onRetry={onRetrySave}
           />
         ) : (
-          <LoginToUnlockPanel cards={cards} />
+          <LoginToUnlockPanel cards={cards} question={question} />
         )}
       </div>
 
