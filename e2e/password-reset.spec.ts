@@ -39,12 +39,12 @@ test("a forgotten password can be reset from the login page", async ({ page }) =
   // Mật khẩu cũ chết theo.
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Mật khẩu").fill(OLD_PASSWORD);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page.getByText("Email hoặc mật khẩu không đúng.")).toBeVisible();
 
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Mật khẩu").fill(NEW_PASSWORD);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("button", { name: "Người Quên Mật Khẩu" })).toBeVisible();
 

@@ -55,6 +55,7 @@ Test e2e ghi sẵn `"denied"` vào localStorage qua `e2e/fixtures.ts`: banner ne
 | `draw_start` | Bấm "Bốc 3 lá bài" thành công | `question_length`, `is_logged_in` |
 | `draw_blocked` | Bấm khi chưa nhập câu hỏi | `reason` |
 | `shuffle_skip` | Bấm "Bỏ qua, trải bài luôn" trong lúc xáo bài | — |
+| `deck_rotate` | Lần đầu xoay vòng bài trong một lượt chọn bài (chỉ bắn một lần mỗi lượt) | `method` (`wheel`, `drag`, `keyboard`, `button`) |
 | `card_select` / `card_deselect` | Chọn/bỏ chọn một lá | `picked_count` |
 | `reading_reveal` | Bấm "Mở lá bài" | `cards` (ba `cardId`, phân tách bằng dấu phẩy), `reversed_count`, `is_logged_in` |
 | `reading_reset` | Bấm "Trải bài mới" hoặc "Chọn câu hỏi khác" | `from_status` |
@@ -144,7 +145,7 @@ Hàng đợi trong `gtag.ts` chỉ phục vụ khoảng thời gian ngắn giữ
 ## Việc phải làm trong GA4 UI
 
 1. Đánh dấu key event (conversion): `sign_up`, `ai_unlock_success`. `purchase` được GA4 tính tự động.
-2. Khai báo custom dimension cho các tham số muốn phân tích: `is_free_trial`, `is_logged_in`, `placement`, `topic`, `reason`. Tham số không khai báo vẫn vào DebugView nhưng không dùng được trong báo cáo chuẩn.
+2. Khai báo custom dimension cho các tham số muốn phân tích: `is_free_trial`, `is_logged_in`, `placement`, `topic`, `reason`, `method` (cách xoay vòng bài của `deck_rotate`). Tham số không khai báo vẫn vào DebugView nhưng không dùng được trong báo cáo chuẩn.
 3. Đổi currency của property sang VND nếu muốn báo cáo doanh thu khớp với giá bán.
 
 ## Kiểm tra

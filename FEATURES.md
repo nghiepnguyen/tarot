@@ -18,7 +18,13 @@
 - Ô nhập câu hỏi có placeholder và giới hạn ký tự.
 - Gợi ý câu hỏi theo chủ đề: tình yêu, công việc, tài chính, phát triển bản thân.
 - Nút “Bốc 3 lá bài”.
-- Bộ bài hiển thị dạng vòng cung ở bên dưới màn hình, chỉ để trang trí. Bước bốc bài dùng lưới chia trang cuộn ngang có snap, vì vòng cung trải 78 lá rộng tới ~3600px, kéo mãi không tới hai đầu.
+- Bộ bài hiển thị dạng vòng cung ở bên dưới màn hình, chỉ để trang trí.
+- Bước bốc bài xếp 78 lá thành một vòng tròn khép kín, tâm nằm dưới đáy màn hình nên chỉ lộ cung phía trên (khoảng 13 lá trên điện thoại, 17 lá trên desktop). Không dùng một vòng cung trải phẳng: 78 lá như vậy rộng tới ~3600px, kéo mãi không tới hai đầu.
+  - Xoay bằng lăn chuột/trackpad (trang không cuộn theo), kéo/vuốt có quán tính rồi dừng đúng một lá, phím ←/→, hoặc nút ‹ ›. Trên điện thoại, vuốt dọc vẫn cuộn trang.
+  - Mỗi lần bốc, vòng mở ở một lá ngẫu nhiên và xoè ra từ đỉnh cung.
+  - Chạm lá nào đang lộ cũng được: lá bay lên ô Bối cảnh / Hiện tại / Hướng đi kế tiếp, vòng khép lại chỗ trống. Chạm ô để trả lá về, các ô sau dồn lên.
+  - Điện thoại dọc: tiêu đề, 3 ô và vòng bài vừa một màn hình phía trên thanh nút. Điện thoại ngang: giữ nguyên kích thước, trang cuộn.
+  - Hình học vòng bài nằm ở `lib/tarot/wheel.ts` (hàm thuần, có unit test), component ở `components/tarot/CardWheel.tsx`. Spec: [tasks/prd-circular-card-wheel.md](tasks/prd-circular-card-wheel.md).
 - Hiệu ứng hover/focus nhẹ, hỗ trợ keyboard và reduced motion.
 
 ### Trải bài

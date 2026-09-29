@@ -27,7 +27,7 @@ Thiết kế giao diện theo tinh thần **Japanese Minimalism** và **Swiss De
 ## Dùng để làm gì
 
 1. Nhập một câu hỏi về tình cảm, công việc, tài chính hoặc định hướng cá nhân.
-2. Bốc ba lá bài từ bộ 78 lá chia thành từng trang, vuốt ngang để xem hết.
+2. Bốc ba lá bài từ bộ 78 lá xếp thành một vòng tròn, xoay vòng để chọn.
 3. Xem tên, hình ảnh và ý nghĩa cơ bản của từng lá.
 4. Dùng 2 lượt miễn phí đầu tiên, sau đó nạp credit qua PayOS ở trang `/credits` để xem phần diễn giải chuyên sâu bằng AI.
 5. Liên hệ hoặc đặt lịch với người tư vấn cho nhu cầu cao cấp hơn.

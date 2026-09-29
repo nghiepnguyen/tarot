@@ -160,7 +160,7 @@ export async function signUpVerifyAndLogIn(page: Page, input: SignUpInput) {
   await page.getByPlaceholder("Tên hiển thị").fill(input.name);
   await page.getByPlaceholder("Email").fill(input.email);
   await page.getByPlaceholder("Mật khẩu").fill(password);
-  await page.getByRole("button", { name: "Đăng ký" }).click();
+  await page.getByRole("button", { name: "Đăng ký", exact: true }).click();
   await expect(page).toHaveURL(/\/verify-email\/sent/);
 
   await page.goto(await verificationLinkFor(input.email));
@@ -168,7 +168,7 @@ export async function signUpVerifyAndLogIn(page: Page, input: SignUpInput) {
 
   await page.getByPlaceholder("Email").fill(input.email);
   await page.getByPlaceholder("Mật khẩu").fill(password);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   // AuthSuccessTracker xoá `?auth=login` khỏi thanh địa chỉ ngay sau khi về.
   await expect(page).toHaveURL("/");
 }

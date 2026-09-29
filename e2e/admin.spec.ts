@@ -42,7 +42,7 @@ async function logInAgain() {
   await page.goto("/login");
   await page.getByPlaceholder("Email").fill(email);
   await page.getByPlaceholder("Mật khẩu").fill(PASSWORD);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL("/");
 }
 

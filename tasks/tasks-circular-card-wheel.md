@@ -103,7 +103,7 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 5.8 Kiểm tra hydration: mở trang ở `pnpm dev`, console không có cảnh báo hydration mismatch.
 
 - [ ] 6.0 Kiểm thử và hoàn thiện
-  - [ ] 6.1 _(3 spec đã chuyển sang helper `pickCards`; `reading-flow` đã pass. `ai-unlock` và `auth-and-history` chưa chạy vì cần Postgres local.)_ Chạy e2e hiện có (`reading-flow`, `ai-unlock`, `auth-and-history`). Các test đang click `deckButtons.nth(0..2)` — đảm bảo 3 nút đầu tiên trong DOM luôn nằm trong vùng lộ và click được sau khi hiệu ứng trải bài xong. Nếu không, sửa test để chờ hết hiệu ứng / chọn lá đang lộ, không nới lỏng yêu cầu.
+  - [x] 6.1 Chạy e2e hiện có (`reading-flow`, `ai-unlock`, `auth-and-history`). Các test đang click `deckButtons.nth(0..2)` — đảm bảo 3 nút đầu tiên trong DOM luôn nằm trong vùng lộ và click được sau khi hiệu ứng trải bài xong. Nếu không, sửa test để chờ hết hiệu ứng / chọn lá đang lộ, không nới lỏng yêu cầu.
   - [x] 6.2 Tạo `e2e/card-wheel.spec.ts`: (a) chọn 3 lá → 3 ô có `aria-label` "đã chọn"; (b) bỏ ô "Bối cảnh" → còn 2 ô đầy, ô "Hướng đi" trống; (c) focus vòng, bấm `ArrowRight` vài lần rồi `Enter` → 1 lá được chọn; (d) bấm nút "Xoay bài sang phải" → tập lá hiển thị thay đổi; (e) khi đủ 3 lá, lá trên vòng `disabled`.
   - [x] 6.3 Thêm project mobile vào `playwright.config.ts` (vd `devices["iPhone 13"]`) và chạy `card-wheel.spec.ts` + `reading-flow.spec.ts` trên cả desktop và mobile.
   - [x] 6.4 Hiệu năng: Chrome DevTools → Performance, CPU throttle 4×, xoay liên tục 5 giây; không có frame > 50ms. Nếu có, giảm số lá đệm hoặc bỏ bớt shadow/filter.

@@ -87,7 +87,7 @@ Chỉ các biến bắt đầu bằng `NEXT_PUBLIC_` mới được đưa vào c
 
 ## Chạy local
 
-Khởi động Postgres local qua Docker Compose:
+Khởi động Postgres local qua Docker Compose (Docker Desktop phải đang chạy, nếu không sẽ gặp `Cannot connect to the Docker daemon`):
 
 ```bash
 docker compose up -d
@@ -110,6 +110,20 @@ pnpm db:migrate   # tạo/áp dụng migration ở local
 pnpm db:seed      # seed dữ liệu mẫu (khi có prisma/seed.ts)
 pnpm db:studio    # mở Prisma Studio để xem dữ liệu
 ```
+
+Prisma CLI **không** tự đọc `.env.local`: có `prisma.config.ts` thì nó bỏ qua bước nạp biến môi trường, và báo `Environment variable not found: DATABASE_URL`. Truyền biến ngay trên lệnh (hoặc export trong shell):
+
+```bash
+DATABASE_URL=postgresql://tarot:tarot@localhost:5432/tarot pnpm db:migrate
+```
+
+Một DB local từng được dựng bằng `db push` sẽ không có bảng `_prisma_migrations`, và `migrate deploy` từ chối với `P3005` (schema không rỗng). Kiểm tra lệch trước khi làm gì khác:
+
+```bash
+DATABASE_URL=... npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script
+```
+
+Ra `-- This is an empty migration.` nghĩa là schema đã khớp, dùng tiếp được cho dev và e2e. Còn lệch thì DB local là rác, `docker compose down -v` rồi dựng lại cho sạch.
 
 Các lệnh kiểm tra đề xuất:
 
@@ -447,6 +461,13 @@ Playwright tự dựng server (`pnpm build && pnpm start`), nên không cần `p
 Nó cũng tự đọc `.env.local` — tiến trình Playwright không đi qua Next nên không được nạp sẵn biến môi trường.
 
 Test `ai-unlock` kiểm tra nhánh thiếu `GEMINI_API_KEY`, nên nó tự skip khi máy bạn có key thật. Ở CI không cấu hình key nên test chạy bình thường.
+
+Có hai project Playwright: `chromium` (desktop, chạy cả suite) và `mobile` (Pixel 7, chỉ chạy `card-wheel.spec.ts` và `reading-flow.spec.ts` để kiểm bố cục và thao tác của vòng bài trên điện thoại mà không nhân đôi các test đăng ký/nạp tiền).
+
+Khi viết test mới:
+
+- **Bốc bài bằng `pickCards(page)`** trong `e2e/fixtures.ts`, đừng click `getByRole("button", { name: /^Chọn lá thứ/ }).nth(i)`. Vòng bài chỉ render các lá quanh đỉnh cung, và lá đầu tiên trong DOM có thể đang ở mép, bị lá bên cạnh đè hoặc nằm dưới mép cắt của khung, nên click theo thứ tự DOM chập chờn. Helper chạm vào lá ở đỉnh như người dùng thật, và chờ vòng khép lại sau mỗi lá.
+- **Dùng `exact: true` cho nút "Đăng ký" / "Đăng nhập".** Có Google OAuth trong `.env.local` thì trang còn hiện nút "Đăng ký với Google", và locator khớp chuỗi con sẽ bắt trúng cả hai. CI không cấu hình Google nên lỗi này chỉ lộ ở local.
 
 ## CI/CD tối thiểu
 
