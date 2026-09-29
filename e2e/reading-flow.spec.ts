@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect, pickCards } from "./fixtures";
 
 test("full reading flow: question -> pick three cards -> reveal", async ({ page }) => {
   await page.goto("/");
@@ -11,10 +11,7 @@ test("full reading flow: question -> pick three cards -> reveal", async ({ page 
 
   await expect(page.getByRole("heading", { name: "Chọn ba lá bài" })).toBeVisible();
 
-  const deckButtons = page.getByRole("button", { name: /^Chọn lá thứ/ });
-  await deckButtons.nth(0).click();
-  await deckButtons.nth(1).click();
-  await deckButtons.nth(2).click();
+  await pickCards(page);
 
   await page.getByRole("button", { name: "Mở lá bài" }).click();
 

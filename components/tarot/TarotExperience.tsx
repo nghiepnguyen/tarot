@@ -260,7 +260,15 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
       // in flow sit below the fold exactly when the user needs them. They
       // live in a bar pinned to the viewport instead; the padding here
       // reserves the room it would otherwise cover at the end of the page.
-      <div className="flex w-full flex-col items-center gap-8 pb-32">
+      //
+      // On a portrait phone the heading, slots and wheel share one screen:
+      // the column fills the viewport below the header and above the bar,
+      // and the wheel sits at its foot so the ring rises from behind the
+      // bar. A landscape phone is too short for that, so there the column
+      // just grows and the page scrolls. The min-height counts the bottom
+      // padding, and the header plus the section's top padding take up
+      // about the same 10rem, hence the net 2rem.
+      <div className="flex w-full flex-col items-center gap-4 pb-32 [@media(min-height:500px)]:min-h-[calc(100dvh-var(--bottom-bar-height,7rem)-2rem)] sm:gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Chọn ba lá bài

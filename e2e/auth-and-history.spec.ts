@@ -1,4 +1,4 @@
-import { test, expect, signUpVerifyAndLogIn, uniqueEmail, verificationLinkFor } from "./fixtures";
+import { test, expect, pickCards, signUpVerifyAndLogIn, uniqueEmail, verificationLinkFor } from "./fixtures";
 
 test("signup requires email verification before the account can be used", async ({
   page,
@@ -68,10 +68,7 @@ test("a verified account can reveal a reading and find it in history", async ({ 
   await page.getByLabel("Câu hỏi của bạn").fill("Tôi nên tập trung vào điều gì?");
   await page.getByRole("button", { name: "Bốc 3 lá bài" }).click();
 
-  const deckButtons = page.getByRole("button", { name: /^Chọn lá thứ/ });
-  await deckButtons.nth(0).click();
-  await deckButtons.nth(1).click();
-  await deckButtons.nth(2).click();
+  await pickCards(page);
   await page.getByRole("button", { name: "Mở lá bài" }).click();
 
   await expect(page.getByRole("button", { name: "Trải bài mới" })).toBeVisible();

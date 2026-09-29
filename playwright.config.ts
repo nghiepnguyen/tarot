@@ -21,5 +21,12 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      // Vòng bài có bố cục và thao tác riêng cho điện thoại; chạy lại luồng
+      // bốc bài trên một máy Chromium cỡ điện thoại, không nhân đôi cả suite.
+      name: "mobile",
+      use: { ...devices["Pixel 7"] },
+      testMatch: ["card-wheel.spec.ts", "reading-flow.spec.ts"],
+    },
   ],
 });

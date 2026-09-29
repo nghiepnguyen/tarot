@@ -172,3 +172,29 @@ export async function signUpVerifyAndLogIn(page: Page, input: SignUpInput) {
   // AuthSuccessTracker xoá `?auth=login` khỏi thanh địa chỉ ngay sau khi về.
   await expect(page).toHaveURL("/");
 }
+
+/**
+ * Bốc `count` lá bằng cách chạm vào lá đang nằm ở đỉnh vòng bài, như người
+ * dùng thật. Không click theo thứ tự DOM được: vòng chỉ render các lá quanh
+ * đỉnh cung, và lá đầu tiên trong DOM có thể đang ở mép vòng, bị lá bên cạnh
+ * đè lên hoặc nằm dưới mép cắt của khung.
+ */
+export async function pickCards(page: Page, count = 3) {
+  const cards = page.getByRole("button", { name: /^Chọn lá thứ/ });
+  // Lá bị khoá trong lúc trải bài; chờ trải xong mới chạm.
+  await expect(cards.first()).toBeEnabled();
+  const wheel = page.getByRole("group", { name: /^Vòng bài/ });
+  const box = await wheel.boundingBox();
+  if (!box) throw new Error("Không thấy vòng bài");
+  const point = { x: box.x + box.width / 2, y: box.y + 60 };
+  for (let i = 1; i <= count; i += 1) {
+    // Lá vừa bốc để lại một khoảng trống ở đỉnh cho tới khi vòng khép lại.
+    await page.waitForFunction(
+      ({ x, y }) =>
+        document.elementFromPoint(x, y)?.closest('button[aria-label^="Chọn lá thứ"]:not([disabled])') != null,
+      point,
+    );
+    await page.mouse.click(point.x, point.y);
+    await expect(page.getByText(new RegExp(i === 3 ? "Đã chọn đủ 3 lá" : `Đã chọn ${i}/3`))).toBeVisible();
+  }
+}

@@ -1,4 +1,4 @@
-import { test, expect, signUpVerifyAndLogIn, uniqueEmail } from "./fixtures";
+import { test, expect, pickCards, signUpVerifyAndLogIn, uniqueEmail } from "./fixtures";
 
 test("unlocking AI without a configured API key shows a clear error with retry", async ({
   page,
@@ -22,10 +22,7 @@ test("unlocking AI without a configured API key shows a clear error with retry",
   await page.getByLabel("Câu hỏi của bạn").fill("Tôi nên tập trung vào điều gì?");
   await page.getByRole("button", { name: "Bốc 3 lá bài" }).click();
 
-  const deckButtons = page.getByRole("button", { name: /^Chọn lá thứ/ });
-  await deckButtons.nth(0).click();
-  await deckButtons.nth(1).click();
-  await deckButtons.nth(2).click();
+  await pickCards(page);
   await page.getByRole("button", { name: "Mở lá bài" }).click();
 
   await page.getByRole("button", { name: /Mở khóa diễn giải chuyên sâu/ }).click();
