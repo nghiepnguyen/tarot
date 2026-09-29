@@ -145,7 +145,7 @@ Hàng đợi trong `gtag.ts` chỉ phục vụ khoảng thời gian ngắn giữ
 ## Việc phải làm trong GA4 UI
 
 1. Đánh dấu key event (conversion): `sign_up`, `ai_unlock_success`. `purchase` được GA4 tính tự động.
-2. Khai báo custom dimension cho các tham số muốn phân tích: `is_free_trial`, `is_logged_in`, `placement`, `topic`, `reason`, `method` (cách xoay vòng bài của `deck_rotate`). Tham số không khai báo vẫn vào DebugView nhưng không dùng được trong báo cáo chuẩn.
+2. Khai báo custom dimension cho các tham số muốn phân tích: `is_free_trial`, `is_logged_in`, `placement`, `topic`, `reason`, `method` (dùng chung cho cách đăng nhập của `login` / `sign_up` và cách xoay vòng bài của `deck_rotate`; lọc theo tên event khi đọc). Tham số không khai báo vẫn vào DebugView nhưng không dùng được trong báo cáo chuẩn.
 3. Đổi currency của property sang VND nếu muốn báo cáo doanh thu khớp với giá bán.
 
 ## Kiểm tra
