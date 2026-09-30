@@ -425,6 +425,16 @@ Session là JWT, mang theo một bản cache của `role`. Nó được làm m�
 
 `/admin` (tổng quan, lọc 7/30/90 ngày), `/admin/users` (tra theo email, chi tiết từng người, chỉnh credit), `/admin/orders` (lọc theo trạng thái, hoàn credit, đối soát lại), `/admin/transactions`, `/admin/audit`, `/admin/deck` (chỉ đọc), `/admin/prompts` (đổi model đang chạy, xem số đo và điểm người đọc chấm theo từng cặp prompt–model).
 
+Trong tab **Prompt và model** (`/admin/prompts`), khối **Đánh giá người đọc** nằm trước bảng số đo kỹ thuật, hiển thị số lượt chấm và ba điểm trung bình theo từng cặp prompt/model. Điểm theo thang 1–5 sao, chỉ tính những lượt đã chấm trên toàn bộ lịch sử; cặp chưa được chấm hiện 0 và dấu **—** ở điểm.
+
+Xem nội dung prompt ở khối **Các phiên bản prompt** cuối trang:
+
+1. Chọn dòng phiên bản theo ID, ngày phát hành và model mặc định. Bản đang chạy đứng đầu, có nhãn **Đang chạy**; tất cả các bản mặc định thu gọn và chỉ mở một bản mỗi lần.
+2. Đọc ghi chú, rồi mở **System instruction** hoặc **Prompt mẫu**. Nội dung dài cuộn trong ô riêng; prompt mẫu dùng trải bài giả, không chứa câu hỏi thật của người dùng.
+3. Bấm lại dòng phiên bản để thu gọn, hoặc chọn bản khác để xem tiếp.
+
+Model ở dòng phiên bản là mặc định khi phát hành bản đó. Model đang dùng xem ở **Bản đang chạy**, thay đổi tại **Đổi model** và có hiệu lực ngay với lượt mở khóa tiếp theo. Prompt chỉ đọc; phát hành hoặc lùi bản prompt bằng cách sửa code, qua code review và deploy.
+
 Chỉnh credit và hoàn đơn đều bắt buộc ghi lý do, và ghi một dòng `AdminAuditLog` trong cùng transaction với thay đổi. `AdminAuditLog` cố tình không có khoá ngoại: xoá tài khoản cascade sang đơn và giao dịch, mà dòng nhật ký thì phải sống lâu hơn đối tượng của nó.
 
 Số tiền trên dashboard lấy từ bảng `Order`, không lấy từ GA4: event `purchase` đếm thiếu những đơn được cứu ở đường đối soát thứ ba. Phễu bắt đầu từ reading đã lưu — người chưa đăng nhập không vào database.

@@ -53,6 +53,7 @@ export default async function AdminPromptsPage() {
     fetchQualitySummary(prisma),
   ]);
   const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE_PROMPT_VERSION.id, usage);
+  const reviewSummaries = summaries.filter((row) => row.runs > 0);
   const isRandom = selection.kind === "random";
   const activeId = isRandom ? RANDOM_AI_MODEL_VALUE : selection.model.id;
   // Ở chế độ ngẫu nhiên không có "model đang chạy" để tra giá: lượt tới có thể
@@ -144,6 +145,45 @@ export default async function AdminPromptsPage() {
       </Panel>
 
       <Panel
+        title="Đánh giá người đọc"
+        note="Số lượt chấm và điểm trung bình theo từng cặp prompt/model trên toàn bộ lịch sử. Điểm từ 1–5 sao; — nghĩa là chưa có đánh giá."
+      >
+        {reviewSummaries.length === 0 ? (
+          <EmptyRow>Chưa có bản diễn giải để thống kê đánh giá.</EmptyRow>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted">
+                  <th scope="col" className="px-2 py-2 font-normal">Bản prompt</th>
+                  <th scope="col" className="px-2 py-2 font-normal">Model</th>
+                  <th scope="col" className="px-2 py-2 text-right font-normal">Lượt chấm</th>
+                  <th scope="col" className="px-2 py-2 text-right font-normal">Độ chính xác TB</th>
+                  <th scope="col" className="px-2 py-2 text-right font-normal">Độ rõ ràng TB</th>
+                  <th scope="col" className="px-2 py-2 text-right font-normal">Tính hữu ích TB</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reviewSummaries.map((row) => (
+                  <tr key={`${row.id}-${row.model}`} className="border-b border-border/60">
+                    <td className="px-2 py-3 font-mono text-xs text-foreground">{row.id}</td>
+                    <td className="px-2 py-3 font-mono text-xs text-muted">{row.model}</td>
+                    <td className="px-2 py-3 text-right font-medium tabular-nums">{num(row.reviews)}</td>
+                    <td className="px-2 py-3 text-right tabular-nums">{stars(row.avgAccuracy)}</td>
+                    <td className="px-2 py-3 text-right tabular-nums">{stars(row.avgClarity)}</td>
+                    <td className="px-2 py-3 text-right tabular-nums">{stars(row.avgActionability)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="text-xs text-muted">
+          Điểm trung bình chỉ tính trên những lượt đã chấm. Luôn đọc cùng số lượt chấm: 5,0 sao từ một đánh giá chưa đủ để kết luận chất lượng.
+        </p>
+      </Panel>
+
+      <Panel
         title="Số đo theo bản prompt"
         note="Tính trên toàn bộ lịch sử, không lọc theo kỳ: câu hỏi ở đây là bản prompt nào tốn bao nhiêu, mà một bản chỉ chạy trong khoảng thời gian nó được deploy. p95 đáng nhìn hơn trung bình — maxDuration là 60 giây, nên cái đuôi mới là thứ sắp chạm trần."
       >
@@ -161,10 +201,6 @@ export default async function AdminPromptsPage() {
                   <th className="py-2 text-right font-normal">Output+think TB</th>
                   <th className="py-2 text-right font-normal">p50</th>
                   <th className="py-2 text-right font-normal">p95</th>
-                  <th className="py-2 text-right font-normal">Chấm</th>
-                  <th className="py-2 text-right font-normal">Acc</th>
-                  <th className="py-2 text-right font-normal">Cla</th>
-                  <th className="py-2 text-right font-normal">Act</th>
                   <th className="py-2 text-right font-normal">Chi phí/lượt</th>
                   <th className="py-2 text-right font-normal">Tổng chi phí</th>
                   <th className="py-2 text-right font-normal">Chạy tới</th>
@@ -194,12 +230,6 @@ export default async function AdminPromptsPage() {
                     <td className="py-2 text-right tabular-nums">{secs(row.latencyP50Ms)}</td>
                     <td className="py-2 text-right tabular-nums">{secs(row.latencyP95Ms)}</td>
                     <td className="py-2 text-right tabular-nums">
-                      {row.reviews.toLocaleString("vi-VN")}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">{stars(row.avgAccuracy)}</td>
-                    <td className="py-2 text-right tabular-nums">{stars(row.avgClarity)}</td>
-                    <td className="py-2 text-right tabular-nums">{stars(row.avgActionability)}</td>
-                    <td className="py-2 text-right tabular-nums">
                       {row.avgCostVnd === null ? "—" : vnd(row.avgCostVnd)}
                     </td>
                     <td className="py-2 text-right tabular-nums">{vnd(row.costVnd)}</td>
@@ -215,11 +245,7 @@ export default async function AdminPromptsPage() {
           <span className="font-mono">promptVersion</span>. Lúc thêm cột chỉ backfill được những row
           có token usage — số còn lại không có bằng chứng nào chỉ ra prompt nào đã sinh ra chúng, và
           cũng không có số đo nào để so sánh. Dấu <span className="font-mono">*</span> nghĩa là model
-          chưa có trong bảng giá, tiền chỉ là ước lượng. <span className="font-mono">Chấm</span> là
-          số lượt người đọc đã chấm điểm, còn <span className="font-mono">Acc</span>/
-          <span className="font-mono">Cla</span>/<span className="font-mono">Act</span> là điểm
-          trung bình trên chính những lượt đó — độ chính xác, độ rõ ràng, tính hữu ích, thang 5
-          sao. Đọc hai con số cùng nhau: 5,0 trên một lượt chấm không nói gì.
+          chưa có trong bảng giá, tiền chỉ là ước lượng.
         </p>
       </Panel>
 
@@ -228,7 +254,7 @@ export default async function AdminPromptsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-left text-xs text-muted">
-                {["Prompt", "Model", "Lượt gọi", "Thành công", "JSON/schema", "Vị trí", "Nhà cung cấp", "Độ dài", "Lặp nội dung"].map(label => <th key={label} className="px-2 py-2 font-normal">{label}</th>)}
+                {["Prompt", "Model", "Lượt gọi", "Thành công", "Lỗi JSON/schema", "Lỗi vị trí", "Lỗi API", "Cảnh báo độ dài", "Cảnh báo lặp nội dung"].map(label => <th key={label} className="px-2 py-2 font-normal">{label}</th>)}
               </tr></thead>
               <tbody>{quality.map(row => <tr key={`${row.promptVersion}-${row.model}`} className="border-b border-border/60">
                 <td className="px-2 py-2 font-mono text-xs">{row.promptVersion}</td><td className="px-2 py-2 font-mono text-xs">{row.model}</td>
