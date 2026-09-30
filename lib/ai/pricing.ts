@@ -27,6 +27,12 @@ export interface ModelPricing {
 export const VND_PER_USD = 25_876;
 
 const MODEL_PRICING: Record<string, ModelPricing> = {
+  "gemini-3.8-flash": {
+    usdPerInputToken: 0.75 / 1_000_000,
+    usdPerOutputToken: 3.75 / 1_000_000,
+    note: "Tier Standard đến 31/12/2026: $0,75 / 1M input, $3,75 / 1M output (gồm thinking). Từ 01/01/2027: $1,50 / 1M input, $7,50 / 1M output; cần cập nhật cách tính theo thời điểm phát sinh. Nguồn: https://ai.google.dev/gemini-api/docs/pricing#gemini-3.8-flash",
+  },
+  // Giữ giá model cũ để thống kê những bản diễn giải đã sinh trước khi đổi model.
   "gemini-3-flash-preview": {
     usdPerInputToken: 0.5 / 1_000_000,
     usdPerOutputToken: 3.0 / 1_000_000,
@@ -56,7 +62,7 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
  * nào hiển thị con số tính bằng giá này phải nói rõ là ước lượng — xem
  * `/admin/prompts`.
  */
-const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["gemini-3-flash-preview"];
+const FALLBACK_PRICING: ModelPricing = MODEL_PRICING["gemini-3.8-flash"];
 
 export function getModelPricing(model: string): ModelPricing | null {
   return MODEL_PRICING[model] ?? null;

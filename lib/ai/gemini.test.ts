@@ -2,11 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { InterpretationCardInput } from "./interpretation";
 import { ACTIVE_PROMPT_VERSION } from "./prompts";
+import { PROMPT_V4 } from "./prompts/v4";
 import { generateInterpretation, MissingApiKeyError } from "./gemini";
 
 const generateContent = vi.hoisted(() => vi.fn());
 
 vi.mock("@google/genai", () => ({
+  ThinkingLevel: { LOW: "LOW" },
   GoogleGenAI: class {
     models = { generateContent };
   },
@@ -15,19 +17,19 @@ vi.mock("@google/genai", () => ({
 const VALID_RESULT = {
   summary: "Tóm tắt.",
   overview: "Tổng quan.",
-  themes: ["Khởi đầu"],
+  themes: ["Khởi đầu", "Chuyển hướng", "Cân bằng"],
   perCard: [
     { position: "Bối cảnh", keyMessage: "Chốt ý.", text: "..." },
     { position: "Hiện tại", keyMessage: "Chốt ý.", text: "..." },
     { position: "Hướng đi", keyMessage: "Chốt ý.", text: "..." },
   ],
   connections: "Liên hệ.",
-  actionSuggestions: ["Gợi ý một."],
+  actionSuggestions: ["Gợi ý một.", "Gợi ý hai.", "Gợi ý ba."],
   reflectiveQuestion: "Câu hỏi?",
   closingNote: "Lời kết.",
 };
 
-const MODEL = "gemini-3-flash-preview";
+const MODEL = "gemini-3.8-flash";
 
 const cards: InterpretationCardInput[] = [
   { position: "Bối cảnh", card: TAROT_CARDS[0], orientation: "upright" },
@@ -90,6 +92,7 @@ describe("generateInterpretation usage", () => {
     const [request] = generateContent.mock.calls[0];
     expect(request.model).toBe(MODEL);
     expect(request.config.systemInstruction).toBe(ACTIVE_PROMPT_VERSION.systemInstruction);
+    expect(request.config.thinkingConfig).toEqual({ thinkingLevel: "LOW" });
     expect(request.contents).toContain("Câu hỏi?");
   });
 
@@ -104,5 +107,21 @@ describe("generateInterpretation usage", () => {
     expect(usage.inputTokens).toBeUndefined();
     expect(usage.thinkingTokens).toBeUndefined();
     expect(usage.latencyMs).toBeTypeOf("number");
+  });
+
+  it("uses JSON Schema for v4 and rejects reordered sections without exposing the output", async () => {
+    const output = { ...VALID_RESULT, themes: ["Chủ đề một", "Chủ đề hai", "Chủ đề ba"], actionSuggestions: ["Một", "Hai", "Ba"], perCard: [...VALID_RESULT.perCard].reverse() };
+    generateContent.mockResolvedValue({ text: JSON.stringify(output) });
+    await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("position_mismatch");
+    const [request] = generateContent.mock.calls[0];
+    expect(request.config.responseJsonSchema).toBe(PROMPT_V4.responseSchema);
+    expect(request.config.responseSchema).toBeUndefined();
+  });
+
+  it("redacts invalid JSON/schema errors instead of passing user content into error tracking", async () => {
+    generateContent.mockResolvedValue({ text: "PRIVATE USER TEXT" });
+    await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("invalid_json");
+    generateContent.mockResolvedValue({ text: JSON.stringify({ private: "PRIVATE USER TEXT" }) });
+    await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("invalid_schema");
   });
 });

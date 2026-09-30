@@ -14,14 +14,14 @@ const sampleCards: InterpretationCardInput[] = [
 const VALID_RESULT = {
   summary: "Tóm tắt.",
   overview: "Tổng quan.",
-  themes: ["Khởi đầu"],
+  themes: ["Khởi đầu", "Chuyển hướng", "Cân bằng"],
   perCard: SPREAD_POSITIONS.map((position) => ({
     position,
     keyMessage: "Chốt ý.",
     text: "...",
   })),
   connections: "Liên hệ.",
-  actionSuggestions: ["Gợi ý một."],
+  actionSuggestions: ["Gợi ý một.", "Gợi ý hai.", "Gợi ý ba."],
   reflectiveQuestion: "Câu hỏi?",
   closingNote: "Lời kết.",
 };
@@ -57,7 +57,7 @@ describe.each(PROMPT_VERSIONS.map((version) => [version.id, version] as const))(
       for (const { position, card, orientation } of sampleCards) {
         expect(prompt).toContain(position);
         expect(prompt).toContain(card.name);
-        expect(prompt).toContain(orientation === "reversed" ? "ngược" : "xuôi");
+        expect(prompt).toContain(version.schemaFormat === "json" ? orientation : orientation === "reversed" ? "ngược" : "xuôi");
       }
     });
 

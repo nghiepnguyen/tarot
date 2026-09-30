@@ -14,6 +14,9 @@
 
 export type AiProvider = "gemini" | "deepseek";
 
+/** Model mặc định của ứng dụng; tách khỏi metadata của các prompt đã đóng băng. */
+export const DEFAULT_AI_MODEL_ID = "gemini-3.8-flash";
+
 export interface AiModel {
   id: string;
   provider: AiProvider;
@@ -34,18 +37,18 @@ export interface AiModel {
 
 export const AI_MODELS: readonly AiModel[] = [
   {
-    id: "gemini-3-flash-preview",
+    id: DEFAULT_AI_MODEL_ID,
     provider: "gemini",
-    label: "Gemini 3 Flash (preview)",
+    label: "Gemini 3.8 Flash",
     persona: "Minh Trí",
-    note: "Model gốc của bản prompt v1. Có thinking token, nên phần suy nghĩ thường đắt hơn phần chữ.",
+    note: "Model Gemini mặc định. Có thinking token, tính cùng giá với output token.",
   },
   {
     id: "deepseek-flash",
     provider: "deepseek",
     label: "DeepSeek V4.1-Flash",
     persona: "Duy Thâm",
-    note: "Rẻ hơn Gemini chừng 44% mỗi lượt và không có thinking token. Đổi lại, hình JSON chỉ do prompt giữ chứ không có structured outputs, và nó viết dài hơn mốc số từ của prompt.",
+    note: "Không có thinking token. Hình JSON chỉ do prompt giữ chứ không có structured outputs, và nó viết dài hơn mốc số từ của prompt.",
   },
 ];
 

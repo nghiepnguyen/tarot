@@ -488,3 +488,9 @@ Sau khi merge vào branch production, pipeline chạy migration có kiểm soát
 - Credit AI phải trừ sau khi payment webhook xác nhận thành công.
 - Request AI cần có timeout, retry có giới hạn và fallback thông báo dễ hiểu.
 - Tách môi trường development, staging và production để tránh dùng nhầm dữ liệu thật.
+
+## Phát hành prompt v4 (30/09/2026)
+
+Trước khi deploy code v4, chạy `pnpm exec prisma migrate deploy` trên database đích để tạo bảng `AiGenerationMetric`; sau đó build/deploy như thường lệ. Không cần backfill bản đọc cũ. Code active v4, Gemini 3.8 dùng `thinkingLevel: low`. Rollback prompt bằng cách đổi `ACTIVE_PROMPT_VERSION` về `PROMPT_V3`, giữ các version trong registry.
+
+Benchmark: `pnpm benchmark-prompts` chạy 24 ca giả lập v3/v4 bằng key trong `.env.local`, lưu kết quả gitignored ở `.model-compare/`, không ghi DB. Đọc kết quả và giới hạn ở `docs/benchmarks/v4-2026-09-30.md`. E2E phải trỏ database local dùng một lần như guard trong `e2e/global-setup.ts`.

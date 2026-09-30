@@ -7,6 +7,7 @@ import { AI_MODELS, RANDOM_AI_MODEL_LABEL, RANDOM_AI_MODEL_VALUE } from "@/lib/a
 import { getActiveAiSelection, getMissingApiKeyEnvs } from "@/lib/ai/settings";
 import { AiModelForm } from "@/components/admin/AiModelForm";
 import { fetchPromptUsage, summarizePromptVersions } from "@/lib/admin/prompt-stats";
+import { fetchQualitySummary } from "@/lib/admin/quality-stats";
 import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { InterpretationCardInput } from "@/lib/ai/interpretation";
@@ -45,9 +46,10 @@ const SAMPLE_CARDS: InterpretationCardInput[] = SPREAD_POSITIONS.map((position, 
 export default async function AdminPromptsPage() {
   await requireAdmin();
 
-  const [usage, selection] = await Promise.all([
+  const [usage, selection, quality] = await Promise.all([
     fetchPromptUsage(prisma),
     getActiveAiSelection(),
+    fetchQualitySummary(prisma),
   ]);
   const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE_PROMPT_VERSION.id, usage);
   const isRandom = selection.kind === "random";
@@ -221,6 +223,24 @@ export default async function AdminPromptsPage() {
           trung bình trên chính những lượt đó — độ chính xác, độ rõ ràng, tính hữu ích, thang 5
           sao. Đọc hai con số cùng nhau: 5,0 trên một lượt chấm không nói gì.
         </p>
+      </Panel>
+
+      <Panel title="Chất lượng đầu ra" note="Đếm các lượt gọi model kể từ khi bật đo lường, gồm lượt lỗi. Cảnh báo độ dài/lặp câu là kiểm tra cơ học, không phải điểm văn phong; chỉ v4 có cảnh báo biên tập. Không lưu câu hỏi hay nội dung vào số đo.">
+        {quality.length === 0 ? <EmptyRow>Chưa có số đo chất lượng.</EmptyRow> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border text-left text-xs text-muted">
+                {["Prompt", "Model", "Lượt gọi", "Thành công", "JSON/schema", "Vị trí", "Nhà cung cấp", "Độ dài", "Lặp nội dung"].map(label => <th key={label} className="px-2 py-2 font-normal">{label}</th>)}
+              </tr></thead>
+              <tbody>{quality.map(row => <tr key={`${row.promptVersion}-${row.model}`} className="border-b border-border/60">
+                <td className="px-2 py-2 font-mono text-xs">{row.promptVersion}</td><td className="px-2 py-2 font-mono text-xs">{row.model}</td>
+                <td className="px-2 py-2">{row.attempts}</td><td className="px-2 py-2">{row.successes}/{row.attempts}</td>
+                {[row.schemaErrors, row.positionErrors, row.providerErrors].map((count, i) => <td key={i} className="px-2 py-2">{count}/{row.attempts}</td>)}
+                {[row.lengthWarnings, row.duplicateWarnings].map((count, i) => <td key={i} className="px-2 py-2">{row.promptVersion.startsWith("v4-") && row.successes > 0 ? `${count}/${row.successes}` : "—"}</td>)}
+              </tr>)}</tbody>
+            </table>
+          </div>
+        )}
       </Panel>
 
       {PROMPT_VERSIONS.map((version) => (

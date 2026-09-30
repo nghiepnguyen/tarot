@@ -1,5 +1,5 @@
 import "server-only";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { MissingApiKeyError } from "@/lib/ai/errors";
 import {
   GENERATION_TIMEOUT_MS,
@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/interpretation";
 import { PROVIDER_API_KEY_ENV } from "@/lib/ai/models";
 import type { PromptVersion } from "@/lib/ai/prompts";
+import { parseGeneratedInterpretation } from "./parse-output";
 
 export { MissingApiKeyError };
 
@@ -46,8 +47,12 @@ export async function generateInterpretation(
     config: {
       systemInstruction: version.systemInstruction,
       responseMimeType: "application/json",
-      responseSchema: version.responseSchema,
+      ...(version.schemaFormat === "json"
+        ? { responseJsonSchema: version.responseSchema }
+        : { responseSchema: version.responseSchema }),
+      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       abortSignal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
+      httpOptions: { retryOptions: { attempts: 1 } },
     },
   });
   const latencyMs = Date.now() - startedAt;
@@ -58,7 +63,7 @@ export async function generateInterpretation(
   const usage = response.usageMetadata;
 
   return {
-    result: version.resultSchema.parse(JSON.parse(text)),
+    ...parseGeneratedInterpretation(text, version, cards),
     usage: {
       inputTokens: usage?.promptTokenCount,
       outputTokens: usage?.candidatesTokenCount,

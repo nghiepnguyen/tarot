@@ -29,8 +29,9 @@ Stack ưu tiên tốc độ phát triển, trải nghiệm tương tác tốt, k
 - Hai nhà cung cấp chạy song song sau một cửa duy nhất (`lib/ai/generate.ts`): Google Gemini (`@google/genai`) và DeepSeek (`fetch` thẳng, giao thức OpenAI — hãng không có SDK JavaScript chính chủ). Thêm nhà cung cấp thứ ba là thêm một `case`, và TypeScript báo ngay nếu quên nối dây.
 - Model mặc định đổi được từ `/admin/prompts` mà không cần deploy, trong giới hạn danh sách cho phép ở `lib/ai/models.ts`. Có thêm chế độ **Ngẫu nhiên**: mỗi lượt bốc một model, mỗi model ký tên bằng một bút danh cố định, và người đọc chấm điểm ba tiêu chí mà không thấy tên nhà cung cấp — xem mục chấm mù trong `FEATURES.md`.
 - Giá token khai theo model ở `lib/ai/pricing.ts`. Bảng đó là *lịch sử giá*: model đã gỡ vẫn phải giữ giá chừng nào còn row sinh ra bằng nó.
-- Prompt nên nhận các biến: câu hỏi, tên lá, vị trí, xuôi/ngược, chủ đề và giọng văn.
+- Prompt v4 nhận JSON gồm câu hỏi, context rỗng và ba lá/vị trí/xuôi-ngược/ý nghĩa tương ứng; system prompt nguyên văn trong `docs/tarot-api-prompt-guide.md`, schema và validator theo version. `AiGenerationMetric` ghi metadata mọi attempt để thống kê chất lượng ở admin.
 - Structured output nên được validate bằng Zod trước khi hiển thị.
+- Gemini dùng `thinkingLevel: low` trong `lib/ai/gemini.ts`, không đặt `thinkingBudget`.
 - Không gửi thông tin thanh toán hoặc dữ liệu không cần thiết vào prompt.
 - Text-to-speech đã gác lại, xem mục "Lưu trữ — không nằm trong kế hoạch" trong `FEATURES.md`.
 

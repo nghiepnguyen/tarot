@@ -4,12 +4,23 @@ import {
   getModelPricing,
   isPricedModel,
   sumAiCostVnd,
+  VND_PER_USD,
 } from "./pricing";
 import { AI_MODELS } from "./models";
 
 const GEMINI = "gemini-3-flash-preview";
 
 describe("estimateAiCostVnd", () => {
+  it("prices Gemini 3.8 input and output including thinking at its introductory rates", () => {
+    expect(isPricedModel("gemini-3.8-flash")).toBe(true);
+    expect(
+      estimateAiCostVnd(
+        { inputTokens: 1_000_000, outputTokens: 500_000, thinkingTokens: 500_000 },
+        "gemini-3.8-flash",
+      ),
+    ).toBe(Math.round((0.75 + 3.75) * VND_PER_USD));
+  });
+
   it("matches the hand-measured ~365đ per unlock", () => {
     // Đo ngày 13/09/2026: input 1.233, output + thinking 4.494.
     const cost = estimateAiCostVnd(

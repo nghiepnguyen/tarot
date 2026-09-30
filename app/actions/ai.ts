@@ -16,7 +16,8 @@ import {
 import { ACTIVE_PROMPT_VERSION } from "@/lib/ai/prompts";
 import { isPricedModel } from "@/lib/ai/pricing";
 import { resolveAiModelForUnlock } from "@/lib/ai/settings";
-import { generateInterpretation, MissingApiKeyError } from "@/lib/ai/generate";
+import { MissingApiKeyError } from "@/lib/ai/generate";
+import { generateMeasuredInterpretation } from "@/lib/ai/metrics";
 import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
 
@@ -94,7 +95,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     });
 
     const version = ACTIVE_PROMPT_VERSION;
-    const { result, usage } = await generateInterpretation(
+    const { result, usage } = await generateMeasuredInterpretation(
       reading.question,
       cardInputs,
       version,

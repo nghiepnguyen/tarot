@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { InterpretationCardInput } from "./interpretation";
 import { ACTIVE_PROMPT_VERSION } from "./prompts";
+import { PROMPT_V4 } from "./prompts/v4";
 import { MissingApiKeyError } from "./errors";
 import { generateInterpretation } from "./deepseek";
 
@@ -12,14 +13,14 @@ const MODEL = "deepseek-flash";
 const VALID_RESULT = {
   summary: "Tóm tắt.",
   overview: "Tổng quan.",
-  themes: ["Khởi đầu"],
+  themes: ["Khởi đầu", "Chuyển hướng", "Cân bằng"],
   perCard: [
     { position: "Bối cảnh", keyMessage: "Chốt ý.", text: "..." },
     { position: "Hiện tại", keyMessage: "Chốt ý.", text: "..." },
     { position: "Hướng đi", keyMessage: "Chốt ý.", text: "..." },
   ],
   connections: "Liên hệ.",
-  actionSuggestions: ["Gợi ý một."],
+  actionSuggestions: ["Gợi ý một.", "Gợi ý hai.", "Gợi ý ba."],
   reflectiveQuestion: "Câu hỏi?",
   closingNote: "Lời kết.",
 };
@@ -187,5 +188,11 @@ describe("generateInterpretation", () => {
     });
 
     await expect(run()).rejects.toThrow("HTTP 401");
+  });
+
+  it("applies the same v4 position validator as Gemini", async () => {
+    const content = JSON.stringify({ ...VALID_RESULT, themes: ["Một chủ đề", "Hai chủ đề", "Ba chủ đề"], actionSuggestions: ["Một", "Hai", "Ba"], perCard: [...VALID_RESULT.perCard].reverse() });
+    fetchMock.mockResolvedValue(reply({ choices: [{ finish_reason: "stop", message: { content } }] }));
+    await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("position_mismatch");
   });
 });

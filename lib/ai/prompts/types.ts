@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { InterpretationQuality } from "../quality";
 import type {
   InterpretationCardInput,
   InterpretationResult,
@@ -30,6 +31,9 @@ export interface PromptVersion {
   systemInstruction: string;
   /** Schema gửi kèm request, ép Gemini trả JSON đúng hình. */
   responseSchema: object;
+  /** V4 dùng JSON Schema; các bản cũ giữ nguyên Schema của SDK. */
+  schemaFormat?: "json";
+  validateResult?: (result: InterpretationResult, cards: InterpretationCardInput[]) => InterpretationQuality;
   /** Schema parse lại phía mình — không tin Gemini giữ đúng hợp đồng. */
   resultSchema: z.ZodType<InterpretationResult>;
   buildPrompt(question: string, cards: InterpretationCardInput[]): string;

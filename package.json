@@ -16,7 +16,8 @@
     "db:studio": "prisma studio",
     "refund-order": "tsx --env-file-if-exists=.env.local scripts/refund-order.ts",
     "grant-admin": "tsx --env-file-if-exists=.env.local scripts/grant-admin.ts",
-    "compare-interpretations": "NODE_OPTIONS='--conditions=react-server' tsx --env-file-if-exists=.env.local scripts/compare-interpretations.ts"
+    "compare-interpretations": "NODE_OPTIONS='--conditions=react-server' tsx --env-file-if-exists=.env.local scripts/compare-interpretations.ts",
+    "benchmark-prompts": "NODE_OPTIONS='--conditions=react-server' tsx --env-file-if-exists=.env.local scripts/benchmark-prompts.ts"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",

@@ -3,12 +3,12 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import {
   AI_MODELS,
+  DEFAULT_AI_MODEL_ID,
   getAiModel,
   PROVIDER_API_KEY_ENV,
   RANDOM_AI_MODEL_VALUE,
   type AiModel,
 } from "@/lib/ai/models";
-import { ACTIVE_PROMPT_VERSION } from "@/lib/ai/prompts";
 import { reportHandledIssue } from "@/lib/monitoring/report";
 
 export const AI_MODEL_SETTING_KEY = "ai.model";
@@ -16,9 +16,9 @@ export const AI_MODEL_SETTING_KEY = "ai.model";
 /** Lựa chọn đang lưu trong database: một model cố định, hay bốc ngẫu nhiên. */
 export type AiModelSelection = { kind: "random" } | { kind: "fixed"; model: AiModel };
 
-/** Model dùng khi chưa ai chọn gì: đúng model bản prompt đang chạy được viết cho. */
+/** Model dùng khi chưa ai chọn gì hoặc lựa chọn cũ đã bị gỡ. */
 export function getFallbackAiModel(): AiModel {
-  return getAiModel(ACTIVE_PROMPT_VERSION.model) ?? AI_MODELS[0];
+  return getAiModel(DEFAULT_AI_MODEL_ID) ?? AI_MODELS[0];
 }
 
 /**

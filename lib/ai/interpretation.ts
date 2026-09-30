@@ -3,6 +3,7 @@ import type { AiInterpretation } from "@prisma/client";
 import { getModelPersona } from "@/lib/ai/models";
 import type { TarotCard } from "@/lib/tarot/cards";
 import type { Orientation } from "@/lib/tarot/draw";
+import type { InterpretationQuality } from "./quality";
 
 export const COST_PER_INTERPRETATION = 10;
 
@@ -108,6 +109,7 @@ export interface InterpretationUsage {
 export interface GeneratedInterpretation {
   result: InterpretationResult;
   usage: InterpretationUsage;
+  quality?: InterpretationQuality;
 }
 
 /** Thang sao của mỗi tiêu chí. 1 là thấp nhất, không có 0. */

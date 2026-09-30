@@ -282,3 +282,23 @@ model AppSetting {
   updatedBy String?
   updatedAt DateTime @updatedAt
 }
+
+/// Một lượt gọi model, kể cả lỗi. Chỉ metadata; không câu hỏi, nội dung hoặc user id.
+model AiGenerationMetric {
+  id                String   @id @default(cuid())
+  promptVersion     String
+  model             String
+  outcome           String
+  latencyMs         Int
+  inputTokens       Int?
+  outputTokens      Int?
+  thinkingTokens    Int?
+  warningCount      Int      @default(0)
+  overLengthFields  Int      @default(0)
+  underLengthFields Int      @default(0)
+  duplicateItems    Int      @default(0)
+  repeatedSentences Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  @@index([promptVersion, model, createdAt])
+}

@@ -7,6 +7,7 @@ import {
 } from "@/lib/ai/interpretation";
 import { PROVIDER_API_KEY_ENV } from "@/lib/ai/models";
 import type { PromptVersion } from "@/lib/ai/prompts";
+import { parseGeneratedInterpretation } from "./parse-output";
 
 /**
  * DeepSeek nói giao thức của OpenAI, nên gọi thẳng bằng `fetch`.
@@ -144,7 +145,7 @@ export async function generateInterpretation(
   const completionTokens = completion.usage?.completion_tokens;
 
   return {
-    result: version.resultSchema.parse(JSON.parse(text)),
+    ...parseGeneratedInterpretation(text, version, cards),
     usage: {
       inputTokens: completion.usage?.prompt_tokens,
       outputTokens: completionTokens === undefined ? undefined : completionTokens - thinkingTokens,

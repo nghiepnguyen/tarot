@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { estimateAiCostVnd } from "@/lib/ai/pricing";
 import { ACTIVE_PROMPT_VERSION, PROMPT_VERSIONS } from "@/lib/ai/prompts";
 import { summarizePromptVersions, type PromptUsageRow } from "./prompt-stats";
 
@@ -60,8 +61,7 @@ describe("summarizePromptVersions", () => {
     expect(summary.runs).toBe(10);
     expect(summary.avgInputTokens).toBe(1_233);
     expect(summary.avgOutputTokens).toBe(4_494);
-    expect(summary.avgCostVnd).toBeGreaterThan(340);
-    expect(summary.avgCostVnd).toBeLessThan(390);
+    expect(summary.avgCostVnd).toBe(estimateAiCostVnd({ inputTokens: 1_233, outputTokens: 4_494, thinkingTokens: 0 }, MODEL));
   });
 
   it("shows a registry version that has never run instead of hiding it", () => {
