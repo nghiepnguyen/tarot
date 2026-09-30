@@ -11,6 +11,7 @@ import { fetchQualitySummary } from "@/lib/admin/quality-stats";
 import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { InterpretationCardInput } from "@/lib/ai/interpretation";
+import { ChevronDown } from "lucide-react";
 
 const vnd = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 const num = (value: number | null) => (value === null ? "—" : value.toLocaleString("vi-VN"));
@@ -85,10 +86,7 @@ export default async function AdminPromptsPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Prompt và model</h1>
         <p className="text-sm text-muted">
-          Prompt đọc từ <code className="font-mono text-xs">lib/ai/prompts/</code>: đổi prompt là
-          thêm một version mới trong code rồi deploy, không có đường nào sửa từ đây, vì prompt cột
-          chặt vào JSON schema và chứa cả ràng buộc an toàn. Model thì đổi được ngay tại đây, trong
-          giới hạn danh sách ở <code className="font-mono text-xs">lib/ai/models.ts</code>.
+          Đổi model có hiệu lực ngay. Prompt chỉ đọc; phát hành phiên bản mới qua code review và deploy.
         </p>
       </div>
 
@@ -243,28 +241,49 @@ export default async function AdminPromptsPage() {
         )}
       </Panel>
 
-      {PROMPT_VERSIONS.map((version) => (
-        <Panel
-          key={version.id}
-          title={`${version.id}${version.id === ACTIVE_PROMPT_VERSION.id ? " — đang chạy" : ""}`}
-          note={`Phát hành ${version.releasedAt}, model ${version.model}. ${version.notes}`}
-        >
-          <details className="rounded-xl border border-border px-4 py-3">
-            <summary className="cursor-pointer text-sm text-foreground">System instruction</summary>
-            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs text-muted">
-              {version.systemInstruction}
-            </pre>
-          </details>
-          <details className="rounded-xl border border-border px-4 py-3">
-            <summary className="cursor-pointer text-sm text-foreground">
-              Prompt mẫu (trải bài giả, không phải dữ liệu người dùng)
-            </summary>
-            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs text-muted">
-              {version.buildPrompt(SAMPLE_QUESTION, SAMPLE_CARDS)}
-            </pre>
-          </details>
-        </Panel>
-      ))}
+      <Panel
+        title={`Các phiên bản prompt (${PROMPT_VERSIONS.length})`}
+        note="Chọn một phiên bản để xem ghi chú và nội dung. Prompt mẫu dùng trải bài giả."
+      >
+        <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+          {[...PROMPT_VERSIONS]
+            .sort((a, b) => Number(b.id === ACTIVE_PROMPT_VERSION.id) - Number(a.id === ACTIVE_PROMPT_VERSION.id))
+            .map((version) => (
+              <details key={version.id} name="prompt-version" className="group/version">
+                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-background focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+                  <div className="grid min-w-0 flex-1 gap-1 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)] sm:items-center sm:gap-4">
+                    <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="break-all font-mono text-xs text-foreground">{version.id}</span>
+                      {version.id === ACTIVE_PROMPT_VERSION.id ? (
+                        <span className="rounded bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">Đang chạy</span>
+                      ) : null}
+                    </span>
+                    <span className="text-xs tabular-nums text-muted">
+                      <span className="sm:hidden">Phát hành </span>{version.releasedAt}
+                    </span>
+                    <span className="break-all font-mono text-xs text-muted">{version.model}</span>
+                  </div>
+                  <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-muted transition-transform group-open/version:rotate-180" />
+                </summary>
+                <div className="flex flex-col gap-3 border-t border-border bg-background/50 p-4">
+                  <p className="text-sm leading-relaxed text-muted">{version.notes}</p>
+                  <details className="rounded-lg border border-border bg-surface px-3 py-2.5">
+                    <summary className="cursor-pointer text-sm text-foreground focus-visible:outline-2 focus-visible:outline-accent">System instruction</summary>
+                    <pre tabIndex={0} aria-label={`System instruction của ${version.id}`} className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background p-3 text-xs leading-relaxed text-muted focus-visible:outline-2 focus-visible:outline-accent">
+                      {version.systemInstruction}
+                    </pre>
+                  </details>
+                  <details className="rounded-lg border border-border bg-surface px-3 py-2.5">
+                    <summary className="cursor-pointer text-sm text-foreground focus-visible:outline-2 focus-visible:outline-accent">Prompt mẫu</summary>
+                    <pre tabIndex={0} aria-label={`Prompt mẫu của ${version.id}`} className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background p-3 text-xs leading-relaxed text-muted focus-visible:outline-2 focus-visible:outline-accent">
+                      {version.buildPrompt(SAMPLE_QUESTION, SAMPLE_CARDS)}
+                    </pre>
+                  </details>
+                </div>
+              </details>
+            ))}
+        </div>
+      </Panel>
     </div>
   );
 }
