@@ -8,6 +8,7 @@ import { Button, buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
+import { CardNameText } from "@/components/tarot/CardNameText";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
 import { buildReadingTeaser, quoteQuestion } from "@/lib/tarot/teaser";
@@ -163,11 +164,13 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
 
           {data.summary ? (
             <p className={`${LEAD} font-medium leading-snug text-foreground`}>
-              {data.summary}
+              <CardNameText text={data.summary} />
             </p>
           ) : null}
 
-          <p className={`${BODY} leading-relaxed text-muted`}>{data.overview}</p>
+          <p className={`${BODY} leading-relaxed text-muted`}>
+            <CardNameText text={data.overview} />
+          </p>
 
           {data.themes && data.themes.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -179,7 +182,7 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
                   // của chip mà vẫn đọc được.
                   className={`rounded-full bg-sage-tint px-[0.9em] py-[0.35em] ${CHIP} text-foreground`}
                 >
-                  {theme}
+                  <CardNameText text={theme} />
                 </span>
               ))}
             </div>
@@ -219,7 +222,7 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
                     {/* Tên lá là tiếng Anh giữa văn bản tiếng Việt, nên in
                         nghiêng cho tách khỏi phần chữ quanh nó. */}
                     <figcaption className="w-16 text-center text-[0.6em] leading-tight text-muted sm:w-20">
-                      <span className="italic text-foreground">{drawn.card.name}</span>
+                      <span className="font-bold italic text-foreground">{drawn.card.name}</span>
                       <span className="mt-0.5 block">({isReversed ? "ngược" : "xuôi"})</span>
                     </figcaption>
                   </figure>
@@ -230,13 +233,17 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
                       tìm "Hướng đi" trước khi đọc chữ. Bậc của nó do cỡ chữ và
                       độ đậm gánh, không do màu: accent trên nền surface chỉ đạt
                       4.28:1, dưới ngưỡng 4.5:1. */}
-                  <h5 className={`${HEADING} text-foreground`}>{entry.position}</h5>
+                  <h5 className={`${HEADING} text-foreground`}>
+                    <CardNameText text={entry.position} />
+                  </h5>
                   {entry.keyMessage ? (
                     <p className={`${KEY_MESSAGE} leading-snug text-foreground`}>
-                      {entry.keyMessage}
+                      <CardNameText text={entry.keyMessage} />
                     </p>
                   ) : null}
-                  <p className={`${BODY} leading-relaxed text-muted`}>{entry.text}</p>
+                  <p className={`${BODY} leading-relaxed text-muted`}>
+                    <CardNameText text={entry.text} />
+                  </p>
                 </div>
               </div>
             );
@@ -245,7 +252,9 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
 
         <div className="flex flex-col gap-2.5">
           <SectionHeading icon={Link2}>Mối liên hệ</SectionHeading>
-          <p className={`${BODY} leading-relaxed text-foreground`}>{data.connections}</p>
+          <p className={`${BODY} leading-relaxed text-foreground`}>
+            <CardNameText text={data.connections} />
+          </p>
         </div>
 
         {data.actionSuggestions.length > 0 ? (
@@ -261,7 +270,7 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
                     className="mt-[0.65em] h-[0.35em] w-[0.35em] shrink-0 rounded-full bg-accent"
                     aria-hidden="true"
                   />
-                  {suggestion}
+                  <CardNameText text={suggestion} />
                 </li>
               ))}
             </ul>
@@ -275,14 +284,16 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
           <p
             className={`rounded-xl border-l-2 border-accent bg-sage-tint px-[1.1em] py-[0.9em] ${BODY} italic leading-relaxed text-foreground`}
           >
-            {data.reflectiveQuestion}
+            <CardNameText text={data.reflectiveQuestion} />
           </p>
         </div>
 
         {data.closingNote ? (
           <div className="flex items-start gap-2.5 border-t border-border pt-5">
             <Quote className="mt-[0.2em] h-[1.2em] w-[1.2em] shrink-0 text-accent/70" aria-hidden="true" />
-            <p className={`${BODY} italic leading-relaxed text-muted`}>{data.closingNote}</p>
+            <p className={`${BODY} italic leading-relaxed text-muted`}>
+              <CardNameText text={data.closingNote} />
+            </p>
           </div>
         ) : null}
 
