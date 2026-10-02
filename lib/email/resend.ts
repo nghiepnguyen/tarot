@@ -11,6 +11,19 @@ const RESEND_API = "https://api.resend.com/emails";
  */
 const RESEND_TIMEOUT_MS = 8_000;
 
+/**
+ * Domain dành riêng cho tài liệu và kiểm thử (RFC 2606, RFC 6761). Không bao giờ
+ * có hộp thư thật, và Resend trả 422 cho chúng — e2e đăng ký bằng
+ * `@example.com`, nên không chặn trước thì mỗi lượt chạy test lại bắn một lỗi
+ * giả lên Sentry.
+ */
+const RESERVED_DOMAIN = /(^|\.)(example\.(com|net|org)|example|test|invalid|localhost)$/i;
+
+function isReservedAddress(address: string): boolean {
+  const domain = address.slice(address.lastIndexOf("@") + 1);
+  return RESERVED_DOMAIN.test(domain);
+}
+
 export interface SendEmailInput {
   to: string;
   subject: string;
@@ -40,6 +53,11 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
   const from = input.from || process.env.ALERT_EMAIL_FROM;
   if (!from) {
     console.warn(`[email] Bỏ qua "${input.subject}": chưa cấu hình ALERT_EMAIL_FROM.`);
+    return false;
+  }
+
+  if (isReservedAddress(input.to)) {
+    console.warn(`[email] Bỏ qua "${input.subject}": địa chỉ nhận thuộc domain dành cho kiểm thử.`);
     return false;
   }
 

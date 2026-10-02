@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sendEmail } from "./resend";
 
-const INPUT = { to: "ops@example.com", subject: "Cảnh báo", text: "Nội dung" };
+const INPUT = { to: "ops@tarot.vn", subject: "Cảnh báo", text: "Nội dung" };
 
 beforeEach(() => {
   vi.stubEnv("RESEND_API_KEY", "re_test_key");
@@ -26,7 +26,7 @@ describe("sendEmail", () => {
     expect(options.headers.Authorization).toBe("Bearer re_test_key");
     expect(JSON.parse(options.body)).toEqual({
       from: "alert@example.com",
-      to: ["ops@example.com"],
+      to: ["ops@tarot.vn"],
       subject: "Cảnh báo",
       text: "Nội dung",
     });
@@ -67,5 +67,25 @@ describe("sendEmail", () => {
 
     await expect(sendEmail(INPUT)).resolves.toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["e2e-1@example.com", "a@sub.example.org", "x@thu.test", "y@host.invalid"])(
+    "skips reserved test domains instead of letting Resend reject %s",
+    async (to) => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const fetchMock = vi.fn();
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(sendEmail({ ...INPUT, to })).resolves.toBe(false);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it("still sends to look-alike domains that are not reserved", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(sendEmail({ ...INPUT, to: "ban@myexample.com" })).resolves.toBe(true);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

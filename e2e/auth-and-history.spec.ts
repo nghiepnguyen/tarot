@@ -12,7 +12,7 @@ test("signup requires email verification before the account can be used", async 
   await page.getByRole("button", { name: "Đăng ký", exact: true }).click();
 
   // Đăng ký không còn tạo phiên đăng nhập: tài khoản tồn tại nhưng chưa dùng được.
-  // Địa chỉ e2e là @example.com nên Resend từ chối gửi; trang có hai đầu ra
+  // Địa chỉ e2e là @example.com nên sendEmail bỏ qua, không gọi Resend; trang có hai đầu ra
   // ("kiểm tra hộp thư" và "chưa gửi được"), cả hai đều đưa ra nút gửi lại.
   await expect(page).toHaveURL(/\/verify-email\/sent/);
   await expect(page.getByRole("button", { name: "Gửi lại email xác nhận" })).toBeVisible();
