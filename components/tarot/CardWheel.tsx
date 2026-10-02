@@ -44,7 +44,6 @@ const WHEEL_SNAP_DELAY_MS = 140;
 // velocity × power slots past the release point.
 const INERTIA_POWER = 0.3;
 const INERTIA_TIME_CONSTANT = 320;
-const SLOT_SIZE = { compact: 60, wide: 84 };
 
 type RotateMethod = "wheel" | "drag" | "keyboard" | "button";
 
@@ -377,7 +376,6 @@ export function CardWheel({ size, selectedSlots = [], onSelectSlot }: CardWheelP
                 key={name}
                 name={name}
                 id={id}
-                compact={layout?.compact ?? true}
                 flightsRef={flightsRef}
                 reducedMotion={prefersReducedMotion}
                 onReturn={returnCard}
@@ -608,24 +606,23 @@ const WheelCard = memo(function WheelCard({
 function SpreadSlot({
   name,
   id,
-  compact,
   flightsRef,
   reducedMotion,
   onReturn,
 }: {
   name: string;
   id: number | undefined;
-  compact: boolean;
   flightsRef: RefObject<Map<number, Flight>>;
   reducedMotion: boolean;
   onReturn: (id: number, el: HTMLElement) => void;
 }) {
-  const width = compact ? SLOT_SIZE.compact : SLOT_SIZE.wide;
-  const height = Math.round(width * 1.57);
-
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative" style={{ width, height }}>
+      {/* Slots grow into whatever height the column has spare above the
+          wheel (the dvh terms; the rem subtracted is the header, heading,
+          wheel and bottom bar), capped so three of them still fit across
+          the row (the vw terms), with a floor for short screens. */}
+      <div className="relative aspect-[1/1.57] w-[clamp(5.5rem,min((100vw_-_5rem)/3,(100dvh_-_33rem)/1.57),8rem)] sm:w-[clamp(8.5rem,min((100vw_-_8rem)/3,(100dvh_-_41rem)/1.57),11rem)]">
         <div
           role={id === undefined ? "img" : undefined}
           aria-label={id === undefined ? `${name}: chưa chọn` : undefined}
@@ -642,7 +639,7 @@ function SpreadSlot({
           />
         ) : null}
       </div>
-      <span className="text-xs font-medium text-muted">{name}</span>
+      <span className="text-xs font-medium text-muted sm:text-sm">{name}</span>
     </div>
   );
 }
