@@ -27,6 +27,15 @@ const VALID_RESULT = {
 };
 
 describe("PROMPT_VERSIONS", () => {
+  it("registers v5 first and activates it after the blind benchmark", () => {
+    expect(PROMPT_VERSIONS.map(version => version.id).slice(0, 2)).toEqual([
+      "v5-2026-10-02",
+      "v4-2026-09-30",
+    ]);
+    expect(ACTIVE_PROMPT_VERSION.id).toBe("v5-2026-10-02");
+    expect(getPromptVersion("v4-2026-09-30")?.releasedAt).toBe("2026-09-30");
+  });
+
   it("has no duplicate ids — the id is what rows in the database point back to", () => {
     const ids = PROMPT_VERSIONS.map((version) => version.id);
     expect(new Set(ids).size).toBe(ids.length);

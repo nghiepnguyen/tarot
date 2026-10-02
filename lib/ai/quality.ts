@@ -10,7 +10,7 @@ export class InterpretationValidationError extends Error {
 }
 
 export interface QualityWarning {
-  code: "under_length" | "over_length" | "duplicate_item" | "repeated_sentence" | "sentence_count";
+  code: "under_length" | "over_length" | "duplicate_item" | "repeated_sentence" | "sentence_count" | "generic_language" | "unearned_reassurance" | "vague_action";
   field: string;
   count: number;
 }
@@ -20,6 +20,7 @@ export interface InterpretationQuality {
   underLengthFields: number;
   duplicateItems: number;
   repeatedSentences: number;
+  styleWarnings: number;
 }
 
 /** Quy ước theo prompt: đếm đơn vị tách bởi khoảng trắng, không phải từ vựng tiếng Việt. */
@@ -35,7 +36,7 @@ export function assertPositions(result: InterpretationResult, positions: readonl
 
 /** Cảnh báo biên tập không làm mất bản đọc, không tự gọi model lần hai. */
 export function assessInterpretationQuality(result: InterpretationResult): InterpretationQuality {
-  const report: InterpretationQuality = { warnings: [], overLengthFields: 0, underLengthFields: 0, duplicateItems: 0, repeatedSentences: 0 };
+  const report: InterpretationQuality = { warnings: [], overLengthFields: 0, underLengthFields: 0, duplicateItems: 0, repeatedSentences: 0, styleWarnings: 0 };
   const fields: Array<[string, string, number, number]> = [
     ["summary", result.summary, 40, 60], ["overview", result.overview, 90, 115],
     ...result.perCard.flatMap((card, i): Array<[string, string, number, number]> => [
@@ -77,6 +78,20 @@ export function assessInterpretationQuality(result: InterpretationResult): Inter
   for (const [field, text, min, max] of sentenceFields) {
     const count = sentences(text).length;
     if (count < min || count > max) report.warnings.push({ code: "sentence_count", field, count });
+  }
+  const styleFields = fields.map(([field, value]) => [field, value] as const);
+  const genericPatterns = [/vũ trụ đang gửi/iu, /năng lượng đang (?:thay đổi|đến)/iu, /mọi thứ xảy ra đều có lý do/iu];
+  const reassurancePatterns = [/mọi chuyện rồi sẽ ổn/iu, /bạn mạnh mẽ hơn bạn nghĩ/iu, /các lá bài nhẹ nhàng nhắc/iu];
+  const vagueActionPatterns = [/tin vào trực giác/iu, /đón nhận năng lượng/iu, /hãy cứ là chính mình/iu];
+  for (const [field, value] of styleFields) {
+    let code: QualityWarning["code"] | null = null;
+    if (field.startsWith("actionSuggestions.") && vagueActionPatterns.some(pattern => pattern.test(value))) code = "vague_action";
+    else if (genericPatterns.some(pattern => pattern.test(value))) code = "generic_language";
+    else if (reassurancePatterns.some(pattern => pattern.test(value))) code = "unearned_reassurance";
+    if (code) {
+      report.styleWarnings++;
+      report.warnings.push({ code, field, count: 1 });
+    }
   }
   return report;
 }

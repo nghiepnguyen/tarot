@@ -27,4 +27,22 @@ describe("quality validation", () => {
     expect(report.duplicateItems).toBe(1);
     expect(report.repeatedSentences).toBeGreaterThan(0);
   });
+  it("flags generic reassurance, decorative mysticism, and vague actions", () => {
+    const report = assessInterpretationQuality({
+      ...valid,
+      summary: "Vũ trụ đang gửi đến bạn một thông điệp và mọi chuyện rồi sẽ ổn thôi.",
+      overview: "Các lá bài nhẹ nhàng nhắc bạn rằng bạn mạnh mẽ hơn bạn nghĩ.",
+      actionSuggestions: [
+        "Hãy tin vào trực giác của mình và đón nhận năng lượng đang đến.",
+        valid.actionSuggestions[1],
+        valid.actionSuggestions[2],
+      ],
+    });
+    expect(report.styleWarnings).toBeGreaterThanOrEqual(3);
+    expect(report.warnings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "generic_language", field: "summary" }),
+      expect.objectContaining({ code: "unearned_reassurance", field: "overview" }),
+      expect.objectContaining({ code: "vague_action", field: "actionSuggestions.0" }),
+    ]));
+  });
 });

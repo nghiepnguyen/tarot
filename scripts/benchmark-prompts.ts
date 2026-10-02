@@ -4,8 +4,8 @@ import path from "node:path";
 import { BENCHMARK_CASES } from "../lib/ai/benchmark-cases";
 import { generateInterpretation } from "../lib/ai/generate";
 import { getAiModel, DEFAULT_AI_MODEL_ID, PROVIDER_API_KEY_ENV } from "../lib/ai/models";
-import { PROMPT_V3 } from "../lib/ai/prompts/v3";
 import { PROMPT_V4 } from "../lib/ai/prompts/v4";
+import { PROMPT_V5 } from "../lib/ai/prompts/v5";
 import { assessInterpretationQuality, InterpretationValidationError } from "../lib/ai/quality";
 import { estimateAiCostVnd } from "../lib/ai/pricing";
 
@@ -17,16 +17,16 @@ async function main() {
   const caseId = args.find(a => a.startsWith("--case="))?.slice(7);
   const cases = caseId ? BENCHMARK_CASES.filter(c => c.id === caseId) : BENCHMARK_CASES;
   if (cases.length === 0) throw new Error("Unknown benchmark case");
-  const limit = Number(args.find(a => a.startsWith("--limit="))?.slice(8) ?? 24);
-  if (!Number.isInteger(limit) || limit < 1 || limit > 24) throw new Error("limit must be 1–24");
-  const dir = path.join(".model-compare", `v4-${model.id}-${new Date().toISOString().replace(/[:.]/g, "-")}`);
+  const limit = Number(args.find(a => a.startsWith("--limit="))?.slice(8) ?? BENCHMARK_CASES.length);
+  if (!Number.isInteger(limit) || limit < 1 || limit > BENCHMARK_CASES.length) throw new Error(`limit must be 1–${BENCHMARK_CASES.length}`);
+  const dir = path.join(".model-compare", `v5-${model.id}-${new Date().toISOString().replace(/[:.]/g, "-")}`);
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, "input.json"), JSON.stringify(cases.slice(0, limit), null, 2));
   console.log(`OUTPUT ${dir}`);
   const rows: Record<string, unknown>[] = [];
   // Tối đa hai request, hai bản của cùng một trường hợp chịu cùng mức tải mạng.
   for (const fixture of cases.slice(0, limit)) {
-    const versions = rows.length % 4 === 0 ? [PROMPT_V3, PROMPT_V4] : [PROMPT_V4, PROMPT_V3];
+    const versions = rows.length % 4 === 0 ? [PROMPT_V4, PROMPT_V5] : [PROMPT_V5, PROMPT_V4];
     const pair = await Promise.all(versions.map(async version => {
       const start = Date.now();
       try {
@@ -46,6 +46,38 @@ async function main() {
     await writeFile(path.join(dir, "results.json"), JSON.stringify(rows, null, 2));
     for (const row of pair) console.log(JSON.stringify({ caseId: row.caseId, version: row.version, ok: row.ok, ...(row.ok ? { usage: row.usage, costVnd: row.costVnd } : { error: row.error, latencyMs: row.latencyMs }) }));
   }
+  const blindReview = cases.slice(0, limit).map((fixture, index) => {
+    const candidates = rows.filter(row => row.caseId === fixture.id && row.ok);
+    const ordered = index % 2 === 0 ? candidates : [...candidates].reverse();
+    return {
+      caseId: fixture.id,
+      topic: fixture.topic,
+      question: fixture.question,
+      candidates: ordered.map((row, candidateIndex) => ({
+        label: candidateIndex === 0 ? "A" : "B",
+        output: row.result,
+        scores: {
+          specificity: null,
+          sharpness: null,
+          grounding: null,
+          voice: null,
+          engagement: null,
+          actionability: null,
+        },
+        flags: {
+          genericLanguage: false,
+          ungroundedClaim: false,
+          repeatedInsight: false,
+          unearnedReassurance: false,
+          decorativeMetaphor: false,
+          safetyOverreach: false,
+        },
+      })),
+      preference: null,
+      notes: "",
+    };
+  });
+  await writeFile(path.join(dir, "blind-review.json"), JSON.stringify(blindReview, null, 2));
   console.log(`COMPLETE ${rows.filter(r => r.ok).length}/${rows.length} ${dir}`);
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : "Benchmark failed"); process.exitCode = 1; });

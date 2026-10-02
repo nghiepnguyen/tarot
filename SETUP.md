@@ -503,4 +503,10 @@ Sau khi merge vào branch production, pipeline chạy migration có kiểm soát
 
 Trước khi deploy code v4, chạy `pnpm exec prisma migrate deploy` trên database đích để tạo bảng `AiGenerationMetric`; sau đó build/deploy như thường lệ. Không cần backfill bản đọc cũ. Code active v4, Gemini 3.8 dùng `thinkingLevel: low`. Rollback prompt bằng cách đổi `ACTIVE_PROMPT_VERSION` về `PROMPT_V3`, giữ các version trong registry.
 
-Benchmark: `pnpm benchmark-prompts` chạy 24 ca giả lập v3/v4 bằng key trong `.env.local`, lưu kết quả gitignored ở `.model-compare/`, không ghi DB. Đọc kết quả và giới hạn ở `docs/benchmarks/v4-2026-09-30.md`. E2E phải trỏ database local dùng một lần như guard trong `e2e/global-setup.ts`.
+Kết quả benchmark lịch sử v4 nằm ở `docs/benchmarks/v4-2026-09-30.md`.
+
+## Phát hành prompt v5 (02/10/2026)
+
+V5 không có migration: giữ nguyên JSON Schema và các cột lưu bài đọc. `ACTIVE_PROMPT_VERSION` đang trỏ tới `PROMPT_V5`; rollback bằng cách trỏ lại `PROMPT_V4`, không sửa hoặc xóa version đã phát hành.
+
+`pnpm benchmark-prompts` chạy 36 ca giả lập v4/v5 bằng key trong `.env.local`, lưu `results.json` và `blind-review.json` vào `.model-compare/`, không ghi database. Có thể chọn một ca bằng `--case=style-challenge-1` hoặc giới hạn bằng `--limit=1`. Chấm từng candidate theo thang 1–5 trong manifest trước khi đối chiếu version ở `results.json`; rubric và ngưỡng phát hành nằm tại `docs/benchmarks/v5-2026-10-02.md`.
