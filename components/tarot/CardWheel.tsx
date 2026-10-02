@@ -622,7 +622,7 @@ function SpreadSlot({
           wheel (the dvh terms; the rem subtracted is the header, heading,
           wheel and bottom bar), capped so three of them still fit across
           the row (the vw terms), with a floor for short screens. */}
-      <div className="relative aspect-[1/1.57] w-[clamp(5.5rem,min((100vw_-_5rem)/3,(100dvh_-_33rem)/1.57),8rem)] sm:w-[clamp(8.5rem,min((100vw_-_8rem)/3,(100dvh_-_41rem)/1.57),11rem)]">
+      <div className="relative aspect-[1/1.57] w-[clamp(3.75rem,min((100vw_-_5rem)/3,(100dvh_-_33rem)/1.57),8rem)] sm:w-[clamp(5.25rem,min((100vw_-_8rem)/3,(100dvh_-_41rem)/1.57),11rem)]">
         <div
           role={id === undefined ? "img" : undefined}
           aria-label={id === undefined ? `${name}: chưa chọn` : undefined}
