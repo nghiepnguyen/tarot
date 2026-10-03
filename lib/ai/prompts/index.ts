@@ -3,6 +3,7 @@ import { PROMPT_V2 } from "./v2";
 import { PROMPT_V3 } from "./v3";
 import { PROMPT_V4 } from "./v4";
 import { PROMPT_V5 } from "./v5";
+import { PROMPT_V6 } from "./v6";
 import type { PromptVersion } from "./types";
 
 export type { PromptVersion } from "./types";
@@ -15,7 +16,7 @@ export type { PromptVersion } from "./types";
  * không biến mất khỏi database: `/admin/prompts` vẫn thống kê được nó, chỉ
  * đánh dấu là không còn trong registry.
  */
-export const PROMPT_VERSIONS: readonly PromptVersion[] = [PROMPT_V5, PROMPT_V4, PROMPT_V3, PROMPT_V2, PROMPT_V1];
+export const PROMPT_VERSIONS: readonly PromptVersion[] = [PROMPT_V6, PROMPT_V5, PROMPT_V4, PROMPT_V3, PROMPT_V2, PROMPT_V1];
 
 /**
  * Bản đang chạy.
@@ -24,7 +25,7 @@ export const PROMPT_VERSIONS: readonly PromptVersion[] = [PROMPT_V5, PROMPT_V4, 
  * và deploy, giống bộ bài. Chỗ này là nơi duy nhất cần sửa khi phát hành bản
  * mới hoặc khi phải lùi lại bản cũ gấp.
  */
-export const ACTIVE_PROMPT_VERSION: PromptVersion = PROMPT_V5;
+export const ACTIVE_PROMPT_VERSION: PromptVersion = PROMPT_V6;
 
 /** Id của version cho một row không ghi `promptVersion` — xem migration `add_prompt_version`. */
 export const LEGACY_PROMPT_VERSION_ID = "v0-legacy";

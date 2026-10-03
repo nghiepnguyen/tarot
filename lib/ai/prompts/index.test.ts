@@ -27,12 +27,13 @@ const VALID_RESULT = {
 };
 
 describe("PROMPT_VERSIONS", () => {
-  it("registers v5 first and activates it after the blind benchmark", () => {
-    expect(PROMPT_VERSIONS.map(version => version.id).slice(0, 2)).toEqual([
+  it("registers v6 first and activates it", () => {
+    expect(PROMPT_VERSIONS.map(version => version.id).slice(0, 3)).toEqual([
+      "v6-2026-10-03",
       "v5-2026-10-02",
       "v4-2026-09-30",
     ]);
-    expect(ACTIVE_PROMPT_VERSION.id).toBe("v5-2026-10-02");
+    expect(ACTIVE_PROMPT_VERSION.id).toBe("v6-2026-10-03");
     expect(getPromptVersion("v4-2026-09-30")?.releasedAt).toBe("2026-09-30");
   });
 
