@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
-import { Panel, EmptyRow } from "@/components/admin/Panel";
+import { Panel, EmptyRow, PageHeader } from "@/components/admin/Panel";
 import { ACTIVE_PROMPT_VERSION, PROMPT_VERSIONS } from "@/lib/ai/prompts";
 import { getModelPricing, isPricedModel } from "@/lib/ai/pricing";
 import { AI_MODELS, RANDOM_AI_MODEL_LABEL, RANDOM_AI_MODEL_VALUE } from "@/lib/ai/models";
@@ -12,13 +12,13 @@ import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import { TAROT_CARDS } from "@/lib/tarot/cards";
 import type { InterpretationCardInput } from "@/lib/ai/interpretation";
 import { ChevronDown } from "lucide-react";
+import { formatVnDate } from "@/lib/admin/time";
 
 const vnd = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 const num = (value: number | null) => (value === null ? "—" : value.toLocaleString("vi-VN"));
 const secs = (ms: number | null) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}s`);
 const stars = (value: number | null) => (value === null ? "—" : value.toFixed(1));
-const day = (value: Date | null) =>
-  value === null ? "—" : value.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+const day = (value: Date | null) => (value === null ? "—" : formatVnDate(value));
 
 /**
  * Trải bài giả, cố định, chỉ để dựng prompt mẫu cho người đọc trang này xem.
@@ -83,13 +83,12 @@ export default async function AdminPromptsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Prompt và model</h1>
-        <p className="text-sm text-muted">
-          Đổi model có hiệu lực ngay. Prompt chỉ đọc; phát hành phiên bản mới qua code review và deploy.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Prompt và model"
+        description="Đổi model có hiệu lực ngay. Prompt chỉ đọc; phát hành phiên bản mới qua code review và deploy."
+        meta={<span>Số đo trên trang này tính trên toàn bộ lịch sử, không lọc theo kỳ · ngày theo giờ VN</span>}
+      />
 
       <Panel
         title="Bản đang chạy"
@@ -254,13 +253,13 @@ export default async function AdminPromptsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-left text-xs text-muted">
-                {["Prompt", "Model", "Lượt gọi", "Thành công", "Lỗi JSON/schema", "Lỗi vị trí", "Lỗi API", "Cảnh báo độ dài", "Cảnh báo lặp nội dung"].map(label => <th key={label} className="px-2 py-2 font-normal">{label}</th>)}
+                {["Prompt", "Model", "Lượt gọi", "Thành công", "Lỗi JSON/schema", "Lỗi vị trí", "Lỗi API", "Cảnh báo độ dài", "Cảnh báo lặp nội dung"].map((label, i) => <th key={label} scope="col" className={`px-2 py-2 font-normal ${i >= 2 ? "text-right" : ""}`}>{label}</th>)}
               </tr></thead>
               <tbody>{quality.map(row => <tr key={`${row.promptVersion}-${row.model}`} className="border-b border-border/60">
                 <td className="px-2 py-2 font-mono text-xs">{row.promptVersion}</td><td className="px-2 py-2 font-mono text-xs">{row.model}</td>
-                <td className="px-2 py-2">{row.attempts}</td><td className="px-2 py-2">{row.successes}/{row.attempts}</td>
-                {[row.schemaErrors, row.positionErrors, row.providerErrors].map((count, i) => <td key={i} className="px-2 py-2">{count}/{row.attempts}</td>)}
-                {[row.lengthWarnings, row.duplicateWarnings].map((count, i) => <td key={i} className="px-2 py-2">{row.promptVersion.startsWith("v4-") && row.successes > 0 ? `${count}/${row.successes}` : "—"}</td>)}
+                <td className="px-2 py-2 text-right tabular-nums">{row.attempts}</td><td className="px-2 py-2 text-right tabular-nums">{row.successes}/{row.attempts}</td>
+                {[row.schemaErrors, row.positionErrors, row.providerErrors].map((count, i) => <td key={i} className={`px-2 py-2 text-right tabular-nums ${count > 0 ? "text-red-700 dark:text-red-400" : "text-muted"}`}>{count}/{row.attempts}</td>)}
+                {[row.lengthWarnings, row.duplicateWarnings].map((count, i) => <td key={i} className="px-2 py-2 text-right tabular-nums">{row.promptVersion.startsWith("v4-") && row.successes > 0 ? `${count}/${row.successes}` : "—"}</td>)}
               </tr>)}</tbody>
             </table>
           </div>

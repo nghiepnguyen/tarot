@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { requireAdmin } from "@/lib/auth/admin";
 import { TAROT_CARDS, type TarotCategory } from "@/lib/tarot/cards";
+import { PageHeader } from "@/components/admin/Panel";
 
 const CATEGORY_LABEL: Record<TarotCategory, string> = {
   "major-arcana": "Ẩn Chính",
@@ -21,27 +22,34 @@ export default async function AdminDeckPage() {
   await requireAdmin();
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Bộ bài</h1>
-        <p className="text-sm text-muted">
-          {TAROT_CARDS.length} lá, đọc từ <code className="font-mono text-xs">lib/tarot/cards.ts</code>. Sửa nội dung
-          bằng cách sửa file đó rồi deploy — không có đường nào sửa từ đây.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Bộ bài"
+        description={
+          <>
+            {TAROT_CARDS.length} lá, đọc từ <code className="font-mono text-xs">lib/tarot/cards.ts</code>. Sửa nội dung
+            bằng cách sửa file đó rồi deploy — không có đường nào sửa từ đây.
+          </>
+        }
+        meta={ORDER.map((category) => (
+          <a key={category} href={`#${category}`} className="text-accent hover:underline">
+            {CATEGORY_LABEL[category]} ({TAROT_CARDS.filter((card) => card.category === category).length})
+          </a>
+        ))}
+      />
 
       {ORDER.map((category) => {
         const cards = TAROT_CARDS.filter((card) => card.category === category);
         return (
-          <section key={category} className="flex flex-col gap-4">
-            <h2 className="text-base font-semibold tracking-tight text-foreground">
+          <section key={category} id={category} className="flex scroll-mt-6 flex-col gap-3">
+            <h2 className="text-sm font-semibold text-foreground">
               {CATEGORY_LABEL[category]} <span className="text-muted">({cards.length})</span>
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {cards.map((card) => (
                 <article
                   key={card.id}
-                  className="flex gap-4 rounded-2xl border border-border bg-surface p-4"
+                  className="flex gap-3 rounded-lg border border-border bg-surface p-3"
                 >
                   <Image
                     src={card.image}

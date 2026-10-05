@@ -81,8 +81,8 @@ test("the user menu carries a link into the admin area", async () => {
 
 test("adjusting credits by hand moves the balance, the ledger and the audit log together", async () => {
   await page.goto("/admin/users");
-  await page.getByPlaceholder("Tìm theo email...").fill(email);
-  await page.getByPlaceholder("Tìm theo email...").press("Enter");
+  await page.getByPlaceholder("Email, tên hoặc id").fill(email);
+  await page.getByPlaceholder("Email, tên hoặc id").press("Enter");
   await page.getByRole("link", { name: email }).click();
 
   await expect(page.getByRole("heading", { name: email, level: 1 })).toBeVisible();

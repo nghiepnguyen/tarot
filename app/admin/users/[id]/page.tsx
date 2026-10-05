@@ -2,19 +2,27 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
-import { Panel, Stat, EmptyRow } from "@/components/admin/Panel";
+import {
+  Badge,
+  buildHref,
+  DataTable,
+  Mono,
+  PageHeader,
+  Panel,
+  SignedNumber,
+  Stat,
+  Td,
+  TextLink,
+  Th,
+  Tr,
+} from "@/components/admin/Panel";
 import { AdjustCreditsForm } from "@/components/admin/AdjustCreditsForm";
 import { RefundOrderForm, ReconcileOrderButton } from "@/components/admin/OrderActions";
+import { CREDIT_TYPE, ORDER_STATUS } from "@/lib/admin/labels";
+import { formatVnDateTime } from "@/lib/admin/time";
 
-const CREDIT_TYPE_LABEL: Record<string, string> = {
-  FREE_GRANT: "Tặng dùng thử",
-  PURCHASE: "Nạp tiền",
-  UNLOCK_SPEND: "Mở khóa AI",
-  REFUND: "Hoàn lại",
-  ADMIN_ADJUST: "Chỉnh tay",
-};
-
-const datetime = (value: Date) => value.toLocaleString("vi-VN");
+const datetime = formatVnDateTime;
+const TX_LIMIT = 50;
 
 export default async function AdminUserDetailPage({
   params,
@@ -36,124 +44,171 @@ export default async function AdminUserDetailPage({
       emailVerifiedAt: true,
       freeCreditsGrantedAt: true,
       createdAt: true,
-      _count: { select: { readings: true } },
+      _count: { select: { readings: true, creditTransactions: true } },
     },
   });
   if (!user) notFound();
 
-  const [transactions, orders] = await Promise.all([
+  const [transactions, orders, paid] = await Promise.all([
     prisma.creditTransaction.findMany({
       where: { userId: id },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: TX_LIMIT,
     }),
     prisma.order.findMany({
       where: { userId: id },
       orderBy: { createdAt: "desc" },
       include: { package: { select: { name: true } } },
     }),
+    prisma.order.aggregate({ where: { userId: id, status: "PAID" }, _sum: { amountVnd: true }, _count: { _all: true } }),
   ]);
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1">
-        <Link href="/admin/users" className="text-sm text-muted transition-colors duration-300 hover:text-accent">
+    <>
+      <div className="flex flex-col gap-2">
+        <Link href="/admin/users" className="text-sm text-muted transition-colors duration-150 hover:text-foreground">
           ← Người dùng
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{user.email}</h1>
-        <p className="text-sm text-muted">
-          {user.name ?? "chưa đặt tên"} · {user.role} · tạo {datetime(user.createdAt)}
-        </p>
+        <PageHeader
+          title={user.email}
+          meta={
+            <>
+              <span>{user.name ?? "chưa đặt tên"}</span>
+              <span>
+                id <span className="font-mono">{user.id}</span>
+              </span>
+              <span>đăng ký {datetime(user.createdAt)} (giờ VN)</span>
+            </>
+          }
+          actions={
+            <>
+              {user.role === "ADMIN" ? <Badge tone="danger">ADMIN</Badge> : null}
+              {user.emailVerifiedAt ? <Badge tone="success">Đã xác nhận email</Badge> : <Badge tone="warning">Chưa xác nhận email</Badge>}
+            </>
+          }
+        />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Stat label="Số dư" value={String(user.credits)} />
+      <section aria-label="Tóm tắt" className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+        <Stat label="Số dư" value={String(user.credits)} tone={user.credits < 0 ? "danger" : undefined} hint="credit" />
+        <Stat
+          label="Đã trả"
+          value={`${(paid._sum.amountVnd ?? 0).toLocaleString("vi-VN")}đ`}
+          hint={`${paid._count._all} đơn PAID`}
+        />
         <Stat label="Lượt trải bài" value={String(user._count.readings)} />
         <Stat
           label="Xác nhận email"
-          value={user.emailVerifiedAt ? "rồi" : "chưa"}
+          value={user.emailVerifiedAt ? "Rồi" : "Chưa"}
           hint={user.emailVerifiedAt ? datetime(user.emailVerifiedAt) : undefined}
         />
         <Stat
-          label="Đã nhận credit dùng thử"
-          value={user.freeCreditsGrantedAt ? "rồi" : "chưa"}
+          label="Credit dùng thử"
+          value={user.freeCreditsGrantedAt ? "Đã nhận" : "Chưa nhận"}
           hint={user.freeCreditsGrantedAt ? datetime(user.freeCreditsGrantedAt) : undefined}
         />
-      </div>
+      </section>
 
-      <Panel
-        title="Chỉnh credit"
-        note="Ghi vào sổ với loại ADMIN_ADJUST và ký tên vào nhật ký quản trị. Không có đường nào chỉnh số dư mà không để lại vết."
-      >
-        <AdjustCreditsForm userId={user.id} currentCredits={user.credits} />
-      </Panel>
-
-      <Panel title="Đơn hàng">
-        {orders.length === 0 ? (
-          <EmptyRow>Chưa có đơn nào.</EmptyRow>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-3xl text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-xs text-muted">
-                  <th className="py-2 font-normal">Tạo lúc</th>
-                  <th className="py-2 font-normal">Gói</th>
-                  <th className="py-2 text-right font-normal">Tiền</th>
-                  <th className="py-2 text-right font-normal">Credit</th>
-                  <th className="py-2 font-normal">Trạng thái</th>
-                  <th className="py-2 font-normal">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-border/50 align-top last:border-0">
-                    <td className="py-3 text-muted">{datetime(order.createdAt)}</td>
-                    <td className="py-3 text-foreground">{order.package.name}</td>
-                    <td className="py-3 text-right tabular-nums text-foreground">
-                      {order.amountVnd.toLocaleString("vi-VN")}đ
-                    </td>
-                    <td className="py-3 text-right tabular-nums text-muted">{order.creditsGranted}</td>
-                    <td className="py-3 text-muted">{order.status}</td>
-                    <td className="py-3">
-                      {order.status === "PAID" ? <RefundOrderForm orderId={order.id} /> : null}
-                      {order.status === "PENDING" ? <ReconcileOrderButton orderId={order.id} /> : null}
-                    </td>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <Panel title={`Đơn hàng (${orders.length})`} flush>
+            {orders.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-muted">Chưa có đơn nào.</p>
+            ) : (
+              <DataTable>
+                <thead>
+                  <tr>
+                    <Th>Tạo lúc</Th>
+                    <Th>Gói</Th>
+                    <Th align="right">Tiền</Th>
+                    <Th align="right">Credit</Th>
+                    <Th>Trạng thái</Th>
+                    <Th>Mã PayOS</Th>
+                    <Th>Thao tác</Th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Panel>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <Tr key={order.id}>
+                      <Td className="whitespace-nowrap text-muted">{datetime(order.createdAt)}</Td>
+                      <Td className="whitespace-nowrap">{order.package.name}</Td>
+                      <Td align="right">{order.amountVnd.toLocaleString("vi-VN")}đ</Td>
+                      <Td align="right" className="text-muted">
+                        {order.creditsGranted}
+                      </Td>
+                      <Td>
+                        <Badge tone={ORDER_STATUS[order.status].tone} title={ORDER_STATUS[order.status].hint}>
+                          {ORDER_STATUS[order.status].label}
+                        </Badge>
+                      </Td>
+                      <Td>
+                        <Mono title={`id nội bộ: ${order.id}`}>{order.providerOrderId}</Mono>
+                      </Td>
+                      <Td className="min-w-40">
+                        {order.status === "PAID" ? <RefundOrderForm orderId={order.id} /> : null}
+                        {order.status === "PENDING" ? <ReconcileOrderButton orderId={order.id} /> : null}
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </DataTable>
+            )}
+          </Panel>
 
-      <Panel title="Sổ credit" note="50 dòng gần nhất.">
-        {transactions.length === 0 ? (
-          <EmptyRow>Chưa có giao dịch nào.</EmptyRow>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs text-muted">
-                <th className="py-2 font-normal">Lúc</th>
-                <th className="py-2 font-normal">Loại</th>
-                <th className="py-2 text-right font-normal">Thay đổi</th>
-                <th className="py-2 text-right font-normal">Số dư sau</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="border-b border-border/50 last:border-0">
-                  <td className="py-2 text-muted">{datetime(tx.createdAt)}</td>
-                  <td className="py-2 text-foreground">{CREDIT_TYPE_LABEL[tx.type] ?? tx.type}</td>
-                  <td className="py-2 text-right tabular-nums text-foreground">
-                    {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
-                  </td>
-                  <td className="py-2 text-right tabular-nums text-muted">{tx.balanceAfter}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
-    </div>
+          <Panel
+            title="Sổ credit"
+            note={`${Math.min(TX_LIMIT, user._count.creditTransactions)} / ${user._count.creditTransactions} dòng gần nhất.`}
+            actions={
+              user._count.creditTransactions > TX_LIMIT ? (
+                <TextLink href={buildHref("/admin/transactions", { q: user.email })}>Xem tất cả →</TextLink>
+              ) : null
+            }
+            flush
+          >
+            {transactions.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-muted">Chưa có giao dịch nào.</p>
+            ) : (
+              <DataTable minWidth="min-w-xl">
+                <thead>
+                  <tr>
+                    <Th>Lúc</Th>
+                    <Th>Loại</Th>
+                    <Th align="right">Thay đổi</Th>
+                    <Th align="right">Số dư sau</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((tx) => (
+                    <Tr key={tx.id}>
+                      <Td className="whitespace-nowrap text-muted">{datetime(tx.createdAt)}</Td>
+                      <Td>
+                        <Badge tone={CREDIT_TYPE[tx.type].tone} title={tx.type}>
+                          {CREDIT_TYPE[tx.type].label}
+                        </Badge>
+                      </Td>
+                      <Td align="right">
+                        <SignedNumber value={tx.amount} />
+                      </Td>
+                      <Td align="right" className="text-muted">
+                        {tx.balanceAfter}
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </DataTable>
+            )}
+          </Panel>
+        </div>
+
+        <div className="xl:sticky xl:top-6 xl:self-start">
+          <Panel
+            title="Chỉnh credit"
+            note="Ghi vào sổ với loại ADMIN_ADJUST và ký tên vào nhật ký quản trị. Không có đường nào chỉnh số dư mà không để lại vết."
+          >
+            <AdjustCreditsForm userId={user.id} currentCredits={user.credits} />
+          </Panel>
+        </div>
+      </div>
+    </>
   );
 }

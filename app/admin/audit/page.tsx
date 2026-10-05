@@ -1,24 +1,51 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
-import { EmptyRow } from "@/components/admin/Panel";
-
-const ACTION_LABEL: Record<string, string> = {
-  credit_adjust: "Chỉnh credit",
-  order_refund: "Hoàn đơn",
-  order_reconcile: "Đối soát đơn",
-  ai_model_change: "Đổi model AI",
-};
+import {
+  Badge,
+  buildHref,
+  DataTable,
+  EmptyRow,
+  FilterTabs,
+  Mono,
+  PageHeader,
+  Pagination,
+  parsePage,
+  SignedNumber,
+  Td,
+  TextLink,
+  Th,
+  Tr,
+} from "@/components/admin/Panel";
+import { AUDIT_ACTION } from "@/lib/admin/labels";
+import { formatVnDateTime } from "@/lib/admin/time";
 
 const PAGE_SIZE = 100;
+const PATH = "/admin/audit";
 
-export default async function AdminAuditPage() {
+export default async function AdminAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ action?: string; page?: string }>;
+}) {
   await requireAdmin();
 
-  const logs = await prisma.adminAuditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: PAGE_SIZE,
-  });
+  const params = await searchParams;
+  const action = params.action && params.action in AUDIT_ACTION ? params.action : undefined;
+  const page = parsePage(params.page);
+  const where = action ? { action } : {};
+
+  const [total, logs, counts] = await Promise.all([
+    prisma.adminAuditLog.count({ where }),
+    prisma.adminAuditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.adminAuditLog.groupBy({ by: ["action"], _count: { _all: true } }),
+  ]);
+  const countOf = (value: string) => counts.find((row) => row.action === value)?._count._all ?? 0;
+  const allCount = counts.reduce((acc, row) => acc + row._count._all, 0);
 
   // Cố tình không join: `AdminAuditLog` không có khoá ngoại để dòng nhật ký
   // sống sót khi tài khoản bị xoá. Email tra riêng, ai còn thì hiện email, ai
@@ -33,62 +60,76 @@ export default async function AdminAuditPage() {
   const emailById = new Map(users.map((user) => [user.id, user.email]));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Nhật ký quản trị</h1>
-        <p className="text-sm text-muted">
-          {PAGE_SIZE} dòng gần nhất. Sổ credit ghi cái gì đã xảy ra; chỗ này ghi ai làm và vì sao.
-        </p>
-      </div>
+    <>
+      <PageHeader
+        title="Nhật ký quản trị"
+        description="Sổ credit ghi cái gì đã xảy ra; chỗ này ghi ai làm và vì sao. Chỉ thêm, không sửa, không xoá."
+        meta={<span>{total.toLocaleString("vi-VN")} dòng · mới nhất trước · giờ VN</span>}
+      />
+
+      <FilterTabs
+        label="Lọc theo thao tác"
+        options={[
+          { href: PATH, label: "Tất cả", count: allCount, active: !action },
+          ...Object.entries(AUDIT_ACTION).map(([value, meta]) => ({
+            href: buildHref(PATH, { action: value }),
+            label: meta.label,
+            count: countOf(value),
+            active: action === value,
+          })),
+        ]}
+      />
 
       {logs.length === 0 ? (
         <EmptyRow>Chưa có thao tác quản trị nào.</EmptyRow>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-          <table className="w-full min-w-3xl text-sm">
+        <div className="overflow-hidden rounded-lg border border-border bg-surface">
+          <DataTable>
             <thead>
-              <tr className="border-b border-border text-left text-xs text-muted">
-                <th className="px-4 py-3 font-normal">Lúc</th>
-                <th className="px-4 py-3 font-normal">Người làm</th>
-                <th className="px-4 py-3 font-normal">Thao tác</th>
-                <th className="px-4 py-3 font-normal">Đối tượng</th>
-                <th className="px-4 py-3 text-right font-normal">Số credit</th>
-                <th className="px-4 py-3 font-normal">Lý do</th>
+              <tr>
+                <Th>Lúc</Th>
+                <Th>Người làm</Th>
+                <Th>Thao tác</Th>
+                <Th>Đối tượng</Th>
+                <Th align="right">Credit</Th>
+                <Th className="w-1/3">Lý do</Th>
               </tr>
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="border-b border-border/50 align-top last:border-0">
-                  <td className="px-4 py-3 text-muted">{log.createdAt.toLocaleString("vi-VN")}</td>
-                  <td className="px-4 py-3 text-foreground">
-                    {emailById.get(log.adminUserId) ?? log.adminUserId}
-                  </td>
-                  <td className="px-4 py-3 text-muted">{ACTION_LABEL[log.action] ?? log.action}</td>
-                  <td className="px-4 py-3 text-muted">
+                <Tr key={log.id}>
+                  <Td className="whitespace-nowrap text-muted">{formatVnDateTime(log.createdAt)}</Td>
+                  <Td>{emailById.get(log.adminUserId) ?? <Mono>{log.adminUserId}</Mono>}</Td>
+                  <Td>
+                    <Badge tone={AUDIT_ACTION[log.action]?.tone ?? "neutral"} title={log.action}>
+                      {AUDIT_ACTION[log.action]?.label ?? log.action}
+                    </Badge>
+                  </Td>
+                  <Td>
                     {log.targetUserId ? (
-                      <Link
-                        href={`/admin/users/${log.targetUserId}`}
-                        className="text-foreground transition-colors duration-300 hover:text-accent"
-                      >
+                      <TextLink href={`/admin/users/${log.targetUserId}`}>
                         {emailById.get(log.targetUserId) ?? log.targetUserId}
-                      </Link>
+                      </TextLink>
                     ) : (
-                      "—"
+                      <span className="text-muted">—</span>
                     )}
                     {log.targetOrderId ? (
-                      <span className="block font-mono text-xs">{log.targetOrderId}</span>
+                      <span className="block">
+                        <TextLink href={buildHref("/admin/orders", { q: log.targetOrderId })}>
+                          <span className="font-mono text-xs">đơn {log.targetOrderId}</span>
+                        </TextLink>
+                      </span>
                     ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-foreground">
-                    {log.amount === null ? "—" : log.amount > 0 ? `+${log.amount}` : log.amount}
-                  </td>
-                  <td className="px-4 py-3 text-muted">{log.reason}</td>
-                </tr>
+                  </Td>
+                  <Td align="right">{log.amount === null ? <span className="text-muted">—</span> : <SignedNumber value={log.amount} />}</Td>
+                  <Td className="whitespace-pre-wrap break-words text-foreground">{log.reason}</Td>
+                </Tr>
               ))}
             </tbody>
-          </table>
+          </DataTable>
+          <Pagination path={PATH} params={{ action }} page={page} pageSize={PAGE_SIZE} total={total} />
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { vnStartOfDaysAgo } from "./time";
 
 /** Số người có mặt ở cả hai tập. Dùng cho tỷ lệ free-to-paid. */
 export function intersectUserIds(a: readonly string[], b: readonly string[]): string[] {
@@ -66,7 +67,8 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
   // Mốc thời gian tính ở đây chứ không ở component: đọc đồng hồ là việc không
   // thuần, và `react-hooks/purity` chặn nó ngay trong thân một Server
   // Component.
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const generatedAt = new Date();
+  const since = vnStartOfDaysAgo(days, generatedAt);
 
   const [
     paid,
@@ -84,6 +86,7 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
     paidUsers,
     aiUsage,
     aiUsageByModel,
+    pendingOrders,
   ] = await Promise.all([
     // Tiền lấy từ `Order`, không từ sổ credit: `refundOrder` lật PAID sang
     // REFUNDED, nên lọc theo trạng thái ra luôn doanh thu ròng. Đếm dòng
@@ -136,9 +139,14 @@ export async function fetchDashboardRaw(db: PrismaClient, days: number) {
       _count: { _all: true },
       where: { createdAt: { gte: since } },
     }),
+    // Không lọc theo kỳ: một đơn PENDING cũ vẫn là việc cần xử lý hôm nay.
+    db.order.count({ where: { status: "PENDING" } }),
   ]);
 
   return {
+    since,
+    generatedAt,
+    pendingOrders,
     revenueVnd: paid._sum.amountVnd ?? 0,
     paidOrders: paid._count._all,
     refundedVnd: refunded._sum.amountVnd ?? 0,

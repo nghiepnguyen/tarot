@@ -17,8 +17,8 @@ export function RefundOrderForm({ orderId }: { orderId: string }) {
 
   return (
     <details className="w-full">
-      <summary className="cursor-pointer text-sm text-muted transition-colors duration-300 hover:text-accent">
-        Hoàn credit
+      <summary className="inline-flex min-h-8 cursor-pointer list-none items-center rounded-md border border-border px-2.5 text-xs font-medium text-foreground transition-colors duration-150 hover:border-red-400 hover:text-red-700 dark:hover:text-red-400 [&::-webkit-details-marker]:hidden">
+        Hoàn credit…
       </summary>
       <form
         action={(formData) => {
@@ -33,8 +33,8 @@ export function RefundOrderForm({ orderId }: { orderId: string }) {
         <p className="text-xs text-muted">
           Chỉ thu hồi credit và đổi đơn sang REFUNDED. Tiền phải hoàn tay trên dashboard PayOS.
         </p>
-        <Input name="reason" maxLength={500} placeholder="Lý do hoàn" required />
-        <Button type="submit" disabled={isPending} className="self-start">
+        <Input name="reason" maxLength={500} placeholder="Lý do hoàn" aria-label="Lý do hoàn" required />
+        <Button type="submit" disabled={isPending} className="self-start px-3! py-1.5! text-xs!">
           {isPending ? "Đang hoàn..." : "Xác nhận hoàn"}
         </Button>
       </form>
@@ -59,7 +59,7 @@ export function ReconcileOrderButton({ orderId }: { orderId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer text-sm text-muted transition-colors duration-300 hover:text-accent disabled:opacity-40"
+        className="inline-flex min-h-8 cursor-pointer items-center rounded-md border border-border px-2.5 text-xs font-medium text-foreground transition-colors duration-150 hover:border-accent hover:text-accent disabled:cursor-wait disabled:opacity-50"
       >
         {isPending ? "Đang hỏi PayOS..." : "Đối soát lại"}
       </button>
