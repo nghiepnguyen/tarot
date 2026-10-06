@@ -27,13 +27,13 @@ const VALID_RESULT = {
 };
 
 describe("PROMPT_VERSIONS", () => {
-  it("registers v6 first and activates it", () => {
+  it("registers v7 first and activates it", () => {
     expect(PROMPT_VERSIONS.map(version => version.id).slice(0, 3)).toEqual([
+      "v7-2026-10-06",
       "v6-2026-10-03",
       "v5-2026-10-02",
-      "v4-2026-09-30",
     ]);
-    expect(ACTIVE_PROMPT_VERSION.id).toBe("v6-2026-10-03");
+    expect(ACTIVE_PROMPT_VERSION.id).toBe("v7-2026-10-06");
     expect(getPromptVersion("v4-2026-09-30")?.releasedAt).toBe("2026-09-30");
   });
 
@@ -44,6 +44,13 @@ describe("PROMPT_VERSIONS", () => {
 
   it("includes the active version, so the app never runs a prompt the registry can't name", () => {
     expect(getPromptVersion(ACTIVE_PROMPT_VERSION.id)).toBe(ACTIVE_PROMPT_VERSION);
+  });
+
+  // v7 từng được soạn lại mà rơi mất hai câu này. Chỉ kiểm bản đang chạy: v1–v4
+  // ra đời trước khi có chúng và không còn phục vụ người dùng.
+  it("keeps the death and medication limits in the active version", () => {
+    expect(ACTIVE_PROMPT_VERSION.systemInstruction).toContain("cái chết");
+    expect(ACTIVE_PROMPT_VERSION.systemInstruction).toContain("Không khuyên thay đổi thuốc hay điều trị");
   });
 
   it("returns null for an id that is not in the registry", () => {
