@@ -1,53 +1,24 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main]
   push:
     branches: [main]
 
-# A new push to the same PR makes the older run pointless; on main every
-# commit keeps its own run.
+# Only the latest run for a branch or PR needs to finish.
+permissions:
+  contents: read
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  ci:
+    name: Lint, unit tests and e2e
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.25.0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # Turbopack writes its build cache to .next/cache (on by default since
-      # Next 16.3); restoring it makes `next build` start warm.
-      - uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', 'types/**', '*.ts', '*.mjs', 'prisma/schema.prisma') }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-
-      - run: pnpm lint
-      - run: pnpm build
-        env:
-          DATABASE_URL: postgresql://tarot:tarot@localhost:5432/tarot
-          AUTH_SECRET: ci-build-placeholder-secret
-
-  # Runs alongside `build` rather than after it: Playwright's webServer does
-  # its own `pnpm build`, so waiting on the other job only added its runtime.
-  e2e:
-    runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:16-alpine
@@ -65,12 +36,13 @@ jobs:
     env:
       DATABASE_URL: postgresql://tarot:tarot@localhost:5432/tarot
       AUTH_SECRET: ci-build-placeholder-secret
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11.25.0
 
       - uses: actions/setup-node@v4
         with:
@@ -86,6 +58,7 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
+      - run: pnpm lint
       - run: pnpm exec prisma migrate deploy
       # Unit tests run only here, where the database exists, so the
       # rate-limiter tests run instead of being skipped.
@@ -104,4 +77,12 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
+      # Playwright builds once before starting the production server.
       - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-test-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
