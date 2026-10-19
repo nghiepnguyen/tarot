@@ -2,6 +2,14 @@
 
 Production: <https://tarot.thanhnghiep.top>
 
+## Giấy phép và nguồn ảnh
+
+Mã nguồn và tài liệu của dự án được phát hành theo [MIT License](LICENSE).
+
+Ảnh lá bài trong `public/cards/` lấy từ [Rider-Waite tarot deck trên Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rider-Waite_tarot_deck), minh họa gốc của Pamela Colman Smith. Ảnh bên thứ ba không thuộc giấy phép MIT của dự án; quyền sử dụng từng ảnh theo trang mô tả file tương ứng trên Wikimedia Commons.
+
+Wikimedia Commons ghi nhận bộ bài gốc thuộc phạm vi công cộng tại Hoa Kỳ và Vương quốc Anh, nhưng một số bản tô màu có thể còn bản quyền. Link danh mục trên là nguồn bộ sưu tập, chưa phải bảng đối chiếu nguồn và giấy phép cho từng file trong repo.
+
 ## Tổng quan
 
 Tarot Reading Web là nền tảng xem bài tarot trực tuyến, kết hợp trải nghiệm tối giản với khả năng giải nghĩa bằng AI và dịch vụ tư vấn trực tiếp. Người dùng nhập câu hỏi, bốc ba lá bài và nhận phần diễn giải cơ bản ngay trên trang.
