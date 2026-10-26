@@ -54,3 +54,15 @@ next-env.d.ts
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Archify: keep the authored candidate and final HTML; captures and receipts are local evidence
+/.archify/**/visual-check*/
+/.archify/**/review-*/
+/.archify/**/*.delivery.json
+/.archify/**/*.browser-check.json
+/.archify/**/*.finalize.json
+/.archify/**/*.finalize-summary.json
+
+# graphify: regenerable cache and local interpreter metadata
+/graphify-out/cache/
+/graphify-out/.graphify_*

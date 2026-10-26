@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "How Tarot Reading Web Works",
+    "locale": "en",
+    "output": ".archify/architecture-tarot-20261026-203721/tarot-reading-platform.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/nghiepnguyen/tarot",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "8231b0c9589f0c1fa3aa0e8efbfda357193f4f7d"
+    }
+  },
+  "components": [
+    {
+      "id": "reader",
+      "type": "external",
+      "label": "Reader",
+      "sublabel": "browser",
+      "icon": "person",
+      "pos": [20, 360],
+      "size": [110, 56]
+    },
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "Tarot UI",
+      "sublabel": "draw · unlock · credits",
+      "tag": "React 19 client",
+      "pos": [240, 330],
+      "size": [200, 160],
+      "sources": [
+        { "path": "components/tarot/TarotExperience.tsx", "line": 153, "end_line": 205, "label": "draw + save" },
+        { "path": "lib/tarot/draw.ts", "line": 23, "end_line": 30, "label": "spread pool" },
+        { "path": "components/tarot/AiUnlockPanel.tsx", "line": 113, "end_line": 135, "label": "unlock call" }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth.js",
+      "sublabel": "credentials + Google",
+      "tag": "JWT session",
+      "pos": [240, 130],
+      "size": [170, 74],
+      "sources": [
+        { "path": "auth.ts", "line": 27, "end_line": 95, "label": "providers" },
+        { "path": "auth.ts", "line": 123, "end_line": 158, "label": "revalidation" }
+      ]
+    },
+    {
+      "id": "ai",
+      "type": "backend",
+      "label": "AI unlock",
+      "sublabel": "10 credits per reading",
+      "tag": "prompt v7 · model routing",
+      "pos": [560, 210],
+      "size": [190, 100],
+      "sources": [
+        { "path": "app/actions/ai.ts", "line": 28, "end_line": 177, "label": "deduct + refund" },
+        { "path": "lib/ai/generate.ts", "line": 22, "end_line": 34, "label": "provider switch" },
+        { "path": "lib/ai/metrics.ts", "line": 17, "end_line": 35, "label": "metrics" }
+      ]
+    },
+    {
+      "id": "readings",
+      "type": "backend",
+      "label": "Readings action",
+      "sublabel": "saveReadingAction",
+      "tag": "30 saves/hour",
+      "pos": [560, 400],
+      "size": [190, 80],
+      "sources": [
+        { "path": "app/actions/readings.ts", "line": 27, "end_line": 79, "label": "save + delete" }
+      ]
+    },
+    {
+      "id": "billing",
+      "type": "backend",
+      "label": "Billing & ledger",
+      "sublabel": "checkout · webhook · reconcile",
+      "tag": "idempotent credit",
+      "pos": [560, 580],
+      "size": [190, 100],
+      "sources": [
+        { "path": "app/actions/payments.ts", "line": 19, "end_line": 72, "label": "create order" },
+        { "path": "lib/payments/orders.ts", "line": 39, "end_line": 101, "label": "credit order" },
+        { "path": "app/api/webhooks/payos/route.ts", "line": 5, "end_line": 35, "label": "webhook" }
+      ]
+    },
+    {
+      "id": "cron",
+      "type": "cloud",
+      "label": "Vercel Cron",
+      "sublabel": "0 20 * * *",
+      "tag": "reconcile sweep",
+      "pos": [260, 700],
+      "size": [160, 64],
+      "sources": [
+        { "path": "vercel.json", "line": 1, "end_line": 8, "label": "schedule" },
+        { "path": "app/api/cron/reconcile-orders/route.ts", "line": 31, "end_line": 53, "label": "sweep" }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Prisma 6",
+      "tag": "single source of state",
+      "pos": [880, 290],
+      "size": [190, 150],
+      "sources": [
+        { "path": "prisma/schema.prisma", "line": 100, "end_line": 155, "label": "ledger + orders" },
+        { "path": "prisma/schema.prisma", "line": 183, "end_line": 215, "label": "reading + interpretation" },
+        { "path": "lib/db/prisma.ts", "line": 1, "end_line": 9, "label": "client" }
+      ]
+    },
+    {
+      "id": "gemini",
+      "type": "external",
+      "label": "Gemini API",
+      "sublabel": "structured JSON output",
+      "tag": "responseSchema",
+      "pos": [880, 20],
+      "size": [180, 70],
+      "sources": [
+        { "path": "lib/ai/gemini.ts", "line": 35, "end_line": 73, "label": "generation call" }
+      ]
+    },
+    {
+      "id": "deepseek",
+      "type": "external",
+      "label": "DeepSeek API",
+      "sublabel": "JSON mode",
+      "tag": "no structured outputs",
+      "pos": [1080, 130],
+      "size": [180, 70],
+      "sources": [
+        { "path": "lib/ai/deepseek.ts", "line": 76, "end_line": 145, "label": "generation call" }
+      ]
+    },
+    {
+      "id": "payos",
+      "type": "external",
+      "label": "PayOS",
+      "sublabel": "payment gateway",
+      "tag": "HMAC-SHA256 webhook",
+      "pos": [880, 580],
+      "size": [190, 100],
+      "sources": [
+        { "path": "lib/payments/payos.ts", "line": 67, "end_line": 103, "label": "create link" },
+        { "path": "lib/payments/payos.ts", "line": 163, "end_line": 172, "label": "verify webhook" }
+      ]
+    }
+  ],
+  "connections": [
+    { "id": "reader-ui", "from": "reader", "to": "ui", "label": "HTTPS" },
+    { "id": "ui-auth", "from": "ui", "to": "auth", "label": "sign in", "fromSide": "top", "toSide": "bottom" },
+    { "id": "ui-ai", "from": "ui", "to": "ai", "label": "unlock AI", "variant": "emphasis" },
+    { "id": "ui-readings", "from": "ui", "to": "readings", "label": "save reading" },
+    { "id": "ui-billing", "from": "ui", "to": "billing", "label": "top up" },
+    { "id": "ai-gemini", "from": "ai", "to": "gemini", "label": "prompt + schema" },
+    { "id": "ai-deepseek", "from": "ai", "to": "deepseek", "label": "prompt + JSON mode" },
+    { "id": "ai-db", "from": "ai", "to": "db", "label": "credits · save" },
+    { "id": "readings-db", "from": "readings", "to": "db", "label": "INSERT Reading" },
+    { "id": "billing-db", "from": "billing", "to": "db", "label": "Order · ledger" },
+    { "id": "billing-payos", "from": "billing", "to": "payos", "label": "create link" },
+    {
+      "id": "payos-billing",
+      "from": "payos",
+      "to": "billing",
+      "label": "signed webhook",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [[975, 745], [655, 745]],
+      "labelAt": [815, 733]
+    },
+    { "id": "cron-billing", "from": "cron", "to": "billing", "label": "daily scan", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Reading loop",
+      "items": [
+        "The 78-card shuffle and orientation happen in the browser; only three picked cards are sent.",
+        "saveReadingAction validates the spread, rate-limits to 30 per hour, and stores a Reading row.",
+        "An existing AiInterpretation is returned before any credit is charged.",
+        "10 credits are decremented first; a generation failure refunds them and reports to Sentry."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Credits & payments",
+      "items": [
+        "PayOS links expire after 30 minutes; every Order starts PENDING.",
+        "The webhook verifies an HMAC signature, then re-checks order status and amount before crediting.",
+        "Return-page polling and the 20:00 UTC cron reconcile orders when the webhook is late.",
+        "Email verification grants 20 credits (two unlocks); every balance change writes a ledger row."
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Model routing",
+      "items": [
+        "Prompt versions v1–v7 are frozen in code; v7 is the active version.",
+        "An admin setting picks Gemini, DeepSeek, or a random model per unlock from an allow-list.",
+        "Gemini enforces a response schema; DeepSeek only guarantees JSON mode.",
+        "AiGenerationMetric records latency, tokens, outcome, and quality warnings for every attempt."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Security & operations",
+      "items": [
+        "Auth.js uses JWT sessions; signup stays locked until the email link is opened.",
+        "Role and password changes are re-read from Postgres every five minutes.",
+        "Rate limits for signup, saves, unlocks, checkout, and alerts live in Postgres.",
+        "Admin actions re-check the database role and write AdminAuditLog; Sentry tunnels through /monitoring."
+      ]
+    }
+  ]
+}
