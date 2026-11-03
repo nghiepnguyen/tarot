@@ -7,8 +7,9 @@ const HEIGHT_VAR = "--bottom-bar-height";
 
 /**
  * Thanh hành động dán đáy màn hình. Nó tự đo chiều cao và ghi ra biến CSS
- * `--bottom-bar-height` để những thứ fixed khác (banner consent) biết mà né,
- * thay vì phải hardcode một con số rồi lệch mỗi lần bar đổi nội dung.
+ * `--bottom-bar-height` để layout phía trên biết chừa chỗ, thay vì phải
+ * hardcode một con số rồi lệch mỗi lần bar đổi nội dung. Nó cũng gắn
+ * `data-bottom-bar` lên `<html>` để banner consent biết mà ẩn đi.
  */
 export function BottomBar({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,10 +26,12 @@ export function BottomBar({ children }: { children: ReactNode }) {
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(node);
+    root.dataset.bottomBar = "";
 
     return () => {
       observer.disconnect();
       root.style.removeProperty(HEIGHT_VAR);
+      delete root.dataset.bottomBar;
     };
   }, []);
 
