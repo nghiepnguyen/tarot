@@ -150,6 +150,14 @@ body::after {
   }
 }
 
+/* Bản in không cuộn nên không bao giờ chạy hết timeline: các section đứng ở
+   opacity 0 và trang in ra trống. */
+@media print {
+  .reveal-on-scroll {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;

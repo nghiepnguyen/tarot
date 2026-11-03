@@ -321,17 +321,17 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
     );
   }
 
-  // Khách có thêm thẻ quà: xếp chồng trong một cột hẹp thì trang dài gấp
-  // đôi, nên từ lg thẻ quà sang cột phải cạnh form. Người đã đăng nhập không
-  // có thẻ đó, giữ một cột căn giữa như cũ.
+  // Khách có thêm thẻ quà: từ lg nó sang cột phải cạnh form. Người đã đăng
+  // nhập không có thẻ đó, giữ một cột căn giữa như cũ.
   const heading = (
     <div className={`flex flex-col items-center gap-4 text-center ${isLoggedIn ? "" : "lg:items-start lg:text-left"}`}>
       <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
         Bốc ba lá bài, soi rõ một câu hỏi
       </h1>
-      <p className="max-w-md text-sm text-muted">
-        Nhập câu hỏi của bạn, chọn ba lá và nhận diễn giải cơ bản ngay trên
-        trang, một khoảnh khắc chậm lại để quan sát hoàn cảnh hiện tại.
+      <p className="max-w-[46ch] text-base leading-relaxed text-muted">
+        Xem bài tarot online miễn phí: nhập câu hỏi, chọn ba lá và nhận diễn
+        giải cơ bản ngay trên trang, một khoảnh khắc chậm lại để quan sát hoàn
+        cảnh hiện tại.
       </p>
     </div>
   );
@@ -353,12 +353,14 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
           <div className="w-full max-w-md">{form}</div>
         </>
       ) : (
-        <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
+        // Dưới lg lưới tan ra (contents) để thẻ quà xuống dưới bộ bài, không
+        // chen giữa form và bộ bài.
+        <div className="contents lg:grid lg:w-full lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
           <div className="mx-auto flex w-full max-w-md flex-col gap-10 lg:mx-0 lg:max-w-none">
             {heading}
             {form}
           </div>
-          <div className="mx-auto w-full max-w-md">
+          <div className="order-last mx-auto w-full max-w-md lg:order-none">
             <GuestGiftCard />
           </div>
         </div>

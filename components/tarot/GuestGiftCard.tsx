@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gift, Sparkles } from "lucide-react";
+import { Check, Gift } from "lucide-react";
 import { buttonClasses } from "@/components/ui/Button";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { FREE_TRIAL_UNLOCKS } from "@/lib/ai/interpretation";
@@ -14,7 +14,8 @@ const GUEST_BENEFITS = [
 
 // Một dòng chữ nhạt "đăng nhập để..." thì người ta lướt qua. Thứ khiến họ
 // dừng lại là món quà: nói thẳng con số lượt miễn phí, kể ba điều nhận được,
-// và viền sáng chạy chậm quanh thẻ để mắt tìm tới nó.
+// và viền sáng chạy chậm quanh thẻ để mắt tìm tới nó. Nút ở đây là viền chứ
+// không đặc: nút xanh đặc trên trang chủ dành cho "Bốc 3 lá bài".
 export function GuestGiftCard() {
   const track = (cta: string) =>
     trackEvent("login_prompt_click", { placement: "question_form", cta });
@@ -35,7 +36,7 @@ export function GuestGiftCard() {
         <ul className="flex flex-col gap-2 text-left text-sm text-muted">
           {GUEST_BENEFITS.map((benefit) => (
             <li key={benefit} className="flex items-start gap-2">
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-earth" aria-hidden="true" />
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
               {benefit}
             </li>
           ))}
@@ -45,7 +46,7 @@ export function GuestGiftCard() {
           <Link
             href="/login"
             onClick={() => track("login")}
-            className={buttonClasses("primary", "w-full whitespace-nowrap shadow-md shadow-accent/25")}
+            className={buttonClasses("secondary", "w-full whitespace-nowrap bg-background")}
           >
             Đăng nhập nhận quà
           </Link>

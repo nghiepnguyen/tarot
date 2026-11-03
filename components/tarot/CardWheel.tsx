@@ -366,7 +366,9 @@ export function CardWheel({ size, selectedSlots = [], onSelectSlot }: CardWheelP
   };
 
   return (
-    <div ref={wrapRef} className="flex w-full flex-1 flex-col items-center gap-4">
+    // isolate: lá bài dùng z-index 100+ và nút xoay z-[200]; không gói lại thì
+    // chúng trồi lên trên banner consent (z-50) và hai lớp vẽ đè lên nhau.
+    <div ref={wrapRef} className="isolate flex w-full flex-1 flex-col items-center gap-4">
       <LayoutGroup>
         <div className="flex items-start justify-center gap-4 sm:gap-8">
           {SPREAD_POSITIONS.map((name, i) => {

@@ -10,21 +10,18 @@ const STEPS = [
     Icon: PenLine,
     body:
       "Viết điều bạn đang phân vân về tình yêu, công việc, tài chính hay chuyện phát triển bản thân. Nếu chưa biết hỏi gì, trang có sẵn gợi ý theo từng chủ đề.",
-    offset: "lg:mt-0",
   },
   {
     title: "Bốc ba lá",
     Icon: Shuffle,
     body:
       "Bộ 78 lá được xáo rồi cắt trong khoảng ba giây, sau đó bạn tự chọn ba lá không trùng nhau. Muốn nhanh thì bỏ qua phần xáo bài.",
-    offset: "lg:mt-10",
   },
   {
     title: "Đọc luận giải",
     Icon: ScrollText,
     body:
       "Mỗi lá hiện tên, hình, từ khóa và ý nghĩa cơ bản theo vị trí của nó trong trải bài. Câu hỏi được giữ lại bên cạnh để bạn không mất mạch.",
-    offset: "lg:mt-20",
   },
 ];
 
@@ -36,10 +33,10 @@ export function HowItWorks() {
       </h2>
 
       <div className="grid gap-10 md:grid-cols-3 md:gap-8">
-        {STEPS.map(({ title, Icon, body, offset }) => (
+        {STEPS.map(({ title, Icon, body }) => (
           <div
             key={title}
-            className={`flex flex-col gap-3 border-t border-border pt-6 ${offset}`}
+            className="flex flex-col gap-3 border-t border-border pt-6"
           >
             <Icon
               aria-hidden="true"

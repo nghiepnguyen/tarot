@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { WalletCards } from "lucide-react";
 import { Textarea } from "@/components/ui/Input";
@@ -33,19 +34,28 @@ export function QuestionForm({
 }: QuestionFormProps) {
   const prefersReducedMotion = useReducedMotion();
   const canSubmit = !disabled && question.trim().length > 0;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <Textarea
-        value={question}
-        onChange={(e) => onChange(e.target.value.slice(0, MAX_LENGTH))}
-        placeholder="Nhập câu hỏi mở, tập trung vào bản thân và hướng đến hành động thay vì hỏi kết quả cố định hoặc phán xét người khác."
-        rows={4}
-        maxLength={MAX_LENGTH}
-        aria-label="Câu hỏi của bạn"
-      />
-      <div className="flex items-center justify-between text-sm text-muted">
-        <span>{question.length}/{MAX_LENGTH} ký tự</span>
+      {/* Bộ đếm nằm trong góc ô và chỉ hiện khi đã gõ: một dòng "0/300" riêng
+          dưới ô trống chỉ thêm nhiễu. pb-9 chừa chỗ để chữ không chạy dưới nó. */}
+      <div className="relative">
+        <Textarea
+          ref={textareaRef}
+          className="pb-9"
+          value={question}
+          onChange={(e) => onChange(e.target.value.slice(0, MAX_LENGTH))}
+          placeholder="Nhập câu hỏi mở, tập trung vào bản thân và hướng đến hành động thay vì hỏi kết quả cố định hoặc phán xét người khác."
+          rows={4}
+          maxLength={MAX_LENGTH}
+          aria-label="Câu hỏi của bạn"
+        />
+        {question.length > 0 ? (
+          <span className="pointer-events-none absolute right-4 bottom-3 text-xs text-muted">
+            {question.length}/{MAX_LENGTH}
+          </span>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -72,10 +82,16 @@ export function QuestionForm({
         animate={canSubmit && !prefersReducedMotion ? { scale: [1, 1.05, 1] } : { scale: 1 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
       >
+        {/* Không disable khi câu hỏi trống: nút nhạt màu đứng cạnh nút xanh
+            đặc của thẻ quà thì mắt bỏ qua hành động chính. Bấm khi trống thì
+            onSubmit tự chặn và báo, ở đây chỉ đưa con trỏ về ô nhập. */}
         <Button
           type="button"
-          onClick={onSubmit}
-          disabled={!canSubmit}
+          onClick={() => {
+            if (!canSubmit) textareaRef.current?.focus();
+            onSubmit();
+          }}
+          disabled={disabled}
           className="w-full px-8 py-4 text-base sm:w-auto"
         >
           <WalletCards className="h-5 w-5 shrink-0" aria-hidden="true" />

@@ -34,12 +34,12 @@ export function Hero() {
     <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
       <div className="flex flex-col items-start gap-6">
         <h1 className="text-4xl leading-[1.12] font-semibold tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
-          Xem bài tarot online, ba lá cho một câu hỏi
+          Trải bài tarot ba lá, đọc một câu hỏi qua ba vị trí
         </h1>
 
         <p className="max-w-[46ch] text-base leading-relaxed text-muted sm:text-lg">
-          Nhập câu hỏi, bốc ba lá và đọc luận giải ngay trên trang. Miễn phí,
-          không cần tài khoản.
+          Bối cảnh, Hiện tại và Hướng đi. Nhập câu hỏi, bốc ba lá và đọc luận
+          giải ngay trên trang. Miễn phí, không cần tài khoản.
         </p>
 
         <div className="flex flex-wrap items-center gap-3">

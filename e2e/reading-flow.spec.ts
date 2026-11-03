@@ -21,9 +21,9 @@ test("full reading flow: question -> pick three cards -> reveal", async ({ page 
   await expect(page.getByRole("button", { name: "Trải bài mới" })).toBeVisible();
 });
 
-test("disables the draw button until a question is entered", async ({ page }) => {
+test("drawing with an empty question stays on the form and focuses it", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Bốc 3 lá bài" })).toBeDisabled();
-  await page.getByLabel("Câu hỏi của bạn").fill("Tôi nên làm gì?");
-  await expect(page.getByRole("button", { name: "Bốc 3 lá bài" })).toBeEnabled();
+  await page.getByRole("button", { name: "Bốc 3 lá bài" }).click();
+  await expect(page.getByText("Vui lòng nhập câu hỏi trước khi bốc bài.")).toBeVisible();
+  await expect(page.getByLabel("Câu hỏi của bạn")).toBeFocused();
 });

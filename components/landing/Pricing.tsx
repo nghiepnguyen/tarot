@@ -1,15 +1,16 @@
+import Link from "next/link";
 import type { CreditPackage } from "@prisma/client";
+import { buttonClasses } from "@/components/ui/Button";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS } from "@/lib/ai/interpretation";
+import { formatVnd, pricePerUnlock, savingPercent, unlocksIn } from "@/lib/payments/pricing";
 
 interface PricingProps {
   packages: CreditPackage[];
 }
 
-function formatVnd(amount: number): string {
-  return `${amount.toLocaleString("vi-VN")}đ`;
-}
-
 export function Pricing({ packages }: PricingProps) {
+  const bestSaving = Math.max(0, ...packages.map((pkg) => savingPercent(pkg, packages)));
+
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-col gap-4">
@@ -24,22 +25,39 @@ export function Pricing({ packages }: PricingProps) {
       </div>
 
       {packages.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-6"
-            >
-              <span className="text-sm text-muted">{pkg.name}</span>
-              <span className="text-2xl font-semibold tracking-tight text-foreground">
-                {formatVnd(pkg.priceVnd)}
-              </span>
-              <span className="text-sm text-muted">
-                {pkg.credits} credit, tương đương{" "}
-                {Math.floor(pkg.credits / COST_PER_INTERPRETATION)} lượt diễn giải
-              </span>
-            </div>
-          ))}
+        <div className="flex flex-col gap-6">
+          {/* Hai cột ngay từ mobile: ô ngắn, xếp một cột thì bảng giá dài gấp đôi. */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {packages.map((pkg) => {
+              const saving = savingPercent(pkg, packages);
+              const isBest = saving > 0 && saving === bestSaving;
+              return (
+                <div
+                  key={pkg.id}
+                  className={`flex flex-col gap-1.5 rounded-2xl border p-4 sm:p-6 ${
+                    isBest ? "border-accent bg-sage-tint" : "border-border bg-surface"
+                  }`}
+                >
+                  <span className="text-sm text-muted">{pkg.name}</span>
+                  <span className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                    {formatVnd(pkg.priceVnd)}
+                  </span>
+                  <span className="text-sm text-muted">{unlocksIn(pkg)} lượt diễn giải</span>
+                  <span className="text-xs text-muted">{formatVnd(pricePerUnlock(pkg))}/lượt</span>
+                  {saving > 0 ? (
+                    <span className="mt-1 self-start rounded-full border border-accent px-2 py-0.5 text-xs font-medium text-foreground">
+                      tiết kiệm {saving}%
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mua credit cần tài khoản, nên lối đi tiếp từ bảng giá là đăng ký. */}
+          <Link href="/signup" className={buttonClasses("primary", "self-start whitespace-nowrap")}>
+            Tạo tài khoản, nhận {FREE_TRIAL_UNLOCKS} lượt miễn phí
+          </Link>
         </div>
       ) : (
         // Seed chưa chạy hoặc mọi gói đã tắt: nói thẳng thay vì để một hàng ô trống.

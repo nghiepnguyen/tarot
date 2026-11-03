@@ -8,29 +8,11 @@ import { createOrderAction } from "@/app/actions/payments";
 import { trackEvent } from "@/lib/analytics/gtag";
 import { COST_PER_INTERPRETATION, DEMO_TOPUP_AMOUNT } from "@/lib/ai/interpretation";
 import { SUPPORT_EMAIL } from "@/lib/seo/site";
+import { formatVnd, pricePerUnlock, savingPercent } from "@/lib/payments/pricing";
 
 interface TopUpPanelProps {
   packages: CreditPackage[];
   showDemoTopup?: boolean;
-}
-
-function formatVnd(amount: number): string {
-  return `${amount.toLocaleString("vi-VN")}đ`;
-}
-
-function pricePerUnlock(pkg: CreditPackage): number {
-  return Math.round(pkg.priceVnd / (pkg.credits / COST_PER_INTERPRETATION));
-}
-
-/**
- * Rẻ hơn bao nhiêu phần trăm so với gói đắt nhất tính trên mỗi lượt. Người mua
- * không tự quy đổi credit sang tiền trong đầu được, nên phải nói thẳng gói nào
- * lợi hơn — nếu không thì bốn nút giá khác nhau chỉ là bốn con số rời rạc.
- */
-function savingPercent(pkg: CreditPackage, packages: CreditPackage[]): number {
-  const worst = Math.max(...packages.map(pricePerUnlock));
-  if (worst === 0) return 0;
-  return Math.round((1 - pricePerUnlock(pkg) / worst) * 100);
 }
 
 function CheckIcon() {
