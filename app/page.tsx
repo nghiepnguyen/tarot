@@ -65,10 +65,10 @@ export default async function Home({
       <main id="main-content" className="flex flex-1 flex-col">
         <Section>
           <TarotExperience isLoggedIn={Boolean(session?.user)} />
-        </Section>
-
-        <Section className="border-t border-border">
-          <Disclaimer />
+          {/* Một câu thôi, không đáng một section riêng có viền và py-20. */}
+          <div className="mx-auto mt-10 max-w-[62ch] text-center">
+            <Disclaimer />
+          </div>
         </Section>
       </main>
       <Footer />
