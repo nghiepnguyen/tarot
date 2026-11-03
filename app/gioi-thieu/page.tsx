@@ -16,10 +16,13 @@ import { ClosingCta } from "@/components/landing/ClosingCta";
 
 const PATH = "/gioi-thieu";
 
-const TITLE = "Xem bài tarot online miễn phí | Tarot Reading Web";
+// "Xem bài tarot online" là từ khóa của trang chủ, nơi người ta bốc bài thật.
+// Hai trang cùng nhắm một ý định thì tự giành thứ hạng của nhau, nên trang này
+// nhắm ý định tìm hiểu: trải bài ba lá đọc thế nào, mỗi vị trí nói gì.
+const TITLE = "Trải bài tarot 3 lá: cách đọc từng vị trí | Tarot Reading Web";
 
 const DESCRIPTION =
-  "Trang tarot tiếng Việt: nhập câu hỏi, bốc ba lá trong bộ 78 lá và đọc luận giải ngay. Miễn phí, không cần tài khoản; diễn giải chuyên sâu bằng AI khi bạn cần đọc kỹ hơn.";
+  "Trải bài tarot 3 lá gồm Bối cảnh, Hiện tại và Hướng đi: mỗi vị trí nói gì, và luận giải miễn phí khác diễn giải chuyên sâu bằng AI ra sao.";
 
 export const metadata: Metadata = {
   // absolute: template của layout gắn thêm tên site vào sau, cộng lại thì tiêu

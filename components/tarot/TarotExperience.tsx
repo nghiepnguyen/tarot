@@ -329,8 +329,9 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
         Bốc ba lá bài, soi rõ một câu hỏi
       </h1>
       <p className="max-w-[46ch] text-base leading-relaxed text-muted">
-        Nhập câu hỏi của bạn, chọn ba lá và nhận diễn giải cơ bản ngay trên
-        trang, một khoảnh khắc chậm lại để quan sát hoàn cảnh hiện tại.
+        Xem bài tarot online miễn phí: nhập câu hỏi, chọn ba lá và nhận diễn
+        giải cơ bản ngay trên trang, một khoảnh khắc chậm lại để quan sát hoàn
+        cảnh hiện tại.
       </p>
     </div>
   );
