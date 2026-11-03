@@ -13,10 +13,10 @@ Ghi chú về ảnh: các ảnh full-page có vài thứ **không phải lỗi**
 |---|---|---|---|
 | 1 | P0 (đã sửa) | `/` | Banner cookie che nút "Bốc 3 lá bài" ở cả desktop lẫn mobile |
 | 2 | P0 (đã sửa) | `/` | Ở bước chọn bài trên mobile, bộ bài và banner cookie đè lên nhau |
-| 3 | P1 | `/` | Thứ bậc thị giác bị ngược: nút "Đăng nhập nhận quà" nổi hơn hành động chính |
-| 4 | P1 | `/` | Khoảng trống lớn dưới bộ bài, và section disclaimer quá cao so với một dòng chữ |
-| 5 | P1 | `/` mobile | Thẻ quà chen giữa form câu hỏi và bộ bài |
-| 6 | P1 | `/gioi-thieu` | Landing chưa lần nào cho thấy kết quả sản phẩm (màn luận giải) |
+| 3 | P1 (đã sửa) | `/` | Thứ bậc thị giác bị ngược: nút "Đăng nhập nhận quà" nổi hơn hành động chính |
+| 4 | P1 (đã sửa) | `/` | Khoảng trống lớn dưới bộ bài, và section disclaimer quá cao so với một dòng chữ |
+| 5 | P1 (đã sửa) | `/` mobile | Thẻ quà chen giữa form câu hỏi và bộ bài |
+| 6 | P1 (đã sửa) | `/gioi-thieu` | Landing chưa lần nào cho thấy kết quả sản phẩm (màn luận giải) |
 | 7 | P2 | `/gioi-thieu` | SpreadPositions: ba vị trí ngang hàng nhưng có ba bố cục khác nhau, không đánh số |
 | 8 | P2 | `/gioi-thieu` | Bảng giá chưa có CTA, chưa có gói nổi bật, chưa có giá mỗi lượt |
 | 9 | P2 | `/gioi-thieu` mobile | Trang dài 6560px: bảng giá và thẻ vị trí xếp một cột |
@@ -120,9 +120,8 @@ Ghi chú về ảnh: các ảnh full-page có vài thứ **không phải lỗi**
 ## Thứ tự làm đề xuất
 
 1. ~~Mục 1 và 2~~: đã sửa. Còn một trường hợp: ở màn ngang thấp khoảng 900×700, nút CTA nằm dưới mép màn hình, và khi cuộn lên nó có thể chạm cạnh trái của banner nổi.
-2. Mục 3, 4, 5: chỉnh lại thứ bậc trang chính.
-3. Mục 6: product shot cho landing, phần tốn công nhất nhưng tăng chuyển đổi rõ nhất.
-4. Mục 7–10, rồi mục 11.
+2. ~~Mục 3, 4, 5, 6~~: đã sửa. Nút bốc bài không còn disabled, thẻ quà dùng nút viền, disclaimer nằm dưới bộ bài, trên mobile thẻ quà nằm sau bộ bài, và DeepReading có `ReadingPreview` thay cho ảnh lá bài.
+3. Mục 7–10, rồi mục 11.
 
 ## Chưa kiểm tra
 
