@@ -38,17 +38,24 @@ export function QuestionForm({
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <Textarea
-        ref={textareaRef}
-        value={question}
-        onChange={(e) => onChange(e.target.value.slice(0, MAX_LENGTH))}
-        placeholder="Nhập câu hỏi mở, tập trung vào bản thân và hướng đến hành động thay vì hỏi kết quả cố định hoặc phán xét người khác."
-        rows={4}
-        maxLength={MAX_LENGTH}
-        aria-label="Câu hỏi của bạn"
-      />
-      <div className="flex items-center justify-between text-sm text-muted">
-        <span>{question.length}/{MAX_LENGTH} ký tự</span>
+      {/* Bộ đếm nằm trong góc ô và chỉ hiện khi đã gõ: một dòng "0/300" riêng
+          dưới ô trống chỉ thêm nhiễu. pb-9 chừa chỗ để chữ không chạy dưới nó. */}
+      <div className="relative">
+        <Textarea
+          ref={textareaRef}
+          className="pb-9"
+          value={question}
+          onChange={(e) => onChange(e.target.value.slice(0, MAX_LENGTH))}
+          placeholder="Nhập câu hỏi mở, tập trung vào bản thân và hướng đến hành động thay vì hỏi kết quả cố định hoặc phán xét người khác."
+          rows={4}
+          maxLength={MAX_LENGTH}
+          aria-label="Câu hỏi của bạn"
+        />
+        {question.length > 0 ? (
+          <span className="pointer-events-none absolute right-4 bottom-3 text-xs text-muted">
+            {question.length}/{MAX_LENGTH}
+          </span>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2">

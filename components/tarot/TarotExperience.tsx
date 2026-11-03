@@ -328,7 +328,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
       <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
         Bốc ba lá bài, soi rõ một câu hỏi
       </h1>
-      <p className="max-w-md text-sm text-muted">
+      <p className="max-w-[46ch] text-base leading-relaxed text-muted">
         Nhập câu hỏi của bạn, chọn ba lá và nhận diễn giải cơ bản ngay trên
         trang, một khoảnh khắc chậm lại để quan sát hoàn cảnh hiện tại.
       </p>
