@@ -16,6 +16,7 @@ import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
 import { SAVE_READING_LIMIT_PER_HOUR } from "@/lib/tarot/limits";
 import type { SaveFailureReason } from "@/components/tarot/TarotExperience";
 import { COST_PER_INTERPRETATION, FREE_TRIAL_UNLOCKS, type DisplayInterpretation } from "@/lib/ai/interpretation";
+import { needsReadingSupport } from "@/lib/ai/reading-support";
 
 interface AiUnlockPanelProps {
   readingId: string;
@@ -68,14 +69,37 @@ function SectionHeading({
   );
 }
 
+export function ReadingSupportCard() {
+  return (
+    <Card className="text-left">
+      <div role="status" className="space-y-3">
+        <h4 className="text-lg font-semibold">Ưu tiên an toàn lúc này</h4>
+        <p>
+          <strong>Nếu bạn có nguy cơ tự làm hại mình ngay lúc này</strong>, hãy gọi cấp cứu tại nơi bạn đang ở.
+          Nếu có thể, hãy nhờ một người bạn tin tưởng ở bên hoặc gọi giúp.
+        </p>
+        <p>
+          <strong>Nếu bạn lo người khác có thể tự làm hại họ ngay lúc này</strong>, hãy gọi cấp cứu tại nơi họ đang ở.
+          Nếu có thể, hãy ở bên họ hoặc nhờ người đáng tin cậy ở gần đến hỗ trợ.
+        </p>
+        <p>
+          Nếu chưa chắc tình huống khẩn cấp đến mức nào, bạn vẫn có thể liên hệ nhân viên y tế hoặc nói với một người bạn tin tưởng.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
 export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnlockPanelProps) {
   const [data, setData] = useState<DisplayInterpretation | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [serverSupport, setServerSupport] = useState(false);
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null);
   const [isPending, startTransition] = useTransition();
+  const showSupport = serverSupport || (question !== undefined && needsReadingSupport(question));
 
   useEffect(() => {
-    if (data) return;
+    if (data || showSupport) return;
     let cancelled = false;
     getCreditStatusAction().then((status) => {
       if (!cancelled) setCreditStatus(status);
@@ -83,7 +107,7 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
     return () => {
       cancelled = true;
     };
-  }, [data]);
+  }, [data, showSupport]);
 
   // Ba lá vào đúng ô diễn giải của nó. `perCard[i].position` là tên vị trí do
   // model giữ lại, còn `cards` về theo thứ tự bốc, khớp `SPREAD_POSITIONS` theo
@@ -101,14 +125,14 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
 
   // Impression của panel khoá: mẫu số để tính tỉ lệ chuyển đổi sang unlock.
   useEffect(() => {
-    if (data || !creditStatus) return;
+    if (data || showSupport || !creditStatus) return;
     trackEvent("ai_unlock_view", {
       reading_id: readingId,
       is_free_trial: isOnFreeTrial,
       out_of_credits: outOfCredits,
       credits_left: creditStatus.credits,
     });
-  }, [data, creditStatus, readingId, isOnFreeTrial, outOfCredits]);
+  }, [data, showSupport, creditStatus, readingId, isOnFreeTrial, outOfCredits]);
 
   const handleUnlock = () => {
     setError(null);
@@ -126,6 +150,8 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
           is_free_trial: isOnFreeTrial,
           credits_spent: COST_PER_INTERPRETATION,
         });
+      } else if ("support" in result) {
+        setServerSupport(true);
       } else {
         setError(result.error);
         trackEvent("ai_unlock_error", { reading_id: readingId, error: result.error });
@@ -133,6 +159,8 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
       }
     });
   };
+
+  if (showSupport) return <ReadingSupportCard />;
 
   if (data) {
     return (

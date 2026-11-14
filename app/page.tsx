@@ -64,7 +64,10 @@ export default async function Home({
       <Header />
       <main id="main-content" className="flex flex-1 flex-col">
         <Section>
-          <TarotExperience isLoggedIn={Boolean(session?.user)} />
+          <TarotExperience
+            isLoggedIn={Boolean(session?.user)}
+            canGenerateReflection={process.env.NODE_ENV === "development" && process.env.TAROT_REFLECTION_ENABLED === "1"}
+          />
           {/* Một câu thôi, không đáng một section riêng có viền và py-20. */}
           <div className="mx-auto mt-10 max-w-[62ch] text-center">
             <Disclaimer />

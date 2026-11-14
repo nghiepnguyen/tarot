@@ -1,4 +1,41 @@
 import { test, expect, pickCards, signUpVerifyAndLogIn, uniqueEmail } from "./fixtures";
+import { SPREAD_POSITIONS } from "../lib/tarot/draw";
+
+test("shows accessible support instead of top-up for a high-risk reading", async ({ page }) => {
+  const { PrismaClient } = await import("@prisma/client");
+  const { hash } = await import("bcryptjs");
+  const question = "Tôi đang định tự làm hại mình ngay hôm nay.";
+  const cards = ["death", "the-tower", "the-star"].map((cardId, index) => ({
+    cardId, position: SPREAD_POSITIONS[index], orientation: "upright",
+  }));
+  const db = new PrismaClient();
+  const password = "password123";
+  const user = await db.user.create({
+    data: { email: uniqueEmail("e2e-support"), passwordHash: await hash(password, 4), emailVerifiedAt: new Date() },
+  });
+  try {
+    const reading = await db.reading.create({
+      data: { userId: user.id, question, cards },
+    });
+    await page.goto("/login");
+    await page.getByPlaceholder("Email").fill(user.email);
+    await page.getByPlaceholder("Mật khẩu").fill(password);
+    await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+    await expect(page).toHaveURL("/");
+    await page.goto("/history");
+    const item = page.locator("details").filter({ hasText: question });
+    await item.locator("summary").click();
+    await expect(item.getByRole("status")).toContainText("Ưu tiên an toàn lúc này");
+    await expect(item.getByRole("link", { name: /Nạp thêm/i })).toHaveCount(0);
+    await expect(item.getByRole("button", { name: /Thử lại|Mở khóa diễn giải/i })).toHaveCount(0);
+    expect(await db.creditTransaction.count({ where: { userId: user.id } })).toBe(0);
+    expect(await db.aiInterpretation.count({ where: { readingId: reading.id } })).toBe(0);
+    expect(await db.user.findUniqueOrThrow({ where: { id: user.id } })).toMatchObject({ credits: 0 });
+  } finally {
+    await db.user.delete({ where: { id: user.id } });
+    await db.$disconnect();
+  }
+});
 
 test("unlocking AI without a configured API key shows a clear error with retry", async ({
   page,
@@ -38,7 +75,6 @@ test("unlocking AI without a configured API key shows a clear error with retry",
 test("history renders both v4 and legacy interpretations without another credit spend", async ({ page }) => {
   const { PrismaClient } = await import("@prisma/client");
   const { TAROT_CARDS } = await import("../lib/tarot/cards");
-  const { SPREAD_POSITIONS } = await import("../lib/tarot/draw");
   const email = uniqueEmail("e2e-v4-history");
   await signUpVerifyAndLogIn(page, { name: "Người Xem Lịch Sử", email });
   const db = new PrismaClient();
