@@ -5,6 +5,8 @@ import { ACTIVE_PROMPT_VERSION, PROMPT_VERSIONS } from "@/lib/ai/prompts";
 import { getModelPricing, isPricedModel } from "@/lib/ai/pricing";
 import { AI_MODELS, RANDOM_AI_MODEL_LABEL, RANDOM_AI_MODEL_VALUE } from "@/lib/ai/models";
 import { getActiveAiSelection, getMissingApiKeyEnvs } from "@/lib/ai/settings";
+import { ReflectionSettingForm } from "@/components/admin/ReflectionSettingForm";
+import { isReflectionEnabled } from "@/lib/ai/reflection-setting";
 import { AiModelForm } from "@/components/admin/AiModelForm";
 import { fetchPromptUsage, summarizePromptVersions } from "@/lib/admin/prompt-stats";
 import { fetchQualitySummary } from "@/lib/admin/quality-stats";
@@ -47,10 +49,11 @@ const SAMPLE_CARDS: InterpretationCardInput[] = SPREAD_POSITIONS.map((position, 
 export default async function AdminPromptsPage() {
   await requireAdmin();
 
-  const [usage, selection, quality] = await Promise.all([
+  const [usage, selection, quality, reflectionEnabled] = await Promise.all([
     fetchPromptUsage(prisma),
     getActiveAiSelection(),
     fetchQualitySummary(prisma),
+    isReflectionEnabled(),
   ]);
   const summaries = summarizePromptVersions(PROMPT_VERSIONS, ACTIVE_PROMPT_VERSION.id, usage);
   const reviewSummaries = summaries.filter((row) => row.runs > 0);
@@ -141,6 +144,10 @@ export default async function AdminPromptsPage() {
         note="Có hiệu lực ngay với lượt mở khóa tiếp theo, không cần deploy. Lượt đã sinh giữ nguyên model của chính nó. Mỗi lần đổi ghi một dòng vào Nhật ký."
       >
         <AiModelForm currentId={activeId} options={modelOptions} />
+      </Panel>
+
+      <Panel title="Tạo câu hỏi phản tư">
+        <ReflectionSettingForm enabled={reflectionEnabled} />
       </Panel>
 
       <Panel

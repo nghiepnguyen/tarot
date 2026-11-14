@@ -18,6 +18,7 @@ import {
   RANDOM_AI_MODEL_VALUE,
 } from "@/lib/ai/models";
 import { getActiveAiSelection, setActiveAiModel } from "@/lib/ai/settings";
+import { REFLECTION_SETTING_KEY } from "@/lib/ai/reflection-setting";
 import { reportHandledError } from "@/lib/monitoring/report";
 
 export type AdminActionResult = { ok: true; message: string } | { ok: false; error: string };
@@ -212,4 +213,38 @@ export async function setAiModelAction(formData: FormData): Promise<AdminActionR
     });
     return { ok: false, error: "Không đổi được model. Thử lại sau." };
   }
+}
+
+export async function setReflectionEnabledAction(enabled: boolean): Promise<AdminActionResult> {
+  const admin = await getAdminUser();
+  if (!admin) return DENIED;
+  if (typeof enabled !== "boolean") return { ok: false, error: "Dữ liệu không hợp lệ." };
+  if (enabled && !process.env.GEMINI_API_KEY) {
+    return { ok: false, error: "Máy chủ chưa có GEMINI_API_KEY." };
+  }
+
+  const value = enabled ? "1" : "0";
+  const message = enabled ? "Đã bật tạo câu hỏi phản tư." : "Đã tắt tạo câu hỏi phản tư.";
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.appSetting.upsert({
+        where: { key: REFLECTION_SETTING_KEY },
+        create: { key: REFLECTION_SETTING_KEY, value, updatedBy: admin.id },
+        update: { value, updatedBy: admin.id },
+      });
+      await writeAuditLog(tx, {
+        adminUserId: admin.id,
+        action: "reflection_setting_change",
+        reason: message,
+      });
+    });
+  } catch (error) {
+    reportHandledError(error, { area: "admin-reflection-setting", userId: admin.id });
+    return { ok: false, error: "Không lưu được cài đặt phản tư. Thử lại sau." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/prompts");
+  revalidatePath("/admin/audit");
+  return { ok: true, message };
 }

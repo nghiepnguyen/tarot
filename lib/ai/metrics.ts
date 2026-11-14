@@ -8,7 +8,7 @@ import type { InterpretationCardInput } from "./interpretation";
 import type { PromptVersion } from "./prompts/types";
 import type { AiModel } from "./models";
 
-async function record(data: Prisma.AiGenerationMetricCreateInput) {
+export async function recordAiGenerationMetric(data: Prisma.AiGenerationMetricCreateInput) {
   try { await prisma.aiGenerationMetric.create({ data }); }
   catch { reportHandledError(new Error("AI generation metric persistence failed"), { area: "ai-quality-metrics", extra: { model: data.model, promptVersion: data.promptVersion } }); }
 }
@@ -19,7 +19,7 @@ export async function generateMeasuredInterpretation(question: string, cards: In
   try {
     const generated = await generateInterpretation(question, cards, version, model);
     const quality = generated.quality;
-    await record({
+    await recordAiGenerationMetric({
       promptVersion: version.id, model: model.id, outcome: "success",
       latencyMs: generated.usage.latencyMs ?? Date.now() - start,
       inputTokens: generated.usage.inputTokens, outputTokens: generated.usage.outputTokens, thinkingTokens: generated.usage.thinkingTokens,
@@ -29,7 +29,7 @@ export async function generateMeasuredInterpretation(question: string, cards: In
     });
     return generated;
   } catch (error) {
-    await record({ promptVersion: version.id, model: model.id, outcome: error instanceof InterpretationValidationError ? error.code : "provider_error", latencyMs: Date.now() - start });
+    await recordAiGenerationMetric({ promptVersion: version.id, model: model.id, outcome: error instanceof InterpretationValidationError ? error.code : "provider_error", latencyMs: Date.now() - start });
     throw error;
   }
 }
