@@ -88,7 +88,10 @@ function readRestorableReading(): PendingReading | null {
   return pending;
 }
 
-export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+export function TarotExperience({
+  isLoggedIn = false,
+  canGenerateReflection = false,
+}: { isLoggedIn?: boolean; canGenerateReflection?: boolean }) {
   const [question, setQuestion] = useState("");
   const [status, setStatus] = useState<Status>("question");
   const [pool, setPool] = useState<DrawnCard[]>([]);
@@ -234,6 +237,7 @@ export function TarotExperience({ isLoggedIn = false }: { isLoggedIn?: boolean }
         cards={cards}
         readingId={readingId}
         isLoggedIn={isLoggedIn}
+        canGenerateReflection={canGenerateReflection}
         saveState={saveState}
         onRetrySave={handleRetrySave}
         onReset={handleReset}

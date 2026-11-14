@@ -18,11 +18,13 @@ import { isPricedModel } from "@/lib/ai/pricing";
 import { resolveAiModelForUnlock } from "@/lib/ai/settings";
 import { MissingApiKeyError } from "@/lib/ai/generate";
 import { generateMeasuredInterpretation } from "@/lib/ai/metrics";
+import { needsReadingSupport } from "@/lib/ai/reading-support";
 import { reportHandledError, reportHandledIssue } from "@/lib/monitoring/report";
 import type { StoredCard } from "@/app/actions/readings";
 
 export type UnlockResult =
   | { ok: true; data: DisplayInterpretation }
+  | { ok: false; support: true }
   | { ok: false; error: string };
 
 export async function unlockAiInterpretationAction(readingId: string): Promise<UnlockResult> {
@@ -34,6 +36,7 @@ export async function unlockAiInterpretationAction(readingId: string): Promise<U
     include: { aiInterpretation: { include: { review: true } } },
   });
   if (!reading) return { ok: false, error: "Không tìm thấy lần trải bài này." };
+  if (needsReadingSupport(reading.question)) return { ok: false, support: true };
 
   if (reading.aiInterpretation) {
     return {

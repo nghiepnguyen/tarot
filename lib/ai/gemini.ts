@@ -14,7 +14,7 @@ export { MissingApiKeyError };
 
 let client: GoogleGenAI | undefined;
 
-function getClient(): GoogleGenAI {
+export function getClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new MissingApiKeyError(PROVIDER_API_KEY_ENV.gemini);
   client ??= new GoogleGenAI({ apiKey });

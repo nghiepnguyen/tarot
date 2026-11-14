@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { WalletCards } from "lucide-react";
 import { Textarea } from "@/components/ui/Input";
@@ -35,6 +35,7 @@ export function QuestionForm({
   const prefersReducedMotion = useReducedMotion();
   const canSubmit = !disabled && question.trim().length > 0;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contextHintId = useId();
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -50,6 +51,7 @@ export function QuestionForm({
           rows={4}
           maxLength={MAX_LENGTH}
           aria-label="Câu hỏi của bạn"
+          aria-describedby={contextHintId}
         />
         {question.length > 0 ? (
           <span className="pointer-events-none absolute right-4 bottom-3 text-xs text-muted">
@@ -57,6 +59,10 @@ export function QuestionForm({
           </span>
         ) : null}
       </div>
+
+      <p id={contextHintId} className="text-sm text-muted">
+        Nếu muốn, hãy thêm một việc cụ thể khiến bạn đặt câu hỏi này.
+      </p>
 
       <div className="flex flex-wrap gap-2">
         {TOPIC_SUGGESTIONS.map((topic) => (
