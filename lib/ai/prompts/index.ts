@@ -5,6 +5,8 @@ import { PROMPT_V4 } from "./v4";
 import { PROMPT_V5 } from "./v5";
 import { PROMPT_V6 } from "./v6";
 import { PROMPT_V7 } from "./v7";
+import { PROMPT_V8 } from "./v8";
+import { PROMPT_V8_1 } from "./v8-1";
 import type { PromptVersion } from "./types";
 
 export type { PromptVersion } from "./types";
@@ -17,7 +19,7 @@ export type { PromptVersion } from "./types";
  * không biến mất khỏi database: `/admin/prompts` vẫn thống kê được nó, chỉ
  * đánh dấu là không còn trong registry.
  */
-export const PROMPT_VERSIONS: readonly PromptVersion[] = [PROMPT_V7, PROMPT_V6, PROMPT_V5, PROMPT_V4, PROMPT_V3, PROMPT_V2, PROMPT_V1];
+export const PROMPT_VERSIONS: readonly PromptVersion[] = [PROMPT_V8_1, PROMPT_V8, PROMPT_V7, PROMPT_V6, PROMPT_V5, PROMPT_V4, PROMPT_V3, PROMPT_V2, PROMPT_V1];
 
 /**
  * Bản đang chạy.

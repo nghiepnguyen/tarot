@@ -27,12 +27,13 @@ const VALID_RESULT = {
 };
 
 describe("PROMPT_VERSIONS", () => {
-  it("registers v7 first and activates it", () => {
+  it("registers v8.1 first and keeps v7 active", () => {
     expect(PROMPT_VERSIONS.map(version => version.id).slice(0, 3)).toEqual([
+      "v8.1-2026-11-12",
+      "v8-2026-11-11",
       "v7-2026-10-06",
-      "v6-2026-10-03",
-      "v5-2026-10-02",
     ]);
+    expect(getPromptVersion("v8.1-2026-11-12")).toBe(PROMPT_VERSIONS[0]);
     expect(ACTIVE_PROMPT_VERSION.id).toBe("v7-2026-10-06");
     expect(getPromptVersion("v4-2026-09-30")?.releasedAt).toBe("2026-09-30");
   });
