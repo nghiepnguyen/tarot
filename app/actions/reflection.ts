@@ -6,12 +6,14 @@ import { checkRateLimit } from "@/lib/auth/rate-limit";
 import {
   buildReflectionInput,
   parseReflectionOutput,
+  REFLECTION_METRIC_VERSION,
   REFLECTION_RESPONSE_SCHEMA,
   REFLECTION_SYSTEM_INSTRUCTION,
 } from "@/lib/ai/dynamic-reflection";
+import { isReflectionEnabled } from "@/lib/ai/reflection-setting";
 import { getClient } from "@/lib/ai/gemini";
 import { DEFAULT_AI_MODEL_ID } from "@/lib/ai/models";
-import { estimateAiCostVnd } from "@/lib/ai/pricing";
+import { recordAiGenerationMetric } from "@/lib/ai/metrics";
 import { needsReadingSupport } from "@/lib/ai/reading-support";
 
 type ReflectionResult =
@@ -19,7 +21,7 @@ type ReflectionResult =
   | { status: "disabled" | "invalid" | "support" | "rate_limited" | "fallback" };
 
 export async function generateReflectionAction(question: unknown, cards: unknown): Promise<ReflectionResult> {
-  if (process.env.NODE_ENV !== "development" || process.env.TAROT_REFLECTION_ENABLED !== "1") {
+  if (!(await isReflectionEnabled())) {
     return { status: "disabled" };
   }
 
@@ -62,24 +64,23 @@ export async function generateReflectionAction(question: unknown, cards: unknown
       outputTokens: response.usageMetadata?.candidatesTokenCount ?? null,
       thinkingTokens: response.usageMetadata?.thoughtsTokenCount ?? null,
     };
-    const hasUsage = Object.values(usage).some(value => value !== null);
-    console.info("dynamic-reflection", {
+    await recordAiGenerationMetric({
+      promptVersion: REFLECTION_METRIC_VERSION,
       model,
       outcome: reflection ? "success" : "invalid_output",
       latencyMs: Date.now() - startedAt,
       ...usage,
-      costVnd: hasUsage ? estimateAiCostVnd(usage, model) : null,
     });
     return reflection ? { status: "success", reflection } : { status: "fallback" };
   } catch (error) {
-    console.info("dynamic-reflection", {
+    await recordAiGenerationMetric({
+      promptVersion: REFLECTION_METRIC_VERSION,
       model,
       outcome: signal.aborted || (error instanceof Error && error.name === "TimeoutError") ? "timeout" : "provider_error",
       latencyMs: Date.now() - startedAt,
       inputTokens: null,
       outputTokens: null,
       thinkingTokens: null,
-      costVnd: null,
     });
     return { status: "fallback" };
   }

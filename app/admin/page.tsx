@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/admin";
 import { Badge, DataTable, FilterTabs, PageHeader, Panel, Stat, Td, Th, TextLink, Tr } from "@/components/admin/Panel";
+import { ReflectionUsagePanel } from "@/components/admin/ReflectionUsagePanel";
 import { fetchDashboardRaw, ratio, toFunnel } from "@/lib/admin/metrics";
 import { isPricedModel, sumAiCostVnd } from "@/lib/ai/pricing";
 import { CREDIT_TYPE, CREDIT_TYPES, ORDER_STATUS, ORDER_STATUSES } from "@/lib/admin/labels";
@@ -165,6 +166,8 @@ export default async function AdminDashboardPage({
           href="/admin/prompts"
         />
       </section>
+
+      <ReflectionUsagePanel days={days} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel

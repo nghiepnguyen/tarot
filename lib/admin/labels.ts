@@ -32,5 +32,6 @@ export const AUDIT_ACTION: Record<string, { label: string; tone: Tone }> = {
   credit_adjust: { label: "Chỉnh credit", tone: "danger" },
   order_refund: { label: "Hoàn đơn", tone: "violet" },
   order_reconcile: { label: "Đối soát đơn", tone: "info" },
+  reflection_setting_change: { label: "Bật/tắt phản tư", tone: "info" },
   ai_model_change: { label: "Đổi model AI", tone: "warning" },
 };

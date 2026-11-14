@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { REFLECTION_METRIC_VERSION } from "@/lib/ai/dynamic-reflection";
 
 export interface QualitySummary {
   promptVersion: string; model: string; attempts: number; successes: number;
@@ -15,6 +16,7 @@ export async function fetchQualitySummary(db: PrismaClient): Promise<QualitySumm
       count(*) FILTER (WHERE "outcome" = 'provider_error')::int AS "providerErrors",
       count(*) FILTER (WHERE "overLengthFields" > 0 OR "underLengthFields" > 0)::int AS "lengthWarnings",
       count(*) FILTER (WHERE "duplicateItems" > 0 OR "repeatedSentences" > 0)::int AS "duplicateWarnings"
-    FROM "AiGenerationMetric" GROUP BY "promptVersion", "model" ORDER BY "promptVersion" DESC, "model"
+    FROM "AiGenerationMetric" WHERE "promptVersion" <> ${REFLECTION_METRIC_VERSION}
+    GROUP BY "promptVersion", "model" ORDER BY "promptVersion" DESC, "model"
   `;
 }

@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { isReflectionEnabled } from "@/lib/ai/reflection-setting";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
 import { Header } from "@/components/ui/Header";
@@ -49,7 +50,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{ auth?: string }>;
 }) {
-  const session = await auth();
+  const [session, reflectionEnabled] = await Promise.all([auth(), isReflectionEnabled()]);
   const { auth: authResult } = await searchParams;
 
   return (
@@ -66,7 +67,7 @@ export default async function Home({
         <Section>
           <TarotExperience
             isLoggedIn={Boolean(session?.user)}
-            canGenerateReflection={process.env.NODE_ENV === "development" && process.env.TAROT_REFLECTION_ENABLED === "1"}
+            canGenerateReflection={reflectionEnabled}
           />
           {/* Một câu thôi, không đáng một section riêng có viền và py-20. */}
           <div className="mx-auto mt-10 max-w-[62ch] text-center">
