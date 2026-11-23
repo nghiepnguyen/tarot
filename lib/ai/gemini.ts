@@ -1,8 +1,10 @@
+import { withTimeout } from "./unlock-deadline";
 import "server-only";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { MissingApiKeyError } from "@/lib/ai/errors";
 import {
   GENERATION_TIMEOUT_MS,
+  type GenerationOptions,
   type GeneratedInterpretation,
   type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
@@ -37,9 +39,11 @@ export async function generateInterpretation(
   cards: InterpretationCardInput[],
   version: PromptVersion,
   model: string,
+  options: GenerationOptions = {},
 ): Promise<GeneratedInterpretation> {
   const ai = getClient();
 
+  return withTimeout(Math.min(GENERATION_TIMEOUT_MS, options.timeoutMs ?? GENERATION_TIMEOUT_MS), async signal => {
   const startedAt = Date.now();
   const response = await ai.models.generateContent({
     model,
@@ -51,7 +55,7 @@ export async function generateInterpretation(
         ? { responseJsonSchema: version.responseSchema }
         : { responseSchema: version.responseSchema }),
       thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-      abortSignal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
+      abortSignal: signal,
       httpOptions: { retryOptions: { attempts: 1 } },
     },
   });
@@ -73,4 +77,5 @@ export async function generateInterpretation(
       latencyMs,
     },
   };
+  });
 }

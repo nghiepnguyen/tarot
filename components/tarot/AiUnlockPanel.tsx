@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useCallback, useRef, useState, useTransition, type ReactNode } from "react";
 import { Link2, ListChecks, LockKeyhole, MessageCircleQuestion, Quote, Sparkles } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -10,7 +10,7 @@ import { InterpretationLoader } from "@/components/tarot/InterpretationLoader";
 import { InterpretationReviewBox } from "@/components/tarot/InterpretationReviewBox";
 import { CardNameText } from "@/components/tarot/CardNameText";
 import { trackEvent } from "@/lib/analytics/gtag";
-import { getCreditStatusAction, unlockAiInterpretationAction, type CreditStatus } from "@/app/actions/ai";
+import { getCreditStatusAction, getUnlockStatusAction, unlockAiInterpretationAction, type CreditStatus, type UnlockResult } from "@/app/actions/ai";
 import { buildReadingTeaser, quoteQuestion } from "@/lib/tarot/teaser";
 import { SPREAD_POSITIONS, type DrawnCard } from "@/lib/tarot/draw";
 import { SAVE_READING_LIMIT_PER_HOUR } from "@/lib/tarot/limits";
@@ -90,24 +90,50 @@ export function ReadingSupportCard() {
   );
 }
 
-export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnlockPanelProps) {
+export function AiUnlockPanel(props: AiUnlockPanelProps) {
+  return <UnlockReadingPanel key={props.readingId} {...props} />;
+}
+
+function UnlockReadingPanel({ readingId, initialData, cards, question }: AiUnlockPanelProps) {
   const [data, setData] = useState<DisplayInterpretation | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [canRetry, setCanRetry] = useState(false);
+  const [checking, setChecking] = useState(!initialData);
+  const busy = useRef(false);
   const [serverSupport, setServerSupport] = useState(false);
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null);
   const [isPending, startTransition] = useTransition();
   const showSupport = serverSupport || (question !== undefined && needsReadingSupport(question));
 
+  const applyResult = useCallback((result: UnlockResult) => {
+    if (result.ok) { setData(result.data); setError(null); setCanRetry(false); }
+    else if ("support" in result) setServerSupport(true);
+    else {
+      setError(result.code === "available" ? null : result.error);
+      setCanRetry(result.retryable === true);
+    }
+  }, []);
+  const uncertain = useCallback(() => {
+    setCanRetry(false);
+    setError("Chưa xác nhận được trạng thái. Hãy kiểm tra lại trạng thái hoặc xem lịch sử trước khi mở khóa thêm.");
+  }, []);
+  const refreshCredits = async () => {
+    try { setCreditStatus(await getCreditStatusAction()); }
+    catch { setCreditStatus(null); }
+  };
   useEffect(() => {
     if (data || showSupport) return;
     let cancelled = false;
-    getCreditStatusAction().then((status) => {
-      if (!cancelled) setCreditStatus(status);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [data, showSupport]);
+    void (async () => {
+      try { const result = await getUnlockStatusAction(readingId); if (!cancelled) applyResult(result); }
+      catch { if (!cancelled) uncertain(); }
+      // Status lookup can settle a refund, so read the balance after reconciliation.
+      try { const status = await getCreditStatusAction(); if (!cancelled) setCreditStatus(status); }
+      catch { if (!cancelled) setCreditStatus(null); }
+      finally { if (!cancelled) setChecking(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [readingId, data, showSupport, applyResult, uncertain]);
 
   // Ba lá vào đúng ô diễn giải của nó. `perCard[i].position` là tên vị trí do
   // model giữ lại, còn `cards` về theo thứ tự bốc, khớp `SPREAD_POSITIONS` theo
@@ -135,28 +161,26 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
   }, [data, showSupport, creditStatus, readingId, isOnFreeTrial, outOfCredits]);
 
   const handleUnlock = () => {
+    if (busy.current || !canRetry) return;
+    busy.current = true;
     setError(null);
-    trackEvent("ai_unlock_click", {
-      reading_id: readingId,
-      is_free_trial: isOnFreeTrial,
-      credits_left: creditStatus?.credits,
-    });
+    trackEvent("ai_unlock_click", { reading_id: readingId, is_free_trial: isOnFreeTrial, credits_left: creditStatus?.credits });
     startTransition(async () => {
-      const result = await unlockAiInterpretationAction(readingId);
-      if (result.ok) {
-        setData(result.data);
-        trackEvent("ai_unlock_success", {
-          reading_id: readingId,
-          is_free_trial: isOnFreeTrial,
-          credits_spent: COST_PER_INTERPRETATION,
-        });
-      } else if ("support" in result) {
-        setServerSupport(true);
-      } else {
-        setError(result.error);
-        trackEvent("ai_unlock_error", { reading_id: readingId, error: result.error });
-        getCreditStatusAction().then(setCreditStatus);
-      }
+      try {
+        const result = await unlockAiInterpretationAction(readingId);
+        applyResult(result);
+        trackEvent(result.ok ? "ai_unlock_success" : "ai_unlock_error", { reading_id: readingId });
+      } catch { uncertain(); }
+      finally { await refreshCredits(); busy.current = false; }
+    });
+  };
+  const handleStatusCheck = () => {
+    if (busy.current) return;
+    busy.current = true;
+    startTransition(async () => {
+      try { applyResult(await getUnlockStatusAction(readingId)); }
+      catch { uncertain(); }
+      finally { await refreshCredits(); busy.current = false; }
     });
   };
 
@@ -336,10 +360,20 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
 
   // The generation takes tens of seconds, so the whole panel switches to the
   // loader rather than leaving the CTA sitting there with disabled button text.
-  if (isPending) {
+  if (checking || isPending) {
     return (
       <Card className="text-center">
-        <InterpretationLoader />
+        {checking ? <p role="status">Đang kiểm tra trạng thái…</p> : <InterpretationLoader />}
+      </Card>
+    );
+  }
+
+  if (!canRetry) {
+    return (
+      <Card className="space-y-4 text-center">
+        <p role="status">{error}</p>
+        <Button variant="secondary" onClick={handleStatusCheck}>Kiểm tra trạng thái</Button>
+        <Link href="/history" className="block text-sm text-accent underline">Xem lịch sử</Link>
       </Card>
     );
   }
@@ -380,10 +414,10 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
         </Button>
       )}
 
-      {error && !outOfCredits ? (
+      {error ? (
         <div className="flex items-center gap-3">
           <p className="text-sm text-red-600">{error}</p>
-          <button
+          {!outOfCredits ? <button
             type="button"
             onClick={() => {
               trackEvent("ai_unlock_retry", { reading_id: readingId });
@@ -392,7 +426,7 @@ export function AiUnlockPanel({ readingId, initialData, cards, question }: AiUnl
             className="text-sm text-accent hover:underline"
           >
             Thử lại
-          </button>
+          </button> : null}
         </div>
       ) : null}
     </LockedDeepReading>

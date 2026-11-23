@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { reportHandledError } from "@/lib/monitoring/report";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -27,35 +29,36 @@ export type SaveReadingResult =
 export async function saveReadingAction(
   question: string,
   cards: StoredCard[],
+  requestId: string,
 ): Promise<SaveReadingResult> {
   const session = await auth();
   if (!session?.user) return { ok: false, reason: "unauthenticated" };
-
-  if (
-    !(await checkRateLimit(
-      `save-reading:${session.user.id}`,
-      SAVE_READING_LIMIT_PER_HOUR,
-      60 * 60 * 1000,
-    ))
-  ) {
-    return { ok: false, reason: "rate_limited" };
-  }
-
   const input = parseReadingInput(question, cards);
-  if (!input) {
-    return { ok: false, reason: "invalid" };
-  }
-
-  const reading = await prisma.reading.create({
-    data: {
-      userId: session.user.id,
-      question: input.question,
+  if (!input || !z.uuid().safeParse(requestId).success) return { ok: false, reason: "invalid" };
+  const replay = (row: { id: string; userId: string; question: string; cards: Prisma.JsonValue }): SaveReadingResult => {
+    const stored = parseReadingInput(row.question, row.cards);
+    return row.userId === session.user.id && stored && JSON.stringify(stored) === JSON.stringify(input)
+      ? { ok: true, id: row.id } : { ok: false, reason: "invalid" };
+  };
+  const existing = await prisma.reading.findUnique({ where: { id: requestId } });
+  if (existing) return replay(existing);
+  if (!(await checkRateLimit(`save-reading:${session.user.id}`, SAVE_READING_LIMIT_PER_HOUR, 60 * 60 * 1000))) return { ok: false, reason: "rate_limited" };
+  try {
+    await prisma.reading.create({ data: {
+      id: requestId, userId: session.user.id, question: input.question,
       cards: input.cards as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  revalidatePath("/history");
-  return { ok: true, id: reading.id };
+    } });
+  } catch (error) {
+    // Resolve a duplicate or lost acknowledgement only from the committed owned payload.
+    const committed = await prisma.reading.findUnique({ where: { id: requestId } });
+    if (committed) return replay(committed);
+    throw error;
+  }
+  try { revalidatePath("/history"); }
+  catch {
+    try { reportHandledError(new Error("Saved reading cache refresh failed"), { area: "reading-save", userId: session.user.id, extra: { readingId: requestId } }); } catch { /* The reading is committed. */ }
+  }
+  return { ok: true, id: requestId };
 }
 
 export async function deleteReadingAction(readingId: string) {

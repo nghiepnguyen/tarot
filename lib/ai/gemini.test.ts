@@ -136,3 +136,15 @@ it("preserves numeric total and tool token metadata without guessing missing thi
   expect(usage).toMatchObject({ inputTokens: 100, outputTokens: 20, totalTokens: 125, toolInputTokens: 0 });
   expect(usage.thinkingTokens).toBeUndefined();
 });
+
+it("bounds a hanging provider and aborts the request without a second call", async () => {
+  vi.useFakeTimers();
+  vi.stubEnv("GEMINI_API_KEY", "test-key"); generateContent.mockReset();
+  generateContent.mockImplementationOnce(() => new Promise(() => {}));
+  const promise = generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL, { timeoutMs: 100 });
+  const check = expect(promise).rejects.toMatchObject({ name: "TimeoutError" });
+  await vi.advanceTimersByTimeAsync(100); await check;
+  expect(generateContent).toHaveBeenCalledOnce();
+  expect(generateContent.mock.calls[0][0].config.abortSignal.aborted).toBe(true);
+  vi.useRealTimers();
+});

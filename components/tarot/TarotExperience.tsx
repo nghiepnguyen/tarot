@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { ArcDeck } from "@/components/tarot/ArcDeck";
 import { ShuffleDeck } from "@/components/tarot/ShuffleDeck";
@@ -31,6 +31,7 @@ export type SaveState =
 const PENDING_READING_KEY = "tarot:pendingReading";
 
 interface PendingReading {
+  requestId?: string;
   question: string;
   cards: StoredCard[];
 }
@@ -98,22 +99,32 @@ export function TarotExperience({
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [readingId, setReadingId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
+  const savingRequest = useRef<string | null>(null);
+  const pendingSave = useRef<PendingReading | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const { showToast } = useToast();
 
   // Lưu thất bại thì giữ bài trong sessionStorage — khách đăng nhập xong sẽ
   // được khôi phục, người đã đăng nhập có thể bấm thử lại.
   const persistReading = async (pending: PendingReading) => {
+    pending = { ...pending, requestId: pending.requestId ?? crypto.randomUUID() };
+    if (savingRequest.current === pending.requestId) return null;
+    savingRequest.current = pending.requestId!;
+    pendingSave.current = pending;
+    savePendingReading(pending);
     let result: SaveReadingResult | null = null;
     try {
-      result = await saveReadingAction(pending.question, pending.cards);
+      result = await saveReadingAction(pending.question, pending.cards, pending.requestId!);
     } catch {
       // Lỗi mạng hay lỗi server: xử lý như lưu hụt bên dưới.
     }
+    if (savingRequest.current === pending.requestId) savingRequest.current = null;
+    if (pendingSave.current?.requestId !== pending.requestId) return null;
     if (result?.ok) {
       setReadingId(result.id);
       setSaveState({ status: "idle" });
       clearPendingReading();
+      pendingSave.current = null;
       return result;
     }
     setReadingId(null);
@@ -194,16 +205,17 @@ export function TarotExperience({
   };
 
   const handleReveal = () => {
-    if (selectedSlots.length !== 3) return;
+    if (selectedSlots.length !== 3 || pendingSave.current) return;
     const cards = selectedSlots.map((i) => pool[i]);
     trackEvent("reading_reveal", {
       is_logged_in: isLoggedIn,
       cards: cards.map((drawn) => drawn.card.id).join(","),
       reversed_count: cards.filter((drawn) => drawn.orientation === "reversed").length,
     });
+    setStatus("revealed");
+    if (isLoggedIn) setSaveState({ status: "saving" });
     startTransition(async () => {
       await persistReading({ question, cards: toStoredCards(cards) });
-      setStatus("revealed");
     });
   };
 
@@ -214,7 +226,7 @@ export function TarotExperience({
     });
     setSaveState({ status: "saving" });
     startTransition(async () => {
-      await persistReading({ question, cards: toStoredCards(cards) });
+      await persistReading(pendingSave.current ?? { question, cards: toStoredCards(cards) });
     });
   };
 
@@ -227,6 +239,8 @@ export function TarotExperience({
     setSaveState({ status: "idle" });
     setStatus("question");
     clearPendingReading();
+    pendingSave.current = null;
+    savingRequest.current = null;
   };
 
   if (status === "revealed") {
