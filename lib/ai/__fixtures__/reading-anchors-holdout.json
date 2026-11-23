@@ -1,0 +1,266 @@
+{
+  "frozenRendererHash": "58467f66d2877289d647c0d6d39039d5e272b2b185f737616371e3bf7fbde996",
+  "curationNote": "Independent synthetic holdout curated without reading the frozen renderer, literal templates, or transformed outputs/reviews. Context labels are manually curated evaluation inputs, not claims of automatic semantic routing. Unknown facts are information absent from each question, not asserted facts. Negative contexts intentionally abstain despite matching domain card sets.",
+  "cases": [
+    {
+      "id": "holdout-transfer-1",
+      "question": "Tôi muốn xin sang một nhóm khác trong công ty. Trước khi gửi đề nghị, tôi cần tìm hiểu những điểm nào?",
+      "context": "transfer",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Lý do muốn chuyển",
+        "Yêu cầu của nhóm dự kiến",
+        "Quy trình xin chuyển"
+      ],
+      "relevanceNotes": "Chỉ biết người hỏi muốn xin chuyển nhóm và cần chuẩn bị kiểm tra thông tin trước khi gửi đề nghị; chưa biết động cơ hay điều kiện chuyển."
+    },
+    {
+      "id": "holdout-transfer-2",
+      "question": "Tôi đang chuẩn bị trao đổi về việc chuyển nhóm. Tôi nên xác nhận thông tin gì trước khi chính thức xin chuyển?",
+      "context": "transfer",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Nhóm dự kiến chuyển đến",
+        "Tiêu chí tiếp nhận",
+        "Phản hồi của quản lý"
+      ],
+      "relevanceNotes": "Yêu cầu chính là xác nhận thông tin trước khi xin chuyển nhóm; việc chuẩn bị trao đổi không chứng minh đã được chấp thuận."
+    },
+    {
+      "id": "holdout-drawing-1",
+      "question": "Tôi đã nghỉ vẽ một thời gian và giờ muốn vẽ lại. Trong tuần đầu, tôi nên bắt đầu bằng bài tập nhỏ nào?",
+      "context": "restart_drawing",
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Lý do nghỉ vẽ",
+        "Thời gian có thể dành để vẽ",
+        "Dụng cụ đang có"
+      ],
+      "relevanceNotes": "Đã nghỉ vẽ và muốn bắt đầu lại là dữ kiện được nói rõ; cần chọn bước nhỏ cho tuần đầu, không gán nguyên nhân nghỉ."
+    },
+    {
+      "id": "holdout-drawing-2",
+      "question": "Tuần tới tôi muốn tập vẽ trở lại sau quãng nghỉ. Tôi nên chọn một việc thật nhỏ nào để khởi động?",
+      "context": "restart_drawing",
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Độ dài quãng nghỉ",
+        "Mức kỹ năng hiện tại",
+        "Khung giờ thuận tiện"
+      ],
+      "relevanceNotes": "Người hỏi muốn một việc nhỏ để khởi động vẽ lại trong tuần tới; không có dữ kiện về năng lực hay lịch rảnh."
+    },
+    {
+      "id": "holdout-housework-1",
+      "question": "Bạn ở cùng muốn chuyển buổi dọn nhà cuối tuần sang giờ khác. Tôi nên hỏi rõ những gì trước khi đồng ý?",
+      "context": "housework_schedule",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Giờ mới được đề xuất",
+        "Lịch rảnh của hai bên",
+        "Cách chia phần việc"
+      ],
+      "relevanceNotes": "Có đề nghị đổi giờ dọn nhà cuối tuần; cần làm rõ đề nghị trước khi trả lời, chưa biết lịch cụ thể hoặc từng có bất đồng."
+    },
+    {
+      "id": "holdout-housework-2",
+      "question": "Người cùng nhà vừa đề xuất đổi lịch vệ sinh chung vào cuối tuần. Trước khi trả lời, tôi cần thống nhất thêm điều gì?",
+      "context": "housework_schedule",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Lịch mới cụ thể",
+        "Phạm vi việc chung",
+        "Khả năng tham gia của mỗi người"
+      ],
+      "relevanceNotes": "Đề nghị thay đổi lịch vệ sinh cuối tuần được nêu trực tiếp; không mặc định ai đang làm nhiều hơn hay không giữ lời."
+    },
+    {
+      "id": "holdout-negative-negation",
+      "question": "Tôi không định xin chuyển nhóm. Tôi muốn chuẩn bị bản tổng kết công việc tháng này; nên bắt đầu từ đâu?",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Nội dung công việc trong tháng",
+        "Mẫu tổng kết cần dùng"
+      ],
+      "relevanceNotes": "Phủ định ý định chuyển nhóm; nhiệm vụ chính là chuẩn bị tổng kết công việc nên nhãn ngữ cảnh được chủ động để null."
+    },
+    {
+      "id": "holdout-negative-topic-change",
+      "question": "Chuyện tập vẽ lại để sau. Bây giờ tôi muốn chọn món đơn giản cho bữa tối, nên cân nhắc điều gì?",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Nguyên liệu đang có",
+        "Số người ăn",
+        "Sở thích ăn uống"
+      ],
+      "relevanceNotes": "Người hỏi chuyển rõ sang chọn món cho bữa tối; nhắc vẽ không làm nhiệm vụ hiện tại thành kế hoạch vẽ lại."
+    },
+    {
+      "id": "holdout-negative-quoted",
+      "question": "Trong truyện tôi viết, nhân vật hỏi: “Đổi lịch dọn nhà cuối tuần nhé?” Tôi nên sửa câu thoại này thế nào cho tự nhiên?",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Giọng nói của nhân vật",
+        "Quan hệ giữa các nhân vật",
+        "Bối cảnh đoạn thoại"
+      ],
+      "relevanceNotes": "Đây là câu thoại hư cấu và yêu cầu sửa lời thoại; không có dữ kiện về đề nghị đổi lịch trong đời sống người hỏi."
+    }
+  ]
+}

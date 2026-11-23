@@ -1,0 +1,38 @@
+{
+  "status": "locked",
+  "lockedAt": "2026-11-22T07:32:45.990569+00:00",
+  "method": "human_preference_only",
+  "source": "docs/benchmarks/v9-3-review-2026-11-22/review.md",
+  "sourceHash": "78ef087b0861fe6fc2e0c06f2e8543c53d6658bde8fd36cfb7437ca3523612a5",
+  "userConfirmedComplete": true,
+  "preferences": [
+    {
+      "alias": "P1",
+      "pairId": "6f32698a-6606-440b-81e8-23dd2eae0751",
+      "preference": "B",
+      "scores": null,
+      "flags": null
+    },
+    {
+      "alias": "P2",
+      "pairId": "f14dfe8d-bc21-44af-86f1-459ce44db24b",
+      "preference": "A",
+      "scores": null,
+      "flags": null
+    },
+    {
+      "alias": "P3",
+      "pairId": "eff22c7b-3682-4f58-8626-41cdc0b74ff9",
+      "preference": "A",
+      "scores": null,
+      "flags": null
+    },
+    {
+      "alias": "P4",
+      "pairId": "a4e1490a-7165-4891-a5d5-54a89048f4ba",
+      "preference": "B",
+      "scores": null,
+      "flags": null
+    }
+  ]
+}

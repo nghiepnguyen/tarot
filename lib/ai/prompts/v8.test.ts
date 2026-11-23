@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import type { InterpretationCardInput } from "@/lib/ai/interpretation";
 import { getCardById } from "@/lib/tarot/cards";
 import { SPREAD_POSITIONS } from "@/lib/tarot/draw";
 import { PROMPT_V7 } from "./v7";
 import { PROMPT_V8 } from "./v8";
+import { PROMPT_V8_1 } from "./v8-1";
+import { BENCHMARK_CASES } from "../benchmark-cases";
+import inputHashes from "./__fixtures__/v8-input-hashes.json";
 
 function spread(...ids: string[]): InterpretationCardInput[] {
   return ids.map((id, index) => {
@@ -14,6 +18,23 @@ function spread(...ids: string[]): InterpretationCardInput[] {
 }
 
 const question = "Tôi nên kiểm tra gì trước khi xin chuyển nhóm?";
+
+// Captured before extracting the frozen v8/v8.1 input builder.
+const legacyCases = [
+  ...BENCHMARK_CASES,
+  ...[
+    ["page-of-cups", "queen-of-cups", "king-of-cups"],
+    ["the-fool", "the-world", "the-star"],
+    ["three-of-pentacles", "eight-of-pentacles", "ten-of-pentacles"],
+  ].map((ids, index) => ({ id: `extra-${index}`, question: "Tôi nên làm rõ điều gì?", cards: spread(...ids) })),
+];
+
+it.each(legacyCases)("preserves frozen v8/v8.1 input bytes for $id", ({ id, question, cards }) => {
+  const hashes = [PROMPT_V8, PROMPT_V8_1].map(version =>
+    createHash("sha256").update(version.buildPrompt(question, cards)).digest("hex"),
+  );
+  expect(hashes).toEqual(inputHashes[id as keyof typeof inputHashes]);
+});
 
 describe("PROMPT_V8", () => {
   it("prioritizes the whole suit and limits overlapping observations to two", () => {

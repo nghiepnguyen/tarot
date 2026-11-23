@@ -1,6 +1,8 @@
 /** API thật; chỉ dùng câu hỏi giả định. Không đọc/ghi dữ liệu người dùng hoặc trừ credit. */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createHash, randomUUID } from "node:crypto";
+import { V9_ADDITIONAL_CASES } from "../lib/ai/benchmark-v9-cases";
 import { BENCHMARK_CASES } from "../lib/ai/benchmark-cases";
 import { generateInterpretation } from "../lib/ai/generate";
 import { getAiModel, DEFAULT_AI_MODEL_ID, PROVIDER_API_KEY_ENV } from "../lib/ai/models";
@@ -20,14 +22,23 @@ export async function main(args: string[]) {
   if (!model) throw new Error("Unknown model");
   if (!process.env[PROVIDER_API_KEY_ENV[model.provider]]) throw new Error(`Missing ${PROVIDER_API_KEY_ENV[model.provider]}`);
   const caseId = args.find(a => a.startsWith("--case="))?.slice(7);
-  const cases = caseId ? BENCHMARK_CASES.filter(c => c.id === caseId) : BENCHMARK_CASES;
+  const cases = caseId ? [...BENCHMARK_CASES, ...V9_ADDITIONAL_CASES].filter(c => c.id === caseId) : BENCHMARK_CASES;
   if (cases.length === 0) throw new Error("Unknown benchmark case");
   const limit = Number(args.find(a => a.startsWith("--limit="))?.slice(8) ?? BENCHMARK_CASES.length);
   if (!Number.isInteger(limit) || limit < 1 || limit > BENCHMARK_CASES.length) throw new Error(`limit must be 1–${BENCHMARK_CASES.length}`);
   const fixtures = cases.slice(0, limit);
-  const dir = path.join(".model-compare", `${baseline.id}-vs-${candidate.id}-${model.id}-${new Date().toISOString().replace(/[:.]/g, "-")}`);
+  const dir = path.join(".model-compare", `${baseline.id}-vs-${candidate.id}-${model.id}-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID()}`);
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, "input.json"), JSON.stringify(fixtures, null, 2));
+  await writeFile(path.join(dir, "run.json"), JSON.stringify({
+    baseline: baseline.id, candidate: candidate.id, model: model.id, provider: model.provider,
+    createdAt: new Date().toISOString(), node: process.version,
+    prompts: [baseline, candidate].map(version => ({
+      id: version.id,
+      systemInstructionHash: createHash("sha256").update(version.systemInstruction).digest("hex"),
+      schemaHash: createHash("sha256").update(JSON.stringify(version.responseSchema)).digest("hex"),
+    })),
+  }, null, 2));
   console.log(`OUTPUT ${dir}`);
 
   const run = async (fixture: (typeof fixtures)[number], version: PromptVersion) => {
@@ -37,14 +48,27 @@ export async function main(args: string[]) {
     try {
       generated = await generateInterpretation(fixture.question, fixture.cards, version, model);
     } catch (error) {
-      const code = error instanceof InterpretationValidationError ? error.code : "provider_error";
+      const code = error instanceof InterpretationValidationError ? error.code
+        : error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name) ? "timeout" : "provider_error";
       // Không in lỗi SDK: thông báo có thể chứa key hoặc phản hồi thô.
-      return { ...metadata, ok: false as const, latencyMs: Date.now() - start, error: code };
+      const record = { ...metadata, ok: false as const, latencyMs: Date.now() - start, error: code };
+      await writeFile(path.join(dir, `${fixture.id}--${version.id}.json`), JSON.stringify(record, null, 2));
+      return record;
     }
     const latencyMs = generated.usage.latencyMs ?? Date.now() - start;
     const quality = generated.quality ?? assessInterpretationQuality(generated.result);
-    const costVnd = estimateAiCostVnd({ inputTokens: generated.usage.inputTokens ?? null, outputTokens: generated.usage.outputTokens ?? null, thinkingTokens: generated.usage.thinkingTokens ?? null }, model.id);
-    const record = { ...metadata, ok: true as const, latencyMs, usage: generated.usage, costVnd, quality, result: generated.result };
+    const usage = { ...generated.usage };
+    // Gemini's total includes prompt + candidates + thoughts; no tools are configured here.
+    if (model.provider === "gemini" && usage.thinkingTokens === undefined
+      && [usage.inputTokens, usage.outputTokens, usage.totalTokens].every(tokens => typeof tokens === "number" && Number.isSafeInteger(tokens) && tokens >= 0)
+      && (usage.toolInputTokens === undefined || usage.toolInputTokens === 0)) {
+      const remainder = usage.totalTokens! - usage.inputTokens! - usage.outputTokens!;
+      if (remainder >= 0) usage.thinkingTokens = remainder;
+    }
+    const measured = [usage.inputTokens, usage.outputTokens, usage.thinkingTokens]
+      .every(tokens => typeof tokens === "number" && Number.isSafeInteger(tokens) && tokens >= 0);
+    const costVnd = measured ? estimateAiCostVnd({ inputTokens: usage.inputTokens!, outputTokens: usage.outputTokens!, thinkingTokens: usage.thinkingTokens! }, model.id) : null;
+    const record = { ...metadata, ok: true as const, latencyMs, usage, costVnd, quality, result: generated.result };
     await writeFile(path.join(dir, `${fixture.id}--${version.id}.json`), JSON.stringify(record, null, 2));
     return record;
   };
@@ -57,8 +81,9 @@ export async function main(args: string[]) {
     pairs.push(pair);
     await writeFile(path.join(dir, "results.json"), JSON.stringify(pairs.flat(), null, 2));
     for (const row of pair) console.log(JSON.stringify({ caseId: row.caseId, version: row.version, ok: row.ok, latencyMs: row.latencyMs, ...(row.ok ? { usage: row.usage, costVnd: row.costVnd } : { error: row.error }) }));
+    if (pair.some(row => row.ok ? row.costVnd === null : row.version === candidate.id)) break;
   }
-  const blindReview = fixtures.map((fixture, index) => ({
+  const blindReview = fixtures.slice(0, pairs.length).map((fixture, index) => ({
     caseId: fixture.id,
     topic: fixture.topic,
     question: fixture.question,
@@ -92,6 +117,7 @@ export async function main(args: string[]) {
   await writeFile(path.join(dir, "blind-key.json"), JSON.stringify(blindKey, null, 2));
   const rows = pairs.flat();
   console.log(`COMPLETE ${rows.filter(r => r.ok).length}/${rows.length} ${dir}`);
+  return dir;
 }
 if (typeof require !== "undefined" && require.main === module) {
   main(process.argv.slice(2)).catch(error => {

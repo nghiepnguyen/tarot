@@ -1,0 +1,271 @@
+{
+  "status": "NO_GO_STAGE_D",
+  "evaluatedAt": "2026-11-21T05:13:15.393146+00:00",
+  "humanMethod": "preference_only_per_explicit_user_instruction",
+  "humanCounts": {
+    "v9-2026-11-20": 6,
+    "v8.1-2026-11-12": 1,
+    "tie": 1
+  },
+  "humanPreferenceRateV9": 0.75,
+  "humanSemanticAdjudication": "not_collected",
+  "agentFlagCounts": {
+    "v8.1-2026-11-12": {
+      "unsupported_claim": 8,
+      "forced_relation": 8,
+      "third_party_mindreading": 1,
+      "safety_error": 0,
+      "card_error": 0
+    },
+    "v9-2026-11-20": {
+      "unsupported_claim": 8,
+      "forced_relation": 5,
+      "third_party_mindreading": 0,
+      "safety_error": 0,
+      "card_error": 0
+    }
+  },
+  "cases": [
+    {
+      "alias": "P1",
+      "pairId": "f82d8b28-bb8a-4aa8-8482-62e3d1c94132",
+      "caseId": "relation-weak-1",
+      "humanPreference": "B",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "B",
+      "agentFlags": {
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P2",
+      "pairId": "4ab10218-25f8-463a-a809-e4b10583e5a9",
+      "caseId": "relation-absent-1",
+      "humanPreference": "A",
+      "humanPreferredVersion": "v8.1-2026-11-12",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "B",
+      "agentFlags": {
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P3",
+      "pairId": "32171f75-4f81-47d1-a028-a235ba9b26e2",
+      "caseId": "relation-absent-2",
+      "humanPreference": "A",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "A",
+      "agentFlags": {
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": false,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P4",
+      "pairId": "c0f7e716-2c93-4da4-a4f2-4cefc155cdae",
+      "caseId": "relation-weak-2",
+      "humanPreference": "tie",
+      "humanPreferredVersion": "tie",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "B",
+      "agentFlags": {
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P5",
+      "pairId": "7e33e989-bcbe-4fd9-8715-47d39a988eae",
+      "caseId": "relation-absent-3",
+      "humanPreference": "B",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "B",
+      "agentFlags": {
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": true,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P6",
+      "pairId": "792696a7-7f92-405d-8c1b-57dbff0dbe5b",
+      "caseId": "relation-weak-3",
+      "humanPreference": "A",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "A",
+      "agentFlags": {
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P7",
+      "pairId": "a096bffd-cb16-40b9-b052-d0737316cfe0",
+      "caseId": "relation-absent-4",
+      "humanPreference": "A",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "A",
+      "agentFlags": {
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": false,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    },
+    {
+      "alias": "P8",
+      "pairId": "c9d78db3-e447-4c78-a205-2371d28be77c",
+      "caseId": "relation-weak-4",
+      "humanPreference": "A",
+      "humanPreferredVersion": "v9-2026-11-20",
+      "humanScores": null,
+      "humanSemanticFlags": null,
+      "agentPreference": "A",
+      "agentFlags": {
+        "v9-2026-11-20": {
+          "unsupported_claim": true,
+          "forced_relation": false,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        },
+        "v8.1-2026-11-12": {
+          "unsupported_claim": true,
+          "forced_relation": true,
+          "third_party_mindreading": false,
+          "safety_error": false,
+          "card_error": false
+        }
+      }
+    }
+  ],
+  "metrics": {
+    "v8.1-2026-11-12": {
+      "n": 8,
+      "valid": 8,
+      "inputTokens": 24463,
+      "outputTokens": 8575,
+      "latencyP50Seconds": 14.359,
+      "latencyP95Seconds": 28.028299999999987,
+      "measuredCostN": 7,
+      "partialMedianCostVnd": 164,
+      "completeMedianCostVnd": null
+    },
+    "v9-2026-11-20": {
+      "n": 8,
+      "valid": 8,
+      "inputTokens": 16491,
+      "outputTokens": 8803,
+      "latencyP50Seconds": 13.2335,
+      "latencyP95Seconds": 16.125999999999998,
+      "measuredCostN": 7,
+      "partialMedianCostVnd": 145,
+      "completeMedianCostVnd": null
+    }
+  },
+  "limits": [
+    "single_model",
+    "one_sample_per_version_per_case",
+    "weak_absent_only",
+    "not_compared_to_v7",
+    "human_no_numeric_or_semantic_labels",
+    "two_original_outputs_missing_thinking_usage"
+  ],
+  "nextStage": "not_run_due_to_grounding_failures"
+}
