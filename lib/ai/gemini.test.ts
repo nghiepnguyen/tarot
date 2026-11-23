@@ -125,3 +125,14 @@ describe("generateInterpretation usage", () => {
     await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("invalid_schema");
   });
 });
+
+it("preserves numeric total and tool token metadata without guessing missing thinking", async () => {
+  vi.stubEnv("GEMINI_API_KEY", "test-key");
+  generateContent.mockResolvedValueOnce({
+    text: JSON.stringify(VALID_RESULT),
+    usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 20, totalTokenCount: 125, toolUsePromptTokenCount: 0 },
+  });
+  const { usage } = await generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL);
+  expect(usage).toMatchObject({ inputTokens: 100, outputTokens: 20, totalTokens: 125, toolInputTokens: 0 });
+  expect(usage.thinkingTokens).toBeUndefined();
+});

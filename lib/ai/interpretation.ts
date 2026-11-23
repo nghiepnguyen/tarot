@@ -102,6 +102,9 @@ export interface InterpretationUsage {
   inputTokens?: number;
   outputTokens?: number;
   thinkingTokens?: number;
+  /** Provider-reported totals retained for offline usage reconciliation. */
+  totalTokens?: number;
+  toolInputTokens?: number;
   latencyMs?: number;
 }
 

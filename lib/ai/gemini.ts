@@ -68,6 +68,8 @@ export async function generateInterpretation(
       inputTokens: usage?.promptTokenCount,
       outputTokens: usage?.candidatesTokenCount,
       thinkingTokens: usage?.thoughtsTokenCount,
+      totalTokens: usage?.totalTokenCount,
+      toolInputTokens: usage?.toolUsePromptTokenCount,
       latencyMs,
     },
   };
