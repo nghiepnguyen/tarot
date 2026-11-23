@@ -1,6 +1,6 @@
 # Task list — Giữ v7, bảo toàn credit và lịch sử khi mở khóa AI
 
-Ngày 22/11/2026. Trạng thái: **tasks 0–3 hoàn tất; task 4 hoàn tất code/kiểm thử, còn xác minh duration deploy trước release; tasks 5–7 hoàn tất; task 8 chưa hoàn tất, chưa release**. Baseline: `docs/v7-unlock-credit-task0-baseline-2026-11-22.md`.
+Ngày 22/11/2026; cập nhật 23/11/2026. Trạng thái: **tasks 0–8 đã hoàn tất triển khai/kiểm chứng/bàn giao; chưa phát hành production**. Task4.1 đã có metadata deployed timeout60 tại task8; cutover/migration/cron production còn cần quyết định riêng. Baseline: `docs/v7-unlock-credit-task0-baseline-2026-11-22.md`.
 
 ## Mục tiêu và phạm vi
 
@@ -91,8 +91,8 @@ Trong phạm vi: unlock AI, spend/refund, concurrency/retry, lưu/đọc lịch 
   - [x] 3.8 Kiểm tra trên DB test thật với independent connections/transactions; không dùng khóa RAM hoặc `isPending` UI làm bằng chứng concurrency serverless.
   - **Hoàn thành khi:** có bằng chứng at-most-once settlement/net charge và phối hợp attempt; không tuyên bố “exactly once API call” trong tình huống nhà cung cấp/DB có kết quả không rõ.
 
-- [ ] 4.0 **P1 — Deadline end-to-end và phục hồi khi request bị ngắt.**
-  - [ ] 4.1 Đối chiếu duration config của trang chính/history với môi trường deploy trước release; không mặc định chú thích 60 giây là giới hạn thực tế ở mọi môi trường.
+- [x] 4.0 **P1 — Deadline end-to-end và phục hồi khi request bị ngắt.**
+  - [x] 4.1 Đối chiếu duration config của trang chính/history với môi trường deploy trước release; không mặc định chú thích 60 giây là giới hạn thực tế ở mọi môi trường.
   - [x] 4.2 Đặt ngân sách từ đầu action tới settlement, tính cả DB/metrics/save/refund; chỉ gọi provider khi còn thời gian xử lý kết quả và failure path. Truyền remaining budget theo API hỗ trợ thay vì tăng timeout cho qua test.
   - [x] 4.3 Test provider treo/abort/timeout bằng fake timers và mocks, không chờ 45 giây thật; xác nhận số requests và hành vi retries của cả Gemini/DeepSeek.
   - [x] 4.4 Test metrics persistence hoặc monitoring chậm/lỗi không cản settlement/hoàn tiền hoặc làm result đã commit bị coi là thất bại; giữ telemetry best-effort có giới hạn.
@@ -127,14 +127,14 @@ Trong phạm vi: unlock AI, spend/refund, concurrency/retry, lưu/đọc lịch 
   - [x] 7.5 Rà import graph/build để helpers experimental không bị nối vào production ngoài ý muốn; không đổi prompt output để phục vụ debt cleanup.
   - **Hoàn thành khi:** review được fix credit độc lập, v9.x không tiếp tục rollout và không mất bằng chứng nghiên cứu.
 
-- [ ] 8.0 **Release gate — Kiểm chứng và bàn giao trước khi cân nhắc phát hành.**
-  - [ ] 8.1 Chạy focused tests unlock/credit/providers/metrics/history/registry sau từng thay đổi; tests mới phải chứng minh failure trước fix đối với logic mới, không chỉ mock implementation.
-  - [ ] 8.2 Chạy DB integration suite: rollback debit+spend, rollback refund+ledger, double unlock, insufficient balance concurrency, retry sau commit và recovery idempotency. Ghi rõ DB version/isolation; không khẳng định concurrency safe nếu chỉ mock pass.
-  - [ ] 8.3 Chạy full Vitest, lint, typecheck, Prisma validation/migration checks khi có schema change và build phù hợp; giải thích từng skipped/unavailable check thay vì coi đạt.
-  - [ ] 8.4 Chạy E2E với auth/DB test và provider giả: mở khóa từ trang chính/history, success, insufficient credits, timeout/refund pending, retry/reload và bài legacy. Không gọi API trả phí hoặc dùng DB production.
-  - [ ] 8.5 Fresh code review tập trung money boundary, transaction isolation, fencing/idempotency, post-commit failures và data compatibility; sửa blockers rồi chạy lại checks bị ảnh hưởng.
-  - [ ] 8.6 Báo cáo GO/NO-GO theo invariants: v7 nguyên trạng; không âm/trừ trùng/hoàn trùng; ledger khớp settlement; không provider call khi chưa đủ điều kiện; crash/recovery có bằng chứng. Thiếu recovery/DB proof phải ghi giới hạn release rõ ràng.
-  - [ ] 8.7 Chuẩn bị migration/rollback/observation plan nếu cần; chỉ deploy hoặc áp migration môi trường chung khi có yêu cầu/phê duyệt riêng. Rollback code không được làm mất khả năng settle các attempts đang tồn đọng.
+- [x] 8.0 **Release gate — Kiểm chứng và bàn giao trước khi cân nhắc phát hành.**
+  - [x] 8.1 Chạy focused tests unlock/credit/providers/metrics/history/registry sau từng thay đổi; tests mới phải chứng minh failure trước fix đối với logic mới, không chỉ mock implementation.
+  - [x] 8.2 Chạy DB integration suite: rollback debit+spend, rollback refund+ledger, double unlock, insufficient balance concurrency, retry sau commit và recovery idempotency. Ghi rõ DB version/isolation; không khẳng định concurrency safe nếu chỉ mock pass.
+  - [x] 8.3 Chạy full Vitest, lint, typecheck, Prisma validation/migration checks khi có schema change và build phù hợp; giải thích từng skipped/unavailable check thay vì coi đạt.
+  - [x] 8.4 Chạy E2E với auth/DB test và provider giả: mở khóa từ trang chính/history, success, insufficient credits, timeout/refund pending, retry/reload và bài legacy. Không gọi API trả phí hoặc dùng DB production.
+  - [x] 8.5 Fresh code review tập trung money boundary, transaction isolation, fencing/idempotency, post-commit failures và data compatibility; sửa blockers rồi chạy lại checks bị ảnh hưởng.
+  - [x] 8.6 Báo cáo GO/NO-GO theo invariants: v7 nguyên trạng; không âm/trừ trùng/hoàn trùng; ledger khớp settlement; không provider call khi chưa đủ điều kiện; crash/recovery có bằng chứng. Thiếu recovery/DB proof phải ghi giới hạn release rõ ràng.
+  - [x] 8.7 Chuẩn bị migration/rollback/observation plan nếu cần; chỉ deploy hoặc áp migration môi trường chung khi có yêu cầu/phê duyệt riêng. Rollback code không được làm mất khả năng settle các attempts đang tồn đọng.
   - **Hoàn thành khi:** người review có test evidence, diff đúng phạm vi, đường rollback/recovery rõ; task list xong không tự đồng nghĩa đã deploy.
 
 ## Thứ tự thực hiện đề xuất
@@ -169,7 +169,7 @@ Báo cáo: `docs/v7-unlock-credit-task3-result-2026-11-23.md`. Chỉ DB test, co
 
 Full suite **772 passed/4 skipped**, gồm **25 PostgreSQL tests**; lint/typecheck/diff check đạt, fresh reviewer không phát hiện lỗi quan trọng. Đã kiểm chứng crash trước/sau provider, sau commit và mất acknowledgement giữa recovery, refund bị DB từ chối rồi phục hồi, recovery đồng thời. Container test đã xóa. V7/registry/schema/lịch cron giữ nguyên.
 
-**4.1 còn mở:** truy vấn Vercel chỉ đọc xác nhận Fluid bật nhưng không trả effective function duration; repo 60s chưa đủ chứng minh production. Chưa build/E2E/deploy/kích hoạt cron. Báo cáo: `docs/v7-unlock-credit-task4-result-2026-11-23.md`. Task 4.0 chỉ đánh dấu toàn bộ sau xác minh duration môi trường release; có thể tiếp task 5 trong workspace.
+**Tại thời điểm task4, 4.1 còn mở:** truy vấn project xác nhận Fluid bật nhưng chưa trả function duration; repo60s chưa đủ chứng minh production. Task8 sau đó đọc deployed lambda metadata, xác nhận index/history/RSC timeout60 và đóng 4.1. Chưa build/E2E/deploy/kích hoạt cron. Báo cáo: `docs/v7-unlock-credit-task4-result-2026-11-23.md`. Task 4.0 chỉ đánh dấu toàn bộ sau xác minh duration môi trường release; có thể tiếp task 5 trong workspace.
 
 ## Kết quả task 5 — 23/11/2026
 
@@ -196,3 +196,13 @@ Source graph 42 roots/186 modules xác nhận renderers offline không nối và
 427 raw artifacts task0 và 486 artifacts local đầu task7 được hash/bảo toàn; source/preferences/reports cũ giữ nguyên. Không archive vì chưa xác minh backup bền vững cho untracked/ignored evidence. Báo cáo + commit plan: `docs/v7-unlock-credit-task7-result-2026-11-23.md`; từng file: `docs/v7-unlock-credit-workspace-inventory-2026-11-23.md`.
 
 Không paid calls/production DB/cron/deploy/commit. Task4.1 effective duration vẫn mở; task8 tiếp tục E2E/cutover/release handoff, không tự GO.
+
+## Kết quả task 8 — 23/11/2026
+
+Full **818/818 tests, không skip**, gồm33 PostgreSQL credit cases +4 rate-limit DB cases. Focused168 tests đạt;9 E2E authenticated Next/DB thật +fake DeepSeek HTTP và13 component regressions đạt. Lint/typecheck/Prisma validate/schema diff/defaultTurbopack build đạt. V7/registry/schema/cron pins không đổi.
+
+Fresh review tìm thấy recovery có thể kẹt ở25rowfaults; đã tái hiện RED→GREEN với26charges, rotate metadata guarded/bounded và chạy lại full/build/E2E. Không đổi expiry/credits/ledger; rotation_failed phải escalation. Deployed Vercel index/history vàRSC timeout60 đã xác nhận bằng inspect chỉ đọc;local newrecovery artifact60. Task4.1 đóng,artifactdeploymentmới vẫn phải kiểm tra trước traffic.
+
+Báo cáo invariant matrix/GO-NO-GO: `docs/v7-unlock-credit-task8-result-2026-11-23.md`. Bàn giao migration/cutover/rollback/observation: `docs/v7-unlock-credit-release-handoff-2026-11-23.md`. Local verification PASS; **production NO-GO trước candidate review/commit,old-writer fence/drain,migration được duyệt,Node24 preview smoke vàrecovery owner/schedule**. Task8 hoàn tất đánh giá/bàn giao, không tự phát hành.
+
+Không paid model calls/productionDB/migration/cron/commit/push/deploy. DB test đã dọn;historical v9evidence giữ nguyên. Task7 patches cần thêm task8 corrective patch hoặcfinal reviewed diff;không phát hành snapshot trước fairnessfix.

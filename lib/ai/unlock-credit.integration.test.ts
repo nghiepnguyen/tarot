@@ -383,4 +383,19 @@ describe.skipIf(!url)("durable unlock — independent PostgreSQL connections", (
     expect(JSON.stringify([one, two])).not.toContain("Tổng quan");
   });
 
+  it("does not let a full page of persistently failing refunds starve a newer healthy charge", async () => {
+    const failures: string[] = [];
+    for (let i = 0; i < 25; i++) {
+      const row = await seed(20, "task3-fail-refund"); failures.push(row.userId);
+      await claim(row.userId, row.readingId); await expire(row.readingId);
+      await db!.unlockOperation.update({ where: { readingId: row.readingId }, data: { updatedAt: new Date(2000, 0, 1, 0, 0, i) } });
+    }
+    const healthy = await seed(); await claim(healthy.userId, healthy.readingId); await expire(healthy.readingId);
+    await db!.unlockOperation.update({ where: { readingId: healthy.readingId }, data: { updatedAt: new Date(2001, 0, 1) } });
+    expect(await recoverStaleUnlocks(db!)).toMatchObject({ scanned: 25, failed: 25, refunded: 0 });
+    expect(await recoverStaleUnlocks(peer!)).toMatchObject({ refunded: 1 });
+    expect(await balance(healthy.userId)).toBe(20); expect(await ledger(healthy.userId)).toHaveLength(2);
+    for (const id of failures) { expect(await balance(id)).toBe(10); expect(await ledger(id)).toHaveLength(1); }
+  });
+
 });

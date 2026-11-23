@@ -21,12 +21,26 @@ export async function recoverOwnedUnlock(db: PrismaClient, userId: string, readi
   return { state: confirmed, recovered: true };
 }
 
+/** Move a failed eligible candidate behind untouched work without changing its financial state. */
+async function rotateFailedCandidate(db: PrismaClient, row: Candidate, deadline: UnlockDeadline) {
+  const budget = Math.min(1500, deadline.remainingMs());
+  if (budget <= 100) throw new DOMException("Recovery rotation deadline exceeded", "TimeoutError");
+  const maxWait = Math.min(300, Math.floor(budget / 4));
+  const timeout = Math.min(1000, budget - maxWait);
+  await withTimeout(budget, () => db.$transaction(async tx => {
+    await tx.$queryRaw`SELECT set_config('statement_timeout', ${String(timeout)}, true), set_config('lock_timeout', ${String(Math.min(500, timeout))}, true)`;
+    await tx.$executeRaw`UPDATE "UnlockOperation" SET "updatedAt" = clock_timestamp() AT TIME ZONE 'UTC'
+      WHERE id = ${row.id} AND "attemptToken" = ${row.attemptToken}
+      AND (status = 'REFUND_PENDING' OR (status = 'PROCESSING' AND "expiresAt" <= clock_timestamp()))`;
+  }, { maxWait, timeout }));
+}
+
 /** Candidate scans are hints only; refundUnlock rechecks token, expiry, receipts and result under lock. */
 export async function recoverStaleUnlocks(db: PrismaClient, deadline = new UnlockDeadline(45_000)) {
   const rows = await withTimeout(deadline.remainingMs(), () => db.$queryRaw<Candidate[]>`
     SELECT id, "userId", "readingId", "attemptToken", model, "promptVersion" FROM "UnlockOperation"
     WHERE status = 'REFUND_PENDING' OR (status = 'PROCESSING' AND "expiresAt" <= clock_timestamp())
-    ORDER BY "expiresAt", id LIMIT 25`);
+    ORDER BY "updatedAt", "expiresAt", id LIMIT 25`);
   const result = { scanned: rows.length, refunded: 0, reconciled: 0, skipped: 0, failed: 0, deferred: 0 };
   for (const [index, row] of rows.entries()) {
     if (deadline.remainingMs() < 5000) { result.deferred = rows.length - index; break; }
@@ -38,6 +52,10 @@ export async function recoverStaleUnlocks(db: PrismaClient, deadline = new Unloc
       else result.skipped++;
     } catch {
       result.failed++;
+      try { await rotateFailedCandidate(db, row, deadline); }
+      catch {
+        try { reportHandledError(new Error("Unlock recovery rotation failed"), { area: "ai-unlock-recovery", userId: row.userId, extra: { operationId: row.id, attemptToken: row.attemptToken, readingId: row.readingId, stage: "rotation_failed" } }); } catch { /* Escalation remains best effort. */ }
+      }
       recordUnlockEvent({ operationId: row.id, ...row, event: "recovery_pending", stage: "batch_failure" });
       try { reportHandledError(new Error("Unlock recovery failed"), { area: "ai-unlock-recovery", userId: row.userId, extra: { operationId: row.id, attemptToken: row.attemptToken, readingId: row.readingId, model: row.model, promptVersion: row.promptVersion, stage: "refund_unconfirmed" } }); } catch { /* Reporting cannot prevent later settlements. */ }
     }

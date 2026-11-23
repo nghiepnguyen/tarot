@@ -1,6 +1,6 @@
 # Runbook — sự cố credit khi mở khóa v7
 
-Phạm vi: UnlockOperation/UNLOCK_SPEND/REFUND của AI unlock, không PayOS/top-up/admin grants. Tài liệu chuẩn bị ngày 23/11/2026; chưa kích hoạt production recovery hoặc phát hành fix. Task 4.1 duration, cutover và full E2E/build còn là release gates.
+Phạm vi: UnlockOperation/UNLOCK_SPEND/REFUND của AI unlock, không PayOS/top-up/admin grants. Tài liệu chuẩn bị ngày 23/11/2026; chưa kích hoạt production recovery hoặc phát hành fix. Task8 đã xác minh deployed index/history timeout60 và local build60, build/E2E test đạt; cutover, migration production và kích hoạt recovery vẫn chưa được phép thực hiện. Cần kiểm tra lại duration của release deployment mới trước mở traffic.
 
 ## Nhận diện trạng thái
 
@@ -56,15 +56,17 @@ Fields spendSum/refundSum/net chỉ là các khoản unlock trong phạm vi read
 1. Xác nhận đang dùng schema mới, chỉ một protocol financial writer, DB khỏe và function duration thực tế đủ budget. Nếu chưa đạt, giữ NO-GO.
 2. Xác định operator/scheduler owner, secret và quyền truy cập trước bật lịch. Endpoint riêng `/api/cron/recover-unlocks`, không ghép vào PayOS reconcile-orders. Task4 chỉ chuẩn bị endpoint, vercel.json chưa thêm lịch.
 3. Khi cutover được duyệt, dùng scheduler/HTTP client được phép với bearer secret trong header bảo mật; mỗi batch tối đa 25 candidates, 45s, không gọi provider. Không retry model để chữa một transaction chưa rõ.
-4. HTTP 503/batch failed/deferred không có nghĩa mọi row đã rollback: có thể một số row đã hoàn. Chạy lại guarded recovery bằng token guard khi DB hoạt động; không thực hiện increment thủ công hoặc replay raw SQL settlement.
-5. Kiểm tra lại DB snapshot: confirmed refund có đúng spend/refund receipt, không có result bất ngờ; success không bị refund. Candidate còn sống/stale/quarantine không được ép hoàn.
-6. Nếu thiếu receipt/ownership/result mâu thuẫn, dừng sửa tiền tự động và giao reviewer có quyền điều tra. Không xóa pending record khi DB chưa thể xác nhận.
+4. Batch chọn theo updatedAt/expiresAt/id; row lỗi được cập nhật riêng updatedAt bằng DB UTC dưới token/status/expiry guard để đi ra sau các row chưa thử. Rotation không gia hạn expiresAt, không đổi status hoặc receipts/credits. Nếu metadata rotation không ghi được, có stage rotation_failed: cần operator xử lý DB/backlog, không hứa eventual recovery vô điều kiện.
+5. HTTP 503/batch failed/deferred không có nghĩa mọi row đã rollback: có thể một số row đã hoàn. Chạy lại guarded recovery bằng token guard khi DB hoạt động; không thực hiện increment thủ công hoặc replay raw SQL settlement.
+6. Kiểm tra lại DB snapshot: confirmed refund có đúng spend/refund receipt, không có result bất ngờ; success không bị refund. Candidate còn sống/stale/quarantine không được ép hoàn.
+7. Nếu thiếu receipt/ownership/result mâu thuẫn, dừng sửa tiền tự động và giao reviewer có quyền điều tra. Không xóa pending record khi DB chưa thể xác nhận.
 
 ## Ngưỡng dừng/quan sát trước release
 
 Đây là ngưỡng vận hành đề xuất, **chưa có alert/scheduler được bật tự động**:
 
 - Bất kỳ net charge/refund sai, balance âm, receipt/result/ownership mismatch hoặc quarantine mới: giữ/dừng rollout unlock, bảo toàn evidence, điều tra trước khi tiếp tục.
+- Bất kỳ rotation_failed: giữ rollout và xác nhận khả năng ghi metadata/recovery trước tiếp tục; nếu đang vận hành, báo operator để ngăn backlog bị kẹt. Không lấy updatedAt làm tuổi debit; rotation có thể cập nhật nó, nên tuổi pending phải tính từ expiresAt.
 - Pending quá hạn trên 5 phút hoặc hai batch liên tiếp lỗi/503: báo operator, kiểm tra DB/deadline/recovery; nếu đang rollout thì giữ rollout, không khuyến khích người dùng tạo lượt mới.
 - Evidence report bị truncate hoặc thiếu trang: không đưa kết luận toàn cục; audit phạm vi hẹp hơn.
 - Quan sát riêng generated, persisted-confirmed, refund-confirmed, recovery_pending và tuổi pending từ expiresAt. Không dùng tỷ lệ generation success thay cho persisted unlock success.
