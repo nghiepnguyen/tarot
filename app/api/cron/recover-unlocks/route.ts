@@ -8,8 +8,9 @@ export const maxDuration = 60;
 // Not scheduled in vercel.json until production cutover and recovery ownership are approved.
 export async function GET(request: Request) {
   const headers = { "Cache-Control": "no-store" };
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return NextResponse.json({ ok: false, error: "Chưa cấu hình CRON_SECRET." }, { status: 503, headers });
+  // Dedicated scheduler key takes precedence; an explicitly empty key fails closed.
+  const secret = process.env.UNLOCK_RECOVERY_SECRET ?? process.env.CRON_SECRET;
+  if (!secret) return NextResponse.json({ ok: false, error: "Chưa cấu hình khóa recovery." }, { status: 503, headers });
   if (request.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ ok: false, error: "Không có quyền." }, { status: 401, headers });
   const deadline = new UnlockDeadline(45_000);
   try {

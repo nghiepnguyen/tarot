@@ -74,7 +74,7 @@ test('synthetic provider timeout with failed refund stays pending then authentic
  await db.$executeRaw`UPDATE "UnlockOperation" SET "expiresAt"=clock_timestamp()-interval '1 second' WHERE "readingId"=${reading.id}`;
  await db.$executeRaw`ALTER TABLE "CreditTransaction" DISABLE TRIGGER task8_release_refund_fault`;
  try {
-  for(let i=0;i<2;i++){const response=await request.get('/api/cron/recover-unlocks',{headers:{authorization:'Bearer release-test-only-cron-secret'}});expect(response.status()).toBe(200);}
+  for(let i=0;i<2;i++){const response=await request.get('/api/cron/recover-unlocks',{headers:{authorization:'Bearer release-test-only-dedicated-recovery-key'}});expect(response.status()).toBe(200);}
  }finally{await db.$executeRaw`ALTER TABLE "CreditTransaction" ENABLE TRIGGER task8_release_refund_fault`;}
  await page.getByRole('button',{name:'Kiểm tra trạng thái'}).click();await expect(page.getByText(/Credit đã được hoàn/)).toBeVisible();expect(await balance(user.id)).toBe(20);expect((await ledger(user.id)).map(r=>r.amount)).toEqual([-10,10]);expect(calls()-before).toBe(1);
 });
@@ -94,5 +94,5 @@ test('recovery endpoint rejects unauthorized requests without changing money',as
  const {user,reading}=await seed();
  expect((await reserveUnlock(db,user.id,reading.id,{model:'deepseek-flash',promptVersion:'v7-2026-10-06'})).status).toBe('reserved');
  await db.$executeRaw`UPDATE "UnlockOperation" SET "expiresAt"=clock_timestamp()-interval '1 second' WHERE "readingId"=${reading.id}`;
- const before=calls();expect((await request.get('/api/cron/recover-unlocks')).status()).toBe(401);expect(await balance(user.id)).toBe(10);expect(await ledger(user.id)).toHaveLength(1);expect((await db.unlockOperation.findUniqueOrThrow({where:{readingId:reading.id}})).status).toBe('PROCESSING');expect(calls()).toBe(before);
+ const before=calls();expect((await request.get('/api/cron/recover-unlocks')).status()).toBe(401);expect((await request.get('/api/cron/recover-unlocks',{headers:{authorization:'Bearer release-test-only-cron-secret'}})).status()).toBe(401);expect(await balance(user.id)).toBe(10);expect(await ledger(user.id)).toHaveLength(1);expect((await db.unlockOperation.findUniqueOrThrow({where:{readingId:reading.id}})).status).toBe('PROCESSING');expect(calls()).toBe(before);
 });
