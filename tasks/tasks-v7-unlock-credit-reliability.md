@@ -1,6 +1,6 @@
 # Task list — Giữ v7, bảo toàn credit và lịch sử khi mở khóa AI
 
-Ngày 22/11/2026; cập nhật 23/11/2026. Trạng thái: **tasks 0–8 đã hoàn tất triển khai/kiểm chứng/bàn giao; chưa phát hành production**. Task4.1 đã có metadata deployed timeout60 tại task8; cutover/migration/cron production còn cần quyết định riêng. Baseline: `docs/v7-unlock-credit-task0-baseline-2026-11-22.md`.
+**Cập nhật 27/11/2026.** Tasks 0–8 đã hoàn tất. V7 đã phát hành production, migration và các lượt kiểm thử unlock/PayOS đã đạt. `main` đã đồng bộ nội dung với bản phát hành và Vercel đã bật lại build tự động. Xem [kết quả cutover và các mục theo dõi](../docs/v7-beta-launch-checklist-2026-11-27.md). [Baseline điều tra ngày 22/11](../docs/v7-unlock-credit-task0-baseline-2026-11-22.md).
 
 ## Mục tiêu và phạm vi
 
@@ -10,7 +10,7 @@ Trong phạm vi: unlock AI, spend/refund, concurrency/retry, lưu/đọc lịch 
 
 Đây là task list triển khai, không chốt sẵn một thiết kế DB mới. Task 1 phải chọn cơ chế đủ đáp ứng invariants; không hứa crash-safety chỉ bằng try/catch hoặc khóa trong RAM.
 
-## Bằng chứng hiện tại
+## Bằng chứng trước khi sửa
 
 - `app/actions/ai.ts`: debit → đọc balance → tạo UNLOCK_SPEND đều trước try. Tests hiện tại chứng minh lỗi balance/ledger sau debit không refund; chúng là characterization debt, không phải hành vi cần giữ.
 - Refund tăng balance và ghi REFUND là hai thao tác tách rời. Lỗi ở giữa có thể làm balance/ledger bất nhất.
@@ -203,6 +203,6 @@ Full **818/818 tests, không skip**, gồm33 PostgreSQL credit cases +4 rate-lim
 
 Fresh review tìm thấy recovery có thể kẹt ở25rowfaults; đã tái hiện RED→GREEN với26charges, rotate metadata guarded/bounded và chạy lại full/build/E2E. Không đổi expiry/credits/ledger; rotation_failed phải escalation. Deployed Vercel index/history vàRSC timeout60 đã xác nhận bằng inspect chỉ đọc;local newrecovery artifact60. Task4.1 đóng,artifactdeploymentmới vẫn phải kiểm tra trước traffic.
 
-Báo cáo invariant matrix/GO-NO-GO: `docs/v7-unlock-credit-task8-result-2026-11-23.md`. Bàn giao migration/cutover/rollback/observation: `docs/v7-unlock-credit-release-handoff-2026-11-23.md`. Local verification PASS; **production NO-GO trước candidate review/commit,old-writer fence/drain,migration được duyệt,Node24 preview smoke vàrecovery owner/schedule**. Task8 hoàn tất đánh giá/bàn giao, không tự phát hành.
+Báo cáo invariant matrix/GO-NO-GO: `docs/v7-unlock-credit-task8-result-2026-11-23.md`. Bàn giao migration/cutover/rollback/observation tại thời điểm 23/11: `docs/v7-unlock-credit-release-handoff-2026-11-23.md`. Local verification PASS; **production NO-GO trước candidate review/commit,old-writer fence/drain,migration được duyệt,Node24 preview smoke vàrecovery owner/schedule**. Task8 hoàn tất đánh giá/bàn giao, không tự phát hành.
 
 Không paid model calls/productionDB/migration/cron/commit/push/deploy. DB test đã dọn;historical v9evidence giữ nguyên. Task7 patches cần thêm task8 corrective patch hoặcfinal reviewed diff;không phát hành snapshot trước fairnessfix.

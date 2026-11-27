@@ -1,5 +1,7 @@
 # Bàn giao phát hành — v7 unlock credit reliability
 
+> **Cập nhật 27/11/2026.** Tài liệu dưới đây ghi lại trạng thái chuẩn bị trước cutover. V7 đã mở production. Xem [kết quả thực thi và trạng thái hiện tại](v7-beta-launch-checklist-2026-11-27.md).
+
 Ngày 23/11/2026. **Kiểm chứng cục bộ PASS; production NO-GO trước các bước vận hành bên dưới.** Không có deploy, migration production hoặc cron activation trong task8.
 
 Candidate hiện là workspace chưa commit trên `codex/v7-unlock-credit-reliability`, base HEAD `81998706a409e2c1278217b8c87c552eef8bb622`. Giữ v7, giá 10 credit và source/phiếu v9.x. Không phát hành trực tiếp từ một bản vá task7 cũ: bản sửa recovery fairness và tests/handoff task8 phải đi cùng candidate cuối. `04-task8-release.patch` trong artifacts task8 là phần bổ sung sau A/B/C của task7, không phải standalone patch.
