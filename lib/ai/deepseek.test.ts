@@ -196,3 +196,14 @@ describe("generateInterpretation", () => {
     await expect(generateInterpretation("Câu hỏi?", cards, PROMPT_V4, MODEL)).rejects.toThrow("position_mismatch");
   });
 });
+
+it("bounds a hanging provider and aborts the request without a second call", async () => {
+  vi.useFakeTimers();
+  vi.stubEnv("DEEPSEEK_API_KEY", "test-key"); fetchMock.mockReset();
+  fetchMock.mockImplementationOnce(() => new Promise(() => {}));
+  const promise = generateInterpretation("Câu hỏi?", cards, ACTIVE_PROMPT_VERSION, MODEL, { timeoutMs: 100 });
+  const check = expect(promise).rejects.toMatchObject({ name: "TimeoutError" });
+  await vi.advanceTimersByTimeAsync(100); await check;
+  expect(fetchMock).toHaveBeenCalledOnce(); expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true);
+  vi.useRealTimers();
+});

@@ -38,6 +38,7 @@ model User {
   credits              Int                @default(0)
   freeCreditsGrantedAt DateTime?
   createdAt            DateTime           @default(now())
+  unlockOperations     UnlockOperation[]
   readings             Reading[]
   creditTransactions   CreditTransaction[]
   orders               Order[]
@@ -104,6 +105,7 @@ model CreditTransaction {
   type             CreditTransactionType
   amount           Int
   balanceAfter     Int
+  idempotencyKey   String?               @unique
   relatedReadingId String?
   relatedOrderId   String?
   createdAt        DateTime              @default(now())
@@ -301,4 +303,32 @@ model AiGenerationMetric {
   createdAt         DateTime @default(now())
 
   @@index([promptVersion, model, createdAt])
+}
+
+// No Reading FK: in-flight financial evidence must survive deletion of history.
+enum UnlockOperationStatus {
+  PROCESSING
+  REFUND_PENDING
+  RECONCILE_REQUIRED
+  SUCCEEDED
+  REFUNDED
+}
+
+model UnlockOperation {
+  id               String                @id @default(cuid())
+  readingId        String                @unique
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attemptToken     String                @unique
+  status           UnlockOperationStatus
+  cost             Int
+  model            String
+  promptVersion    String
+  expiresAt        DateTime              @db.Timestamptz(3)
+  interpretationId String?
+  failureCode      String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([status, expiresAt])
 }

@@ -1,0 +1,712 @@
+{
+  "status": "NO_GO_CANDIDATE",
+  "reason": "human_preference_gate_failed",
+  "evaluatedAt": "2026-11-22T07:33:09.472917+00:00",
+  "sourcePromptVersion": "v9-2026-11-20",
+  "controlTransformVersion": "controlled-reading-offline-2026-11-21",
+  "candidateTransformVersion": "constraint-reading-offline-2026-11-22",
+  "humanMethod": "preference_only",
+  "humanPreferredCandidate": 0,
+  "humanPreferredControl": 4,
+  "humanTies": 0,
+  "requiredHumanCandidateWins": 3,
+  "candidateSemanticUsefulnessSpecificityPass": 4,
+  "humanSemanticAdjudication": "not_collected",
+  "preferenceReasons": "not_collected",
+  "holdoutStatus": "not_run_gate_failed",
+  "wholeReadingReleaseStatus": "NO_GO",
+  "generationCalls": 0,
+  "cases": [
+    {
+      "alias": "P1",
+      "pairId": "6f32698a-6606-440b-81e8-23dd2eae0751",
+      "preference": "B",
+      "scores": null,
+      "flags": null,
+      "caseId": "controlled-holdout-housework-2",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "reviewerCandidates": {
+        "constraint-reading-offline-2026-11-22": {
+          "label": "A",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": true,
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "name": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Recognition and accomplishment are recognizable upright themes; application remains optional and does not assert unequal contribution. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed nostalgia is correctly framed as attachment or idealization of the past; no invented personal history. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Roommate proposes changing cleaning schedule for this weekend",
+              "requiredAction": "Clarify the proposed time for this weekend and whether change is one-off.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Only Saturday afternoon is available",
+              "requiredAction": "Check roommate availability within Saturday afternoon; do not imply other user availability.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Shared workload must remain evenly divided",
+              "requiredAction": "Agree on a fair workload measure and task split, rather than merely asking which tasks each person has.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Clarifications precede response",
+              "requiredAction": "Ask before agreeing.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Concrete questions cover every supplied constraint and keep agreement conditional on factual confirmation.",
+          "specificityNotes": "Actions are meaningfully specific to this question, while several other fields use general phrasing."
+        },
+        "controlled-reading-offline-2026-11-21": {
+          "label": "B",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[0:3]",
+              "excerpt": "Hỏi rõ giờ mới",
+              "reason": "Never checks the specific this-weekend Saturday-afternoon-only availability; asking for another convenient hour does not operationalize this fixed window."
+            },
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[1]",
+              "excerpt": "Xác nhận phần việc mỗi người",
+              "reason": "Asking who does which tasks does not preserve evenly shared effort or establish a fairness criterion."
+            }
+          ],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": false,
+          "specificityPass": false,
+          "perCardSpecificity": [
+            {
+              "name": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Recognition and accomplishment are recognizable upright themes; application remains optional and does not assert unequal contribution. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed nostalgia is correctly framed as attachment or idealization of the past; no invented personal history. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Roommate proposes changing cleaning schedule for this weekend",
+              "requiredAction": "Clarify the proposed time for this weekend and whether change is one-off.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            },
+            {
+              "constraint": "Only Saturday afternoon is available",
+              "requiredAction": "Check roommate availability within Saturday afternoon; do not imply other user availability.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Shared workload must remain evenly divided",
+              "requiredAction": "Agree on a fair workload measure and task split, rather than merely asking which tasks each person has.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Clarifications precede response",
+              "requiredAction": "Ask before agreeing.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Some broadly useful questions, but does not satisfy all explicit source constraints; overall usefulness gate fails.",
+          "specificityNotes": "Distinct card symbolism passes per-card specificity, but the overall practical advice could be reused unchanged across materially different constraints."
+        }
+      },
+      "agentPreference": "A",
+      "agentPreferredVariant": "constraint-reading-offline-2026-11-22"
+    },
+    {
+      "alias": "P2",
+      "pairId": "f14dfe8d-bc21-44af-86f1-459ce44db24b",
+      "preference": "A",
+      "scores": null,
+      "flags": null,
+      "caseId": "controlled-holdout-transfer-1",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "reviewerCandidates": {
+        "controlled-reading-offline-2026-11-21": {
+          "label": "A",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[0:3]",
+              "excerpt": "Hỏi đầu mối phụ trách về quy trình, điều kiện và thời điểm xin chuyển nhóm.",
+              "reason": "Omits the outstanding handover entirely, including this-month deadline, receiver, scope, completion criteria and coordination with transfer timing."
+            }
+          ],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": false,
+          "specificityPass": false,
+          "perCardSpecificity": [
+            {
+              "name": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Deliberation and incomplete visibility preserve the upright symbol while avoiding unsupported fear or delay claims. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed persistence and misdirected effort are recognizable; asking about work and learning fit is a cautious practical application. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Considering request to transfer teams",
+              "requiredAction": "Check transfer process, conditions and timing before request.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            },
+            {
+              "constraint": "One outstanding task must be handed over this month",
+              "requiredAction": "Identify receiver, scope and completion criteria, and reconcile transfer timing with this-month handover deadline.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Consider both transfer and handover before sending request",
+              "requiredAction": "Treat transfer and handover as linked planning requirements.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Some broadly useful questions, but does not satisfy all explicit source constraints; overall usefulness gate fails.",
+          "specificityNotes": "Distinct card symbolism passes per-card specificity, but the overall practical advice could be reused unchanged across materially different constraints."
+        },
+        "constraint-reading-offline-2026-11-22": {
+          "label": "B",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": true,
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "name": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Deliberation and incomplete visibility preserve the upright symbol while avoiding unsupported fear or delay claims. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed persistence and misdirected effort are recognizable; asking about work and learning fit is a cautious practical application. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Considering request to transfer teams",
+              "requiredAction": "Check transfer process, conditions and timing before request.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "One outstanding task must be handed over this month",
+              "requiredAction": "Identify receiver, scope and completion criteria, and reconcile transfer timing with this-month handover deadline.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Consider both transfer and handover before sending request",
+              "requiredAction": "Treat transfer and handover as linked planning requirements.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Concrete questions cover every supplied constraint and keep agreement conditional on factual confirmation.",
+          "specificityNotes": "Actions are meaningfully specific to this question, while several other fields use general phrasing."
+        }
+      },
+      "agentPreference": "B",
+      "agentPreferredVariant": "constraint-reading-offline-2026-11-22"
+    },
+    {
+      "alias": "P3",
+      "pairId": "eff22c7b-3682-4f58-8626-41cdc0b74ff9",
+      "preference": "A",
+      "scores": null,
+      "flags": null,
+      "caseId": "controlled-holdout-housework-1",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "reviewerCandidates": {
+        "controlled-reading-offline-2026-11-21": {
+          "label": "A",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[0:3]",
+              "excerpt": "Nếu giờ được đề xuất chưa phù hợp, nêu một giờ khác bạn có thể thu xếp.",
+              "reason": "Generic scheduling does not explicitly protect the already occupied Sunday morning."
+            },
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[1]",
+              "excerpt": "Xác nhận phần việc mỗi người",
+              "reason": "No estimate or scope negotiation checks the maximum one-hour limit for the user’s own work."
+            }
+          ],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": false,
+          "specificityPass": false,
+          "perCardSpecificity": [
+            {
+              "name": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Recognition and accomplishment are recognizable upright themes; application remains optional and does not assert unequal contribution. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed nostalgia is correctly framed as attachment or idealization of the past; no invented personal history. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Roommate proposes changing weekend cleaning schedule",
+              "requiredAction": "Clarify proposed weekend time and whether one-off.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            },
+            {
+              "constraint": "Existing Sunday morning appointment",
+              "requiredAction": "Exclude Sunday morning when checking proposed time.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Maximum one hour for own cleaning share",
+              "requiredAction": "Estimate own task scope and duration against the one-hour cap, renegotiating scope if necessary.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Clarify before answering",
+              "requiredAction": "Obtain mutual confirmation before agreeing.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Some broadly useful questions, but does not satisfy all explicit source constraints; overall usefulness gate fails.",
+          "specificityNotes": "Distinct card symbolism passes per-card specificity, but the overall practical advice could be reused unchanged across materially different constraints."
+        },
+        "constraint-reading-offline-2026-11-22": {
+          "label": "B",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": true,
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "name": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Recognition and accomplishment are recognizable upright themes; application remains optional and does not assert unequal contribution. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed nostalgia is correctly framed as attachment or idealization of the past; no invented personal history. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Roommate proposes changing weekend cleaning schedule",
+              "requiredAction": "Clarify proposed weekend time and whether one-off.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Existing Sunday morning appointment",
+              "requiredAction": "Exclude Sunday morning when checking proposed time.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Maximum one hour for own cleaning share",
+              "requiredAction": "Estimate own task scope and duration against the one-hour cap, renegotiating scope if necessary.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Clarify before answering",
+              "requiredAction": "Obtain mutual confirmation before agreeing.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Concrete questions cover every supplied constraint and keep agreement conditional on factual confirmation.",
+          "specificityNotes": "Actions are meaningfully specific to this question, while several other fields use general phrasing."
+        }
+      },
+      "agentPreference": "B",
+      "agentPreferredVariant": "constraint-reading-offline-2026-11-22"
+    },
+    {
+      "alias": "P4",
+      "pairId": "a4e1490a-7165-4891-a5d5-54a89048f4ba",
+      "preference": "B",
+      "scores": null,
+      "flags": null,
+      "caseId": "controlled-holdout-transfer-2",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "reviewerCandidates": {
+        "constraint-reading-offline-2026-11-22": {
+          "label": "A",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": true,
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "name": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Deliberation and incomplete visibility preserve the upright symbol while avoiding unsupported fear or delay claims. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed persistence and misdirected effort are recognizable; asking about work and learning fit is a cautious practical application. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Considering team transfer before proposing it",
+              "requiredAction": "Check transfer process and role requirements.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Wants continued use of current skills",
+              "requiredAction": "Identify target-team tasks that actually use existing skills without inventing what the skills are.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            },
+            {
+              "constraint": "Only two sessions weekly for additional learning",
+              "requiredAction": "Check training cadence and session duration against two-session weekly availability.",
+              "meaningfullyAddressed": true,
+              "notes": "Actions explicitly turn this into a check or coordination step; this is more than quote repetition."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Concrete questions cover every supplied constraint and keep agreement conditional on factual confirmation.",
+          "specificityNotes": "Actions are meaningfully specific to this question, while several other fields use general phrasing."
+        },
+        "controlled-reading-offline-2026-11-21": {
+          "label": "B",
+          "fieldsReviewed": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[*].position",
+            "perCard[*].keyMessage",
+            "perCard[*].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[1]",
+              "excerpt": "hỏi về nhiệm vụ thường gặp và cách hỗ trợ người cần học kỹ năng mới",
+              "reason": "Does not check which duties continue using existing skills; generic role information is insufficient for this stated preference."
+            },
+            {
+              "category": "constraint_omission",
+              "field": "actionSuggestions[1]",
+              "excerpt": "Sau đó đối chiếu câu trả lời với một hoặc hai tiêu chí bạn muốn tìm hiểu.",
+              "reason": "Leaves the supplied two-sessions-per-week learning limit unspecified: no training cadence, session duration or compatibility check."
+            }
+          ],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "contradictionPass": true,
+          "usefulnessPass": false,
+          "specificityPass": false,
+          "perCardSpecificity": [
+            {
+              "name": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Quiet reflection and personal criteria match upright introspection; preparation is a suggestion rather than a diagnosis. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Deliberation and incomplete visibility preserve the upright symbol while avoiding unsupported fear or delay claims. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            },
+            {
+              "name": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "meaningSpecificityPass": true,
+              "positionApplicationPass": true,
+              "notes": "Reversed persistence and misdirected effort are recognizable; asking about work and learning fit is a cautious practical application. Application is fairly general; symbolic specificity is stronger than personalized per-card guidance."
+            }
+          ],
+          "constraintNotes": [
+            {
+              "constraint": "Considering team transfer before proposing it",
+              "requiredAction": "Check transfer process and role requirements.",
+              "meaningfullyAddressed": true,
+              "notes": "Generic questions address the broad request context."
+            },
+            {
+              "constraint": "Wants continued use of current skills",
+              "requiredAction": "Identify target-team tasks that actually use existing skills without inventing what the skills are.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            },
+            {
+              "constraint": "Only two sessions weekly for additional learning",
+              "requiredAction": "Check training cadence and session duration against two-session weekly availability.",
+              "meaningfullyAddressed": false,
+              "notes": "Not operationalized by the generic questions."
+            }
+          ],
+          "semanticNotes": "No affirmative unsupported personal facts, mindreading, loaded premise, forced causal relation or prediction found in any supplied field. Negative disclaimers reject rather than assert those premises. Card labels, order, positions and orientations match source metadata. Omissions are usefulness/specificity failures, not factual contradictions.",
+          "usefulnessNotes": "Some broadly useful questions, but does not satisfy all explicit source constraints; overall usefulness gate fails.",
+          "specificityNotes": "Distinct card symbolism passes per-card specificity, but the overall practical advice could be reused unchanged across materially different constraints."
+        }
+      },
+      "agentPreference": "A",
+      "agentPreferredVariant": "constraint-reading-offline-2026-11-22"
+    }
+  ],
+  "validation": {
+    "latestRecordedTestsPassed": 696,
+    "testsSkipped": 4,
+    "lint": "previously_passed_matching_frozen_sources",
+    "typecheck": "previously_passed_matching_frozen_sources",
+    "diffCheck": "passed",
+    "sourceHashesVerifiedUnchanged": true,
+    "testsRerunThisTurn": false
+  }
+}

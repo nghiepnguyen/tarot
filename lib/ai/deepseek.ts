@@ -1,7 +1,9 @@
+import { withTimeout } from "./unlock-deadline";
 import "server-only";
 import { MissingApiKeyError } from "@/lib/ai/errors";
 import {
   GENERATION_TIMEOUT_MS,
+  type GenerationOptions,
   type GeneratedInterpretation,
   type InterpretationCardInput,
 } from "@/lib/ai/interpretation";
@@ -78,9 +80,11 @@ export async function generateInterpretation(
   cards: InterpretationCardInput[],
   version: PromptVersion,
   model: string,
+  options: GenerationOptions = {},
 ): Promise<GeneratedInterpretation> {
   const apiKey = getApiKey();
 
+  return withTimeout(Math.min(GENERATION_TIMEOUT_MS, options.timeoutMs ?? GENERATION_TIMEOUT_MS), async signal => {
   const startedAt = Date.now();
   const response = await fetch(API_URL, {
     method: "POST",
@@ -103,7 +107,7 @@ export async function generateInterpretation(
     }),
     // Không có vòng thử lại, có chủ đích: thử lại hai lần là ba lượt 45 giây,
     // vượt `maxDuration` đúng theo cách timeout sinh ra để tránh.
-    signal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
+    signal: signal,
   });
 
   if (!response.ok) {
@@ -153,4 +157,5 @@ export async function generateInterpretation(
       latencyMs,
     },
   };
+  });
 }

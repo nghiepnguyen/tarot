@@ -1,0 +1,267 @@
+{
+  "frozenRendererHash": "e04ac815b5a53c3d648d40d87bffb76234e942e81cad47cefc87e806f242925b",
+  "curationNote": "Independent synthetic v9.2 holdout curated using only the three permitted prior question fixtures to avoid duplicates; no renderer, templates, design, generated outputs, reviews, or human choices were read. Positive contexts and negative null contexts are manually curated evaluation inputs, not automatic routing results. Known constraints are explicit in questions; unknownFacts lists only absent information. Six positives cover supported guidance intents, while three manual negatives test negation, fictional quotation, and an unsupported exact scheduling request.",
+  "cases": [
+    {
+      "id": "controlled-holdout-transfer-1",
+      "question": "Tôi muốn xin chuyển sang nhóm khác nhưng còn một đầu việc phải bàn giao trong tháng này. Trước khi gửi yêu cầu, tôi nên tìm hiểu gì để cân nhắc cả việc chuyển và bàn giao?",
+      "context": "transfer",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Thời điểm nhóm mới có thể tiếp nhận",
+        "Yêu cầu của vai trò mới",
+        "Người nhận và tiêu chí hoàn tất bàn giao"
+      ],
+      "relevanceNotes": "Có ý định xin chuyển nhóm và có đầu việc cần bàn giao trong tháng; hướng dẫn cần lưu ý ràng buộc này mà không tự đặt ngày chuyển hoặc khẳng định được chấp thuận."
+    },
+    {
+      "id": "controlled-holdout-transfer-2",
+      "question": "Tôi đang cân nhắc xin chuyển nhóm; tôi muốn tiếp tục dùng kỹ năng hiện tại và chỉ có hai buổi mỗi tuần để học thêm. Tôi cần kiểm tra thông tin nào trước khi đề nghị?",
+      "context": "transfer",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Kỹ năng hiện tại cụ thể",
+        "Nhu cầu kỹ năng và đào tạo của nhóm mới",
+        "Quy trình xét chuyển nội bộ"
+      ],
+      "relevanceNotes": "Ý định là kiểm tra trước khi xin chuyển; mong muốn dùng kỹ năng hiện có và giới hạn hai buổi học mỗi tuần đều đã được cung cấp, không được coi là chưa biết hoặc bảo đảm đáp ứng yêu cầu."
+    },
+    {
+      "id": "controlled-holdout-drawing-1",
+      "question": "Tôi muốn cầm bút vẽ lại sau mấy tháng nghỉ; hiện chỉ có bút chì, giấy nháp và mười phút sau bữa tối. Tuần đầu tôi nên thử bài tập nhỏ nào với những thứ này?",
+      "context": "restart_drawing",
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Trình độ vẽ hiện tại",
+        "Chủ đề thích vẽ",
+        "Nguyên nhân nghỉ vẽ"
+      ],
+      "relevanceNotes": "Cần bài tập khởi động tuần đầu phù hợp bút chì, giấy nháp và mười phút sau bữa tối; không cần giả định phải mua dụng cụ hoặc biết lý do nghỉ."
+    },
+    {
+      "id": "controlled-holdout-drawing-2",
+      "question": "Sau quãng nghỉ, tôi muốn tập vẽ trở lại trong tuần đầu nhưng chỉ rảnh ba tối, mỗi tối khoảng mười lăm phút. Tôi thích vẽ đồ vật trong nhà; nên chọn bài tập nhỏ nào?",
+      "context": "restart_drawing",
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Mức kỹ năng hiện tại",
+        "Đồ vật cụ thể muốn vẽ",
+        "Dụng cụ đang có"
+      ],
+      "relevanceNotes": "Ba tối, mỗi tối mười lăm phút và sở thích đồ vật trong nhà là dữ kiện; bài tập cần nhỏ và không mặc định phải luyện mỗi ngày."
+    },
+    {
+      "id": "controlled-holdout-housework-1",
+      "question": "Bạn cùng nhà đề nghị đổi lịch dọn dẹp cuối tuần; tôi đã có hẹn sáng Chủ nhật và chỉ muốn dành tối đa một giờ cho phần việc của mình. Tôi nên hỏi rõ gì trước khi trả lời?",
+      "context": "housework_schedule",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Khung giờ thay thế bạn đề xuất",
+        "Phần việc và thời lượng mỗi bên",
+        "Lịch rảnh còn lại của bạn cùng nhà"
+      ],
+      "relevanceNotes": "Yêu cầu là làm rõ trước khi trả lời đề nghị; cần tôn trọng lịch hẹn sáng Chủ nhật và giới hạn một giờ, không tự chốt lịch hoặc suy đoán mâu thuẫn."
+    },
+    {
+      "id": "controlled-holdout-housework-2",
+      "question": "Bạn cùng nhà muốn đổi lịch lau dọn cuối tuần này, còn tôi chỉ tham gia được chiều thứ Bảy và muốn giữ phần việc chung chia đều. Trước khi phản hồi, tôi cần xác nhận thêm gì?",
+      "context": "housework_schedule",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": true,
+      "unknownFacts": [
+        "Giờ mới bạn cùng nhà muốn đổi sang",
+        "Danh sách và thời lượng việc chung",
+        "Khả năng tham gia chiều thứ Bảy của bạn cùng nhà"
+      ],
+      "relevanceNotes": "Chiều thứ Bảy là khung giờ người hỏi có thể tham gia và chia đều là mong muốn đã nêu; cần xác nhận thay vì suy ra hai bên đều rảnh hoặc đã chia việc không công bằng."
+    },
+    {
+      "id": "controlled-holdout-negative-negation",
+      "question": "Tôi không muốn xin chuyển nhóm; tôi cần chuẩn bị lời giới thiệu ngắn cho buổi đón đồng nghiệp mới. Tôi nên chọn những thông tin nào về công việc của mình?",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Vai trò công việc cụ thể",
+        "Thời lượng lời giới thiệu",
+        "Nhu cầu thông tin của đồng nghiệp mới"
+      ],
+      "relevanceNotes": "MANUAL null: nhãn do người biên soạn chủ động đặt, không phải kết quả định tuyến tự động. Ý định chuyển nhóm bị phủ định; nhiệm vụ thực là chọn thông tin cho lời giới thiệu."
+    },
+    {
+      "id": "controlled-holdout-negative-quoted",
+      "question": "Tôi đang sửa truyện, nhân vật hỏi: “Nghỉ vẽ lâu rồi, tuần đầu nên tập gì nhỉ?” Tôi muốn biến câu thoại này thành lời kể ngôi thứ ba; nên viết thế nào?",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "the-star",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-pentacles",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "page-of-wands",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Giọng văn của truyện",
+        "Tên và đặc điểm nhân vật",
+        "Đoạn văn trước sau câu thoại"
+      ],
+      "relevanceNotes": "MANUAL null: nhãn do người biên soạn chủ động đặt, không phải kết quả định tuyến tự động. Câu hỏi tập vẽ là lời nhân vật hư cấu; nhiệm vụ thật là chuyển câu thoại thành lời kể."
+    },
+    {
+      "id": "controlled-holdout-negative-specific-schedule",
+      "question": "Bạn cùng nhà đề nghị đổi lịch dọn dẹp cuối tuần. Hãy xác định chính xác ngày và giờ mà cả hai đều rảnh để tôi trả lời, dù tôi chưa cung cấp lịch của ai.",
+      "context": null,
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "expectedApplied": false,
+      "unknownFacts": [
+        "Lịch rảnh của cả hai người",
+        "Khung giờ thay thế được đề xuất",
+        "Thời lượng cần cho việc dọn dẹp"
+      ],
+      "relevanceNotes": "MANUAL null: nhãn do người biên soạn chủ động đặt, không phải kết quả định tuyến tự động. Yêu cầu chốt chính xác lịch chung khi thiếu lịch của cả hai nằm ngoài hướng dẫn chung về điều cần làm rõ; không được bịa ngày giờ."
+    }
+  ]
+}

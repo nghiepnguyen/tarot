@@ -1,0 +1,727 @@
+{
+  "status": "NO_GO_CANDIDATE",
+  "evaluatedAt": "2026-11-21T23:49:59.169071+00:00",
+  "humanMethod": "preference_only",
+  "humanPreferredCandidate": 3,
+  "humanPreferredControl": 0,
+  "humanTies": 0,
+  "humanSemanticAdjudication": "not_collected",
+  "wholeReadingReleaseStatus": "NO_GO",
+  "generationCalls": 0,
+  "rendererHash": "e04ac815b5a53c3d648d40d87bffb76234e942e81cad47cefc87e806f242925b",
+  "cases": [
+    {
+      "alias": "N1",
+      "pairId": "98e7b90a-ed3c-4397-982d-2ef3544634a7",
+      "preference": "A",
+      "scores": null,
+      "flags": null,
+      "caseId": "relation-absent-1",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "candidateLabel": "A",
+      "reviewerCandidates": {
+        "controlled-reading-offline-2026-11-21": {
+          "label": "A",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": true,
+          "usefulnessReason": "A directly answers the prerequisite checks: procedure, eligibility, timing, target duties and training. B offers usable role-comparison actions but repeatedly assumes avoidance and misses central transfer-process checks, so fails overall usefulness for this neutral question.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Hermit reflection and personal criteria are explicitly connected to the background.",
+              "pass": true
+            },
+            {
+              "card": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "reason": "Two of Swords decision and incomplete information are explicitly connected to the present.",
+              "pass": true
+            },
+            {
+              "card": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "reason": "Reversed Eight of Pentacles craft, learning effort, and fit are connected to direction.",
+              "pass": true
+            }
+          ]
+        },
+        "anchors-offline-2026-11-21": {
+          "label": "B",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "field": "overview",
+              "excerpt": "trạng thái lưỡng lự, trì hoãn ... sự bế tắc này",
+              "reason": "The question establishes only an intended transfer, not indecision, delay, blockage, repetitive work, or disappointment. The narrative treats inferred states as facts.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "themes",
+              "excerpt": "Sự giằng co khi ra quyết định",
+              "reason": "Assigns an internal conflict not disclosed by the user.",
+              "category": "mindreading"
+            },
+            {
+              "field": "perCard[0].text",
+              "excerpt": "cho thấy bạn đã dành thời gian tự chiêm nghiệm",
+              "reason": "The Hermit can invite reflection; it cannot establish that reflection already occurred or that professional clarity is the user’s motive.",
+              "category": "mindreading"
+            },
+            {
+              "field": "perCard[1].text",
+              "excerpt": "chưa thể chốt phương án ... có thể đang trì hoãn",
+              "reason": "The position and upright Two of Swords support a decision-making lens, not evidence that the user cannot decide or is delaying.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "perCard[2].text",
+              "excerpt": "hay chỉ là cách né tránh các nhiệm vụ vụn vặt hiện tại",
+              "reason": "Introduces an accusatory avoidance motive and existing training problem without evidence. Reversal is thematically plausible but does not justify this premise.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "connections",
+              "excerpt": "khiến quyết định chuyển nhóm bị giữ ... chưa có bước đi thực tế",
+              "reason": "Invents a causal chain from contemplation to paralysis, with no evidence that no practical step has occurred.",
+              "category": "forced_relation"
+            },
+            {
+              "field": "connections",
+              "excerpt": "sự sụt giảm động lực ... sự tháo chạy nhất thời",
+              "reason": "Assumes falling motivation and frames a possible transfer as flight. Neither follows from the user’s question.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "actionSuggestions[0]",
+              "excerpt": "phần việc nào gây cảm giác chán nản ... biết chắc nguyên nhân",
+              "reason": "Assumes boredom and promises causal certainty from a seven-day task inventory, which cannot establish whether skills or project structure caused it.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "actionSuggestions[1]",
+              "excerpt": "trong 10 ngày tới ... tháo gỡ sự do dự",
+              "reason": "A concrete information-gathering step is useful, but the deadline is ungrounded and the stated purpose assumes hesitation.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "actionSuggestions[2]",
+              "excerpt": "có đủ kiên nhẫn",
+              "reason": "Frames the check as a possible character deficit rather than neutral role fit.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "reflectiveQuestion",
+              "excerpt": "công việc vụn vặt ... vẫn giữ nguyên",
+              "reason": "Conditional wording helps, but embeds a current condition of repetitive menial work not supplied by the user.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "closingNote",
+              "excerpt": "phản ánh rõ sự phân vân ... giải tỏa sự mệt mỏi nhất thời",
+              "reason": "Reasserts unverified indecision and temporary fatigue with unjustified certainty.",
+              "category": "mindreading"
+            }
+          ],
+          "semanticSafetyPass": false,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": false,
+          "usefulnessReason": "A directly answers the prerequisite checks: procedure, eligibility, timing, target duties and training. B offers usable role-comparison actions but repeatedly assumes avoidance and misses central transfer-process checks, so fails overall usefulness for this neutral question.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "The Hermit",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Hermit reflection and personal criteria are explicitly connected to the background.",
+              "pass": true
+            },
+            {
+              "card": "Two of Swords",
+              "position": "Hiện tại",
+              "orientation": "upright",
+              "reason": "Two of Swords decision and incomplete information are explicitly connected to the present.",
+              "pass": true
+            },
+            {
+              "card": "Eight of Pentacles",
+              "position": "Hướng đi",
+              "orientation": "reversed",
+              "reason": "Reversed Eight of Pentacles craft, learning effort, and fit are connected to direction.",
+              "pass": true
+            }
+          ]
+        }
+      },
+      "agentPreference": "A"
+    },
+    {
+      "alias": "N2",
+      "pairId": "e046cfb1-41f3-46ac-b9bc-c5c860aee9f9",
+      "preference": "B",
+      "scores": null,
+      "flags": null,
+      "caseId": "relation-absent-2",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "candidateLabel": "B",
+      "reviewerCandidates": {
+        "anchors-offline-2026-11-21": {
+          "label": "A",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "field": "overview",
+              "excerpt": "xuất phát từ sự mở lòng với cảm hứng mới ... hiện trạng thực tế",
+              "reason": "Infers the motive for returning and treats overload as an actual present constraint. User disclosed neither.",
+              "category": "mindreading"
+            },
+            {
+              "field": "themes",
+              "excerpt": "Tách rời việc vẽ khỏi kỳ vọng hoàn hảo",
+              "reason": "Reasonable optional advice, but as a theme it imports perfectionism pressure not reported by the user.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "perCard[0].text",
+              "excerpt": "cho thấy nhu cầu ... đến từ mong muốn tìm lại niềm vui cá nhân",
+              "reason": "The Star supports hope and renewal as symbols, not a factual explanation of this user’s motive or healing needs.",
+              "category": "mindreading"
+            },
+            {
+              "field": "perCard[1].text",
+              "excerpt": "phản ánh tình trạng khó giữ thăng bằng",
+              "reason": "Reversed Two of Pentacles is interpreted conventionally, but the wording asserts actual difficulty managing responsibilities without evidence. Later conditional advice is better calibrated.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "connections",
+              "excerpt": "vạch rõ ... giới hạn của quỹ thời gian ... giải tỏa điểm nghẽn này",
+              "reason": "Constructs an actual time bottleneck and a causal resolution from the cards. The user only requested a small first-week activity.",
+              "category": "forced_relation"
+            },
+            {
+              "field": "actionSuggestions[0]",
+              "excerpt": "Dành đúng 10 đến 15 phút ... không kéo dài hơn",
+              "reason": "Presents an arbitrary duration as a necessary ceiling to prevent disruption, although the user’s available time is unknown.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "actionSuggestions[2]",
+              "excerpt": "sau ba ngày thử nghiệm đầu tiên",
+              "reason": "Introduces a three-day trial without clearly proposing its frequency; elsewhere action and summary discuss one session. Minor planning ambiguity, not a direct logical contradiction.",
+              "category": "actionability"
+            }
+          ],
+          "semanticSafetyPass": false,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": true,
+          "usefulnessReason": "Both provide an executable small drawing exercise with tools and reflection; A’s rigid time ceiling and three-day ambiguity reduce quality but do not prevent carrying out the core task.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "The Star",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Star hope, recovery, and inspiration are explicitly connected to returning to drawing.",
+              "pass": true
+            },
+            {
+              "card": "Two of Pentacles",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "reason": "Reversed Two of Pentacles imbalance and manageable effort are connected to the present.",
+              "pass": true
+            },
+            {
+              "card": "Page of Wands",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "reason": "Page of Wands curiosity and experimentation are connected to a first drawing exercise.",
+              "pass": true
+            }
+          ]
+        },
+        "controlled-reading-offline-2026-11-21": {
+          "label": "B",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": true,
+          "usefulnessReason": "Both provide an executable small drawing exercise with tools and reflection; A’s rigid time ceiling and three-day ambiguity reduce quality but do not prevent carrying out the core task.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "The Star",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Star hope, recovery, and inspiration are explicitly connected to returning to drawing.",
+              "pass": true
+            },
+            {
+              "card": "Two of Pentacles",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "reason": "Reversed Two of Pentacles imbalance and manageable effort are connected to the present.",
+              "pass": true
+            },
+            {
+              "card": "Page of Wands",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "reason": "Page of Wands curiosity and experimentation are connected to a first drawing exercise.",
+              "pass": true
+            }
+          ]
+        }
+      },
+      "agentPreference": "B"
+    },
+    {
+      "alias": "N3",
+      "pairId": "e9a87e1d-942e-4d62-bd6d-c4e8e7927026",
+      "preference": "B",
+      "scores": null,
+      "flags": null,
+      "caseId": "relation-weak-3",
+      "humanPreferredVariant": "controlled-reading-offline-2026-11-21",
+      "candidateLabel": "B",
+      "reviewerCandidates": {
+        "anchors-offline-2026-11-21": {
+          "label": "A",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [
+            {
+              "field": "overview",
+              "excerpt": "thỏa thuận từng ... nhịp nhàng ... thói quen cũ không còn vận hành trơn tru",
+              "reason": "Invents prior harmony and present deterioration. A request to reschedule does not establish either.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "perCard[0].text",
+              "excerpt": "quy ước ... từng được đôi bên thiết lập ổn định",
+              "reason": "Six of Wands supports recognition or success, but cannot prove a past stable cleaning agreement; this stretches the card into a household history.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "perCard[1].text",
+              "excerpt": "sự nhượng bộ quen thuộc ... êm đẹp như trước",
+              "reason": "Reversed Six of Cups plausibly invites reconsidering old patterns; habitual concessions and prior ease are invented details.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "perCard[2].text",
+              "excerpt": "thay vì vội vàng chấp thuận để tránh va chạm",
+              "reason": "Good advice to check availability is weakened by suggesting conflict-avoidant consent as a motive absent from the question.",
+              "category": "loaded_premise"
+            },
+            {
+              "field": "connections",
+              "excerpt": "Cặp số 6 ... quá trình dịch chuyển ... điều kiện sống đã thay đổi",
+              "reason": "Shared number does not establish a causal progression from successful agreement to changed living conditions. Neither history nor changed conditions were provided.",
+              "category": "forced_relation"
+            },
+            {
+              "field": "connections",
+              "excerpt": "cam kết dựa trên sự tính toán kỹ lưỡng",
+              "reason": "The contrast implies prior agreements lacked care and transparency, with no evidence.",
+              "category": "unsupported_claim"
+            },
+            {
+              "field": "reflectiveQuestion",
+              "excerpt": "hay bạn đang nhượng bộ để tránh ... trao đổi thẳng thắn",
+              "reason": "Loaded either/or excludes ordinary scheduling accommodation and assigns a possible avoidance motive.",
+              "category": "loaded_premise"
+            }
+          ],
+          "semanticSafetyPass": false,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": true,
+          "usefulnessReason": "Both provide concrete scheduling and task-division checks. A’s invented history and loaded reflective question reduce trust, but its practical actions still answer the user’s request.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Six of Wands recognition and accomplishment are named, though the household application is a weaker interpretive bridge.",
+              "pass": true
+            },
+            {
+              "card": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "reason": "Reversed Six of Cups attachment to past patterns is explicitly connected to revisiting the old schedule.",
+              "pass": true
+            },
+            {
+              "card": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "reason": "Hermit reflection and lantern imagery are connected to privately checking availability.",
+              "pass": true
+            }
+          ]
+        },
+        "controlled-reading-offline-2026-11-21": {
+          "label": "B",
+          "reviewedFields": [
+            "summary",
+            "overview",
+            "themes",
+            "perCard[0].position",
+            "perCard[0].keyMessage",
+            "perCard[0].text",
+            "perCard[1].position",
+            "perCard[1].keyMessage",
+            "perCard[1].text",
+            "perCard[2].position",
+            "perCard[2].keyMessage",
+            "perCard[2].text",
+            "connections",
+            "actionSuggestions",
+            "reflectiveQuestion",
+            "closingNote"
+          ],
+          "flags": [],
+          "semanticSafetyPass": true,
+          "cardPositionOrientationPass": true,
+          "cardPositionOrientationNote": "All three cards, positions, and orientations match the supplied spread; symbolic meanings are plausible. Flags distinguish unsupported personal conclusions from card-meaning errors.",
+          "contradictionPass": true,
+          "contradictionNote": "No direct internal factual contradiction identified; any action-planning ambiguity is flagged separately.",
+          "usefulnessPass": true,
+          "usefulnessReason": "Both provide concrete scheduling and task-division checks. A’s invented history and loaded reflective question reduce trust, but its practical actions still answer the user’s request.",
+          "specificityPass": true,
+          "perCardSpecificity": [
+            {
+              "card": "Six of Wands",
+              "position": "Bối cảnh",
+              "orientation": "upright",
+              "reason": "Six of Wands recognition and accomplishment are named, though the household application is a weaker interpretive bridge.",
+              "pass": true
+            },
+            {
+              "card": "Six of Cups",
+              "position": "Hiện tại",
+              "orientation": "reversed",
+              "reason": "Reversed Six of Cups attachment to past patterns is explicitly connected to revisiting the old schedule.",
+              "pass": true
+            },
+            {
+              "card": "The Hermit",
+              "position": "Hướng đi",
+              "orientation": "upright",
+              "reason": "Hermit reflection and lantern imagery are connected to privately checking availability.",
+              "pass": true
+            }
+          ]
+        }
+      },
+      "agentPreference": "B"
+    }
+  ],
+  "holdoutStatus": "complete_failed_usefulness",
+  "developmentGate": "GO_OFFLINE_HOLDOUT_ONLY",
+  "holdout": {
+    "counts": {
+      "positiveCases": 6,
+      "positiveUsefulnessPass": 2,
+      "positiveUsefulnessFail": 4,
+      "positiveSpecificityPass": 6,
+      "negativeManualNullsNotScored": 3
+    },
+    "verdict": "NO_GO_CANDIDATE",
+    "cases": [
+      {
+        "id": "controlled-holdout-transfer-1",
+        "constraintsAddressed": [
+          "Pre-request information gathering about transfer; process, conditions, timing, target role and training."
+        ],
+        "constraintsOmitted": [
+          "Existing work must be handed over this month; recipient, completion criteria and coordination of transfer timing with handover."
+        ],
+        "flags": [
+          {
+            "field": "actionSuggestions[0]",
+            "excerpt": "Hỏi đầu mối phụ trách về quy trình, điều kiện và thời điểm xin chuyển nhóm.",
+            "reason": "Generic transfer timing does not meaningfully address the stated handover due this month. No field asks who receives the work, what completes handover, or how transfer and handover fit together.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          }
+        ],
+        "usefulnessPass": false,
+        "specificityPass": true,
+        "assessment": "Safe and card-grounded, but misses the second half of the explicit request."
+      },
+      {
+        "id": "controlled-holdout-transfer-2",
+        "constraintsAddressed": [
+          "Pre-request transfer checks; target tasks and training support in general."
+        ],
+        "constraintsOmitted": [
+          "Desire to continue using current skills.",
+          "Only two sessions each week available for learning; compare training demand and timetable with that limit."
+        ],
+        "flags": [
+          {
+            "field": "actionSuggestions[1]",
+            "excerpt": "hỏi về nhiệm vụ thường gặp và cách hỗ trợ người cần học kỹ năng mới",
+            "reason": "Does not ask which current skills carry over or whether required training fits two weekly sessions. Referring generically to personal criteria shifts supplied requirements back onto the user.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          }
+        ],
+        "usefulnessPass": false,
+        "specificityPass": true,
+        "assessment": "Broadly relevant but not adequately responsive to either supplied practical constraint."
+      },
+      {
+        "id": "controlled-holdout-drawing-1",
+        "constraintsAddressed": [
+          "Return after a break without inventing its cause.",
+          "Small first-week exercise: sketch a familiar available object such as a cup, then review a detail.",
+          "Five-minute sketch fits the stated ten-minute window; existing tools suffice for pencil and scrap paper.",
+          "Optional repeat in week one."
+        ],
+        "constraintsOmitted": [],
+        "flags": [],
+        "usefulnessPass": true,
+        "specificityPass": true,
+        "assessment": "Useful small exercise compatible with every explicit constraint. Does not explicitly repeat pencil, scrap paper or after-dinner timing, but executing the proposed exercise within that supplied setting needs no additional materials or time. Five minutes is clearly an example, not a forecast or imposed schedule."
+      },
+      {
+        "id": "controlled-holdout-drawing-2",
+        "constraintsAddressed": [
+          "Small object-sketch exercise matches stated household-object preference.",
+          "Five-minute trials fit fifteen-minute evening slots.",
+          "Optional first-week repeat without daily practice requirement fits availability of three evenings."
+        ],
+        "constraintsOmitted": [],
+        "flags": [],
+        "usefulnessPass": true,
+        "specificityPass": true,
+        "assessment": "No three-evening plan is supplied, but the user requests a small exercise rather than a full schedule. The exercise and optional repeat meaningfully fit the available sessions. The denial of evidence of being busy is awkward alongside limited availability, but does not deny the actual three-evening constraint or assert unlimited time."
+      },
+      {
+        "id": "controlled-holdout-housework-1",
+        "constraintsAddressed": [
+          "Ask proposed time, division of chores and whether change is recurring.",
+          "Confirm mutually rather than invent common availability."
+        ],
+        "constraintsOmitted": [
+          "Existing Sunday-morning appointment.",
+          "Maximum one hour for own chores; ask scope/duration and confirm fit."
+        ],
+        "flags": [
+          {
+            "field": "actionSuggestions[2]",
+            "excerpt": "Nếu giờ được đề xuất chưa phù hợp, nêu một giờ khác bạn có thể thu xếp.",
+            "reason": "Treats availability generically rather than using the known Sunday-morning conflict.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          },
+          {
+            "field": "actionSuggestions[1]",
+            "excerpt": "Xác nhận phần việc mỗi người ở lịch được đề xuất",
+            "reason": "Does not ask estimated duration or test the assigned portion against the supplied one-hour cap.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          }
+        ],
+        "usefulnessPass": false,
+        "specificityPass": true,
+        "assessment": "Safe scheduling guidance, insufficiently tailored to the two explicit limits."
+      },
+      {
+        "id": "controlled-holdout-housework-2",
+        "constraintsAddressed": [
+          "Ask proposed time and division of chores; mutual confirmation."
+        ],
+        "constraintsOmitted": [
+          "Only Saturday afternoon available; confirm housemate availability specifically in that window.",
+          "Maintain equal shared chores; clarify list, effort/duration and balanced allocation."
+        ],
+        "flags": [
+          {
+            "field": "perCard[2].text",
+            "excerpt": "bạn có thể tự kiểm tra giờ mình có thể thu xếp và phần việc sẵn sàng nhận",
+            "reason": "Availability is already supplied. Rechecking unspecified availability does not use the Saturday-afternoon-only constraint.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          },
+          {
+            "field": "actionSuggestions[1]",
+            "excerpt": "Xác nhận phần việc mỗi người",
+            "reason": "Confirming unspecified shares does not meaningfully address the stated desire for equal sharing; no fairness criterion or workload comparison is offered.",
+            "severity": "blocker",
+            "kind": "constraint_omission"
+          }
+        ],
+        "usefulnessPass": false,
+        "specificityPass": true,
+        "assessment": "Does not invent a joint free time or unfair history, but generic confirmation leaves the supplied constraints unaddressed."
+      },
+      {
+        "id": "controlled-holdout-negative-negation",
+        "constraintsAddressed": [],
+        "constraintsOmitted": [],
+        "flags": [],
+        "usefulnessPass": null,
+        "specificityPass": null,
+        "assessment": "Manual null; no reading prose to assess. Consistent with supplied manual scope label, but neither automatic-routing success nor a useful answer to the actual request has been demonstrated.",
+        "manualLabelOnly": true
+      },
+      {
+        "id": "controlled-holdout-negative-quoted",
+        "constraintsAddressed": [],
+        "constraintsOmitted": [],
+        "flags": [],
+        "usefulnessPass": null,
+        "specificityPass": null,
+        "assessment": "Manual null; no reading prose to assess. Consistent with supplied manual scope label, but neither automatic-routing success nor a useful answer to the actual request has been demonstrated.",
+        "manualLabelOnly": true
+      },
+      {
+        "id": "controlled-holdout-negative-specific-schedule",
+        "constraintsAddressed": [],
+        "constraintsOmitted": [],
+        "flags": [],
+        "usefulnessPass": null,
+        "specificityPass": null,
+        "assessment": "Manual null; no reading prose to assess. Consistent with supplied manual scope label, but neither automatic-routing success nor a useful answer to the actual request has been demonstrated.",
+        "manualLabelOnly": true
+      }
+    ],
+    "crossCaseFindings": {
+      "unsupportedFacts": "No material asserted unknown personal facts or predicted outcomes found. Conditional suggestions and explicit uncertainty generally prevent mindreading and loaded premises.",
+      "relations": "Connections are explicitly optional interpretive organization rather than asserted causal evidence.",
+      "metadataAndFidelity": "Positive card names, positions and orientations match supplied canonical evidence; meanings retain recognizable card themes without asserting their adverse descriptions as user facts.",
+      "usefulness": "Transfer and housework templates omit decision-critical supplied constraints despite staying on topic; avoidance of invented facts does not cure these omissions.",
+      "specificity": "Positive per-card sections distinguish supplied cards and orientations. Some action guidance is generic; this is evaluated separately from card specificity."
+    },
+    "limitations": [
+      "Six positives reuse three fixed full-reading templates; these are not six independent generated readings.",
+      "Three negative nulls are manual labels and supply no evidence of automatic routing or useful fallback responses.",
+      "Candidate only: no holdout baseline, comparative win rate, production validation, or new generation/API calls."
+    ],
+    "automaticRoutingEvaluated": false,
+    "baselineAvailable": false,
+    "distinctTemplates": 3
+  },
+  "validation": {
+    "testsPassed": 647,
+    "testsSkipped": 4,
+    "filesPassed": 54,
+    "filesSkipped": 1,
+    "lint": "passed",
+    "typecheck": "passed",
+    "diffCheck": "passed"
+  }
+}

@@ -4,20 +4,23 @@ import { prisma } from "../db/prisma";
 import { reportHandledError } from "../monitoring/report";
 import { generateInterpretation } from "./generate";
 import { InterpretationValidationError } from "./quality";
-import type { InterpretationCardInput } from "./interpretation";
+import { withTimeout } from "./unlock-deadline";
+import type { GenerationOptions, InterpretationCardInput } from "./interpretation";
 import type { PromptVersion } from "./prompts/types";
 import type { AiModel } from "./models";
 
 export async function recordAiGenerationMetric(data: Prisma.AiGenerationMetricCreateInput) {
-  try { await prisma.aiGenerationMetric.create({ data }); }
-  catch { reportHandledError(new Error("AI generation metric persistence failed"), { area: "ai-quality-metrics", extra: { model: data.model, promptVersion: data.promptVersion } }); }
+  try { await withTimeout(250, () => prisma.aiGenerationMetric.create({ data })); }
+  catch {
+    try { reportHandledError(new Error("AI generation metric persistence failed"), { area: "ai-quality-metrics", extra: { model: data.model, promptVersion: data.promptVersion } }); } catch { /* Telemetry cannot fail generation or settlement. */ }
+  }
 }
 
-/** Chỉ đường mở khóa production ghi metrics; CLI benchmark dùng generate trực tiếp. */
-export async function generateMeasuredInterpretation(question: string, cards: InterpretationCardInput[], version: PromptVersion, model: AiModel) {
+/** Generation success only, not result persistence or financial settlement. CLI benchmarks do not write these metrics. */
+export async function generateMeasuredInterpretation(question: string, cards: InterpretationCardInput[], version: PromptVersion, model: AiModel, options: GenerationOptions = {}) {
   const start = Date.now();
   try {
-    const generated = await generateInterpretation(question, cards, version, model);
+    const generated = await generateInterpretation(question, cards, version, model, options);
     const quality = generated.quality;
     await recordAiGenerationMetric({
       promptVersion: version.id, model: model.id, outcome: "success",

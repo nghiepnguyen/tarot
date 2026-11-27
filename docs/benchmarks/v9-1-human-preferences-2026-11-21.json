@@ -1,0 +1,31 @@
+{
+  "status": "locked",
+  "lockedAt": "2026-11-21T11:02:03.171870+00:00",
+  "method": "human_preference_only",
+  "userConfirmedComplete": true,
+  "sourcePath": "docs/benchmarks/v9-1-review-2026-11-21/review.md",
+  "sourceSha256": "c42cc2eab8a1aa26bb29f5d565d72a937c234e6bd1924e89aa3aa3526873ee62",
+  "preferences": [
+    {
+      "alias": "M1",
+      "pairId": "cd7b51ab-3e79-405d-b093-6d8255ab5672",
+      "preference": "B",
+      "scores": null,
+      "flags": null
+    },
+    {
+      "alias": "M2",
+      "pairId": "12bf2b6f-d3ba-4813-80cb-1dd7c17ff899",
+      "preference": "A",
+      "scores": null,
+      "flags": null
+    },
+    {
+      "alias": "M3",
+      "pairId": "b59211ef-698f-47d2-a860-7bb97cd4d21d",
+      "preference": "A",
+      "scores": null,
+      "flags": null
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "annotationProvenance": "Synthetic development annotations manually selected from the four positive transfer and housework questions in controlled-reading-holdout.json. Facts represent explicit decision-relevant question constraints only, not extraction outputs; no candidate renderer, rules prose, reviews, generated outputs, or Tarot-derived facts informed the annotations. Offsets use JavaScript UTF-16 code units on each trimmed question and retain the stated qualifiers. Development reviewer found the explicit this-weekend anchor omitted; available_window quote expanded to preserve that contiguous source qualifier before freeze.",
+  "cases": [
+    {
+      "id": "controlled-holdout-transfer-1",
+      "question": "Tôi muốn xin chuyển sang nhóm khác nhưng còn một đầu việc phải bàn giao trong tháng này. Trước khi gửi yêu cầu, tôi nên tìm hiểu gì để cân nhắc cả việc chuyển và bàn giao?",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "context": "transfer",
+      "scopeSupported": true,
+      "annotationComplete": true,
+      "excludedConstraints": [],
+      "facts": [
+        {
+          "id": "controlled-holdout-transfer-1-fact-1",
+          "kind": "handover_obligation",
+          "start": 41,
+          "end": 87,
+          "quote": "còn một đầu việc phải bàn giao trong tháng này"
+        }
+      ]
+    },
+    {
+      "id": "controlled-holdout-transfer-2",
+      "question": "Tôi đang cân nhắc xin chuyển nhóm; tôi muốn tiếp tục dùng kỹ năng hiện tại và chỉ có hai buổi mỗi tuần để học thêm. Tôi cần kiểm tra thông tin nào trước khi đề nghị?",
+      "cards": [
+        {
+          "cardId": "the-hermit",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "two-of-swords",
+          "position": "Hiện tại",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "eight-of-pentacles",
+          "position": "Hướng đi",
+          "orientation": "reversed"
+        }
+      ],
+      "context": "transfer",
+      "scopeSupported": true,
+      "annotationComplete": true,
+      "excludedConstraints": [],
+      "facts": [
+        {
+          "id": "controlled-holdout-transfer-2-fact-1",
+          "kind": "existing_skill_goal",
+          "start": 35,
+          "end": 74,
+          "quote": "tôi muốn tiếp tục dùng kỹ năng hiện tại"
+        },
+        {
+          "id": "controlled-holdout-transfer-2-fact-2",
+          "kind": "learning_capacity",
+          "start": 78,
+          "end": 114,
+          "quote": "chỉ có hai buổi mỗi tuần để học thêm"
+        }
+      ]
+    },
+    {
+      "id": "controlled-holdout-housework-1",
+      "question": "Bạn cùng nhà đề nghị đổi lịch dọn dẹp cuối tuần; tôi đã có hẹn sáng Chủ nhật và chỉ muốn dành tối đa một giờ cho phần việc của mình. Tôi nên hỏi rõ gì trước khi trả lời?",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "context": "housework_schedule",
+      "scopeSupported": true,
+      "annotationComplete": true,
+      "excludedConstraints": [],
+      "facts": [
+        {
+          "id": "controlled-holdout-housework-1-fact-1",
+          "kind": "unavailable_time",
+          "start": 49,
+          "end": 76,
+          "quote": "tôi đã có hẹn sáng Chủ nhật"
+        },
+        {
+          "id": "controlled-holdout-housework-1-fact-2",
+          "kind": "time_budget",
+          "start": 80,
+          "end": 131,
+          "quote": "chỉ muốn dành tối đa một giờ cho phần việc của mình"
+        }
+      ]
+    },
+    {
+      "id": "controlled-holdout-housework-2",
+      "question": "Bạn cùng nhà muốn đổi lịch lau dọn cuối tuần này, còn tôi chỉ tham gia được chiều thứ Bảy và muốn giữ phần việc chung chia đều. Trước khi phản hồi, tôi cần xác nhận thêm gì?",
+      "cards": [
+        {
+          "cardId": "six-of-wands",
+          "position": "Bối cảnh",
+          "orientation": "upright"
+        },
+        {
+          "cardId": "six-of-cups",
+          "position": "Hiện tại",
+          "orientation": "reversed"
+        },
+        {
+          "cardId": "the-hermit",
+          "position": "Hướng đi",
+          "orientation": "upright"
+        }
+      ],
+      "context": "housework_schedule",
+      "scopeSupported": true,
+      "annotationComplete": true,
+      "excludedConstraints": [],
+      "facts": [
+        {
+          "id": "controlled-holdout-housework-2-fact-1",
+          "kind": "available_window",
+          "start": 35,
+          "end": 89,
+          "quote": "cuối tuần này, còn tôi chỉ tham gia được chiều thứ Bảy"
+        },
+        {
+          "id": "controlled-holdout-housework-2-fact-2",
+          "kind": "task_share_goal",
+          "start": 93,
+          "end": 126,
+          "quote": "muốn giữ phần việc chung chia đều"
+        }
+      ]
+    }
+  ]
+}

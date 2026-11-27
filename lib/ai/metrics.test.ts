@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PROMPT_V4 } from "./prompts/v4";
 import { getAiModel, DEFAULT_AI_MODEL_ID } from "./models";
 import { InterpretationValidationError } from "./quality";
@@ -31,4 +31,18 @@ describe("generation metrics", () => {
     await expect(generateMeasuredInterpretation("PRIVATE", [], PROMPT_V4, getAiModel(DEFAULT_AI_MODEL_ID)!)).resolves.toMatchObject({ result: {} });
     expect(mocks.report).toHaveBeenCalled();
   });
+});
+
+afterEach(() => vi.useRealTimers());
+it("does not let hanging metric persistence delay a successful reading", async () => {
+  vi.useFakeTimers(); mocks.generate.mockResolvedValueOnce({ result: {}, usage: {} });
+  mocks.create.mockImplementationOnce(() => new Promise(() => {}));
+  const promise = generateMeasuredInterpretation("PRIVATE", [], PROMPT_V4, getAiModel(DEFAULT_AI_MODEL_ID)!);
+  await vi.advanceTimersByTimeAsync(250);
+  await expect(promise).resolves.toMatchObject({ result: {} });
+});
+it("does not let metric reporter failure replace the original provider error", async () => {
+  const error = new Error("PRIVATE provider failure"); mocks.generate.mockRejectedValueOnce(error);
+  mocks.create.mockRejectedValueOnce(new Error("DB metric error")); mocks.report.mockImplementationOnce(() => { throw new Error("Report error"); });
+  await expect(generateMeasuredInterpretation("PRIVATE", [], PROMPT_V4, getAiModel(DEFAULT_AI_MODEL_ID)!)).rejects.toBe(error);
 });

@@ -1,0 +1,481 @@
+{
+  "status": "GO_OFFLINE_HOLDOUT_ONLY",
+  "evaluatedAt": "2026-11-21T11:03:42.036692+00:00",
+  "sourcePromptVersion": "v9-2026-11-20",
+  "transformVersion": "anchors-offline-2026-11-21",
+  "humanMethod": "preference_only",
+  "humanPreferredTransformed": 3,
+  "humanPreferredControl": 0,
+  "humanTies": 0,
+  "reviewedTransformedFields": 12,
+  "targetedFlagCounts": {
+    "v9-2026-11-20": {
+      "unsupported_claim": 3,
+      "forced_relation": 2,
+      "third_party_mindreading": 1,
+      "card_error": 0
+    },
+    "anchors-offline-2026-11-21": {
+      "unsupported_claim": 0,
+      "forced_relation": 0,
+      "third_party_mindreading": 0,
+      "card_error": 0
+    }
+  },
+  "humanSemanticAdjudication": "not_collected",
+  "generationCalls": 0,
+  "wholeReadingReleaseStatus": "NO_GO",
+  "cases": [
+    {
+      "alias": "M1",
+      "pairId": "cd7b51ab-3e79-405d-b093-6d8255ab5672",
+      "caseId": "relation-absent-1",
+      "humanPreference": "B",
+      "humanPreferredVariant": "anchors-offline-2026-11-21",
+      "humanScores": null,
+      "humanFlags": null,
+      "reviewerCandidates": {
+        "v9-2026-11-20": {
+          "targetedFlags": {
+            "unsupported_claim": true,
+            "forced_relation": true,
+            "third_party_mindreading": false,
+            "card_error": false
+          },
+          "targetEvidence": [
+            {
+              "flag": "unsupported_claim",
+              "field": "summary",
+              "excerpt": "bắt nguồn từ nhu cầu tự nhìn nhận lại hướng đi cá nhân",
+              "reason": "Assigns an unreported cause and says the decision is stalled due to unclear criteria."
+            },
+            {
+              "flag": "unsupported_claim",
+              "field": "perCard[0].keyMessage",
+              "excerpt": "xuất phát từ quá trình tự xem xét",
+              "reason": "Hermit symbolism cannot establish the actual origin of this transfer request."
+            },
+            {
+              "flag": "unsupported_claim",
+              "field": "perCard[1].keyMessage",
+              "excerpt": "Tình trạng do dự xuất hiện khi thiếu thông tin",
+              "reason": "Neither current indecision nor its cause is given."
+            },
+            {
+              "flag": "forced_relation",
+              "field": "perCard[1].keyMessage",
+              "excerpt": "giữa nhóm cũ và nhóm mới",
+              "reason": "Forces Two of Swords into an already-defined old/new comparison, although a destination is not established."
+            }
+          ],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Work quality and learning are useful checks, but the opening turns symbolic interpretation into factual biography."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Fits Hermit upright introspection in background, but asserts motive as fact."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Fits Two of Swords upright decision tension, but invents indecision and missing-information causation."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "The check-whether wording leaves burnout/disengagement open; a reasonable Eight of Pentacles reversed learning/effort check, though loaded phrasing could be gentler."
+            }
+          ],
+          "anchorBodyContradictions": [],
+          "cardSpecificityNotes": [
+            "All three anchors have recognizable card themes and correct positions/orientations; that does not ground the asserted circumstances."
+          ]
+        },
+        "anchors-offline-2026-11-21": {
+          "targetedFlags": {
+            "unsupported_claim": false,
+            "forced_relation": false,
+            "third_party_mindreading": false,
+            "card_error": false
+          },
+          "targetEvidence": [],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Direct practical response; destination-team advice is expressly conditional and does not invent a motive."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Open question about desired change does not presuppose unhappiness or completed reflection; only loosely Hermit-specific."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Asks criteria rather than claiming indecision; compatible with Two of Swords, but widely reusable."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "Conditional destination and learning question are grounded; learning links to Pentacles, but reversal-specific friction/quality is barely retained."
+            }
+          ],
+          "anchorBodyContradictions": [
+            {
+              "fields": [
+                "summary",
+                "perCard[0].keyMessage",
+                "perCard[0].text"
+              ],
+              "issue": "Open inquiry into aims coexists with body certainty that the user has already reflected and seeks professional direction."
+            },
+            {
+              "fields": [
+                "perCard[1].keyMessage",
+                "connections"
+              ],
+              "issue": "Criteria remain open in the anchor, while connections declares a stalled decision with no practical steps."
+            },
+            {
+              "fields": [
+                "summary",
+                "actionSuggestions[1]"
+              ],
+              "issue": "Summary conditions the existence of a target team, while the action assumes one."
+            }
+          ],
+          "cardSpecificityNotes": [
+            "Safe anchors retain introspection, choosing criteria and learning, but are generic enough to fit other spreads. Absence of target flags is not proof of strong card-grounded interpretation."
+          ]
+        }
+      },
+      "unchangedBodyIssues": [
+        {
+          "flag": "unsupported_claim",
+          "field": "overview",
+          "excerpt": "sự bế tắc này",
+          "reason": "Presupposes blockage and previous disappointment."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "perCard[0].text",
+          "excerpt": "bạn đã dành thời gian tự chiêm nghiệm",
+          "reason": "Claims an unreported personal history."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "connections",
+          "excerpt": "chưa có bước đi thực tế",
+          "reason": "Invents lack of action and stalled decision; later language about reduced learning motivation and escape further overreaches."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "actionSuggestions[0]",
+          "excerpt": "biết chắc nguyên nhân",
+          "reason": "A week of task listing cannot establish a definite root cause; the instruction also assumes boredom/lack of progress."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "closingNote",
+          "excerpt": "phản ánh rõ sự phân vân",
+          "reason": "Treats indecision as established. Conditional cautions elsewhere do not remove this claim."
+        }
+      ]
+    },
+    {
+      "alias": "M2",
+      "pairId": "12bf2b6f-d3ba-4813-80cb-1dd7c17ff899",
+      "caseId": "relation-weak-3",
+      "humanPreference": "A",
+      "humanPreferredVariant": "anchors-offline-2026-11-21",
+      "humanScores": null,
+      "humanFlags": null,
+      "reviewerCandidates": {
+        "anchors-offline-2026-11-21": {
+          "targetedFlags": {
+            "unsupported_claim": false,
+            "forced_relation": false,
+            "third_party_mindreading": false,
+            "card_error": false
+          },
+          "targetEvidence": [],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Concrete one-off/recurring and task-allocation checks respond directly without assuming the reason for the proposal."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Mutual confirmation is a useful open question; acknowledgment loosely relates to Six of Wands, but is a weak substitute for recognition/success symbolism."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Conditional if-any avoids assuming old division is defective; revisiting old arrangements fits Six of Cups reversed."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "Self-clarification before reply fits Hermit upright guidance, though it repeats the question broadly."
+            }
+          ],
+          "anchorBodyContradictions": [
+            {
+              "fields": [
+                "perCard[1].keyMessage",
+                "overview",
+                "connections"
+              ],
+              "issue": "Optional review of old arrangements coexists with body certainty that old routines no longer work and living conditions have changed."
+            },
+            {
+              "fields": [
+                "perCard[0].keyMessage",
+                "perCard[0].text"
+              ],
+              "issue": "Anchor asks how to confirm the new arrangement; body claims past stability and successful shared agreement."
+            }
+          ],
+          "cardSpecificityNotes": [
+            "No hard card error; the background anchor is weakly Six-of-Wands-specific and the Hermit anchor is generic. Safety is not semantic richness."
+          ]
+        },
+        "v9-2026-11-20": {
+          "targetedFlags": {
+            "unsupported_claim": true,
+            "forced_relation": true,
+            "third_party_mindreading": true,
+            "card_error": false
+          },
+          "targetEvidence": [
+            {
+              "flag": "unsupported_claim",
+              "field": "summary",
+              "excerpt": "Trải bài cho thấy sự chuyển dịch từ thói quen quen thuộc",
+              "reason": "Makes a factual transition narrative out of a scheduling proposal; checking the old agreement itself is reasonable."
+            },
+            {
+              "flag": "unsupported_claim",
+              "field": "perCard[0].keyMessage",
+              "excerpt": "từng vận hành hiệu quả",
+              "reason": "Previous effectiveness is not given."
+            },
+            {
+              "flag": "third_party_mindreading",
+              "field": "perCard[0].keyMessage",
+              "excerpt": "sự đồng thuận rõ ràng giữa đôi bên",
+              "reason": "Claims both people shared clear agreement, including an unreported housemate stance."
+            },
+            {
+              "flag": "forced_relation",
+              "field": "perCard[0].keyMessage",
+              "excerpt": "Một thỏa thuận từng vận hành hiệu quả",
+              "reason": "Converts Six of Wands recognition/success into a specific history of a successful domestic agreement."
+            },
+            {
+              "flag": "unsupported_claim",
+              "field": "perCard[1].keyMessage",
+              "excerpt": "không còn phù hợp trọn vẹn",
+              "reason": "A request to swap a weekend does not prove the old division is no longer suitable."
+            }
+          ],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Useful times/responsibilities advice, but narrative transition is asserted as revealed fact."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Recognizable success association becomes unsupported agreement history and both parties’ stance."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Revisiting the past fits Six of Cups reversed, but present unsuitability is asserted rather than checked."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "Appropriate Hermit upright self-review advice; no factual claim about hidden motives."
+            }
+          ],
+          "anchorBodyContradictions": [],
+          "cardSpecificityNotes": [
+            "Themes broadly match all three cards and positions; Six of Wands is stretched to household consensus. This is an evidential/forced-application problem rather than wrong card identity or orientation."
+          ]
+        }
+      },
+      "unchangedBodyIssues": [
+        {
+          "flag": "unsupported_claim",
+          "field": "overview",
+          "excerpt": "thói quen cũ không còn vận hành trơn tru",
+          "reason": "Assumes deterioration and past harmony."
+        },
+        {
+          "flag": "forced_relation",
+          "field": "perCard[0].text",
+          "excerpt": "quy ước dọn dẹp từng được đôi bên thiết lập ổn định",
+          "reason": "Specific domestic history is not established by Six of Wands."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "connections",
+          "excerpt": "khi điều kiện sống đã thay đổi",
+          "reason": "Invents a change in living conditions."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "perCard[2].text",
+          "excerpt": "chấp thuận để tránh va chạm",
+          "reason": "Introduces an unreported conflict-avoidance motive as a suggested alternative; should remain explicitly hypothetical."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "reflectiveQuestion",
+          "excerpt": "hay bạn đang nhượng bộ để tránh việc phải trao đổi thẳng thắn",
+          "reason": "Question form still frames a loaded binary and suggests avoidance without evidence."
+        }
+      ]
+    },
+    {
+      "alias": "M3",
+      "pairId": "b59211ef-698f-47d2-a860-7bb97cd4d21d",
+      "caseId": "relation-absent-2",
+      "humanPreference": "A",
+      "humanPreferredVariant": "anchors-offline-2026-11-21",
+      "humanScores": null,
+      "humanFlags": null,
+      "reviewerCandidates": {
+        "anchors-offline-2026-11-21": {
+          "targetedFlags": {
+            "unsupported_claim": false,
+            "forced_relation": false,
+            "third_party_mindreading": false,
+            "card_error": false
+          },
+          "targetEvidence": [],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Grounded, optional one-session planning and reflection; does not assume overload. It does not actually select a concrete small drawing task, so usefulness is incomplete."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Asks the reason openly; compatible with Star upright renewal but not distinctive hope/renewal guidance."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Open time-allocation question avoids inferring a busy schedule; weakly communicates Two of Pentacles reversed imbalance."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "Small exploratory subject or marks fit Page of Wands upright direction; still asks user to choose instead of proposing an example."
+            }
+          ],
+          "anchorBodyContradictions": [
+            {
+              "fields": [
+                "perCard[0].keyMessage",
+                "perCard[0].text"
+              ],
+              "issue": "Open reason question is followed by body certainty that the motive is recovering personal joy."
+            },
+            {
+              "fields": [
+                "perCard[1].keyMessage",
+                "connections"
+              ],
+              "issue": "Time availability stays open in anchor, but body asserts limited time as the central bottleneck."
+            }
+          ],
+          "cardSpecificityNotes": [
+            "Page of Wands exploratory direction is most explicit; Star and reversed Two of Pentacles anchors are safe but broadly reusable. Lack of target claims alone does not validate the whole reading."
+          ]
+        },
+        "v9-2026-11-20": {
+          "targetedFlags": {
+            "unsupported_claim": true,
+            "forced_relation": false,
+            "third_party_mindreading": false,
+            "card_error": false
+          },
+          "targetEvidence": [
+            {
+              "flag": "unsupported_claim",
+              "field": "summary",
+              "excerpt": "thời gian biểu chưa thật sự ổn định",
+              "reason": "Presupposes an unstable schedule, absent from the prompt."
+            },
+            {
+              "flag": "unsupported_claim",
+              "field": "perCard[1].keyMessage",
+              "excerpt": "lịch trình vốn đã bận rộn",
+              "reason": "Conditional overload warning still presupposes that the existing schedule is busy."
+            }
+          ],
+          "fieldAssessments": [
+            {
+              "field": "summary",
+              "assessment": "Small experiment is relevant, but unstable scheduling is invented; no concrete experiment is selected."
+            },
+            {
+              "field": "perCard[0].keyMessage",
+              "assessment": "Desire to return is given; inspiration as a supportive frame fits Star upright. Mild interpretation rather than serious biographical overreach, though inspiration is not explicit."
+            },
+            {
+              "field": "perCard[1].keyMessage",
+              "assessment": "Two of Pentacles reversed supports checking capacity, not asserting the user already has a busy schedule; if-clause does not neutralize that presupposition."
+            },
+            {
+              "field": "perCard[2].keyMessage",
+              "assessment": "Exploration fits Page of Wands upright. Easier maintenance is plausible advisory language, not a guarantee, though it should be offered as a possibility rather than universal effect."
+            }
+          ],
+          "anchorBodyContradictions": [],
+          "cardSpecificityNotes": [
+            "Themes and orientations align broadly. Reversed Two of Pentacles has been turned into factual schedule knowledge; no literal card/orientation error."
+          ]
+        }
+      },
+      "unchangedBodyIssues": [
+        {
+          "flag": "unsupported_claim",
+          "field": "perCard[0].text",
+          "excerpt": "đến từ mong muốn tìm lại niềm vui cá nhân",
+          "reason": "Assigns an unknown motive; a break need not imply lost joy or healing needs."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "connections",
+          "excerpt": "giới hạn của quỹ thời gian",
+          "reason": "Treats time as the actual obstacle and overstates that any overload could cause rupture."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "actionSuggestions[0]",
+          "excerpt": "không kéo dài hơn để tránh làm gián đoạn",
+          "reason": "Rigid cap assumes longer drawing would interfere with other duties; 10–15 minutes is fine as a flexible example."
+        },
+        {
+          "flag": "unsupported_claim",
+          "field": "actionSuggestions[2]",
+          "excerpt": "mức độ mệt mỏi sau ba ngày",
+          "reason": "Introduces physical fatigue and a three-day regimen without grounding; observational advice is low risk but unnecessary."
+        }
+      ]
+    }
+  ],
+  "holdoutStatus": "complete_offline_only",
+  "holdout": {
+    "positiveInputs": 6,
+    "manualNullNegatives": 3,
+    "distinctTemplates": 3,
+    "applicabilityChecksPassed": 9,
+    "automaticRoutingEvaluated": false,
+    "semanticReview": ".model-compare/anchors-offline-2026-11-21/holdout-semantic-review.json",
+    "semanticVerdict": "Safe wording observed; drawing lacks requested concrete exercise; all templates have weak card specificity",
+    "rendererHash": "58467f66d2877289d647c0d6d39039d5e272b2b185f737616371e3bf7fbde996",
+    "generationCalls": 0
+  },
+  "validation": {
+    "testsPassed": 607,
+    "testsSkipped": 4,
+    "lint": "passed",
+    "typecheck": "passed",
+    "diffCheck": "passed"
+  }
+}

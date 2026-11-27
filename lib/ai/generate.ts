@@ -2,6 +2,7 @@ import "server-only";
 import { generateInterpretation as generateWithDeepSeek } from "@/lib/ai/deepseek";
 import { generateInterpretation as generateWithGemini } from "@/lib/ai/gemini";
 import type {
+  GenerationOptions,
   GeneratedInterpretation,
   InterpretationCardInput,
 } from "@/lib/ai/interpretation";
@@ -24,11 +25,12 @@ export async function generateInterpretation(
   cards: InterpretationCardInput[],
   version: PromptVersion,
   model: AiModel,
+  options: GenerationOptions = {},
 ): Promise<GeneratedInterpretation> {
   switch (model.provider) {
     case "gemini":
-      return generateWithGemini(question, cards, version, model.id);
+      return generateWithGemini(question, cards, version, model.id, options);
     case "deepseek":
-      return generateWithDeepSeek(question, cards, version, model.id);
+      return generateWithDeepSeek(question, cards, version, model.id, options);
   }
 }
