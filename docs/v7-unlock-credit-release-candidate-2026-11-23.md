@@ -6,7 +6,7 @@
 
 - Commit cuối: `a6f8e72a66ed7940cc678e0f7727fd6e2eddb9d5`; tree `0e8395a81da6e4d5aa76d9b9f2d96b281e92ab9e`.
 - Branch trong repository artifact riêng: `codex/v7-unlock-credit-rc-20261123`.
-- Repository: `/Users/nghiepnguyen/My Files/tarot/.model-compare/v7-release-candidate-20261123/source`. Working tree sạch, không cấu hình remote.
+- Repository: `.model-compare/v7-release-candidate-20261123/source`. Working tree sạch, không cấu hình remote.
 - Base: `81998706a409e2c1278217b8c87c552eef8bb622`; bốn commits áp theo đúng A/B/C/task8-fix.
 - 141 files khớp từng byte với workspace đã qua task8. Source/prompt v7, registry, schema, pricing, dữ liệu chấm v9.x không đổi.
 
@@ -17,7 +17,7 @@
 | `bcc3a6f1fff6` | chore(ai): preserve frozen experiments and review evidence |
 | `a6f8e72a66ed` | fix(ai): prevent failed refunds from starving recovery backlog |
 
-Bundle tự chứa lịch sử/source: `/Users/nghiepnguyen/My Files/tarot/.model-compare/v7-release-candidate-20261123/v7-credit-rc.bundle`; SHA-256 `b13d4808e7438c8e9bb9f30263d3df829d60b0416d29f5862a8fb6fd0c5a8fd1`. Đã `git bundle verify`. Bundle/repository nằm cục bộ, không phải backup ngoài máy; raw artifacts Git-ignore vẫn được giữ tại chỗ và không đưa thêm vào bundle.
+Bundle tự chứa lịch sử/source: `.model-compare/v7-release-candidate-20261123/v7-credit-rc.bundle`; SHA-256 `b13d4808e7438c8e9bb9f30263d3df829d60b0416d29f5862a8fb6fd0c5a8fd1`. Đã `git bundle verify`. Bundle/repository nằm cục bộ, không phải backup ngoài máy; raw artifacts Git-ignore vẫn được giữ tại chỗ và không đưa thêm vào bundle.
 
 Checkout gốc vẫn trên `codex/v7-unlock-credit-reliability`, HEAD `81998706a409e2c1278217b8c87c552eef8bb622`, index không đổi, toàn bộ 141 files trước bước này giữ nguyên. Chỉ thêm tài liệu này ở docs; không biến lịch sử Git của repository gốc thành các commit RC. Muốn tích hợp/push phải chọn hành động riêng sau khi review candidate.
 
