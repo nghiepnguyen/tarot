@@ -8,9 +8,9 @@
 | --- | --- |
 | Chốt nguồn phát hành | Candidate `1b33a0ac864ba383ef87dc97b5924369dd2a6b87`. Đã đối chiếu 540 tệp nguồn theo Git blob và SHA-256 của bundle. Gói upload có hai tệp metadata Vercel, tách riêng khỏi workspace thử nghiệm. |
 | Bảo trì và chặn bản cũ ghi DB | Tạm khóa build, tắt cron PayOS và chặn ingress. Đợi 312 giây sau khi xác minh chặn ở edge, dài hơn timeout cũ 300 giây. Khi kiểm tra không còn đơn chờ hay transaction cũ đang chạy. Sau khi xoay credential, login cũ bị từ chối qua cả direct và pooler, không còn session owner cũ, và người vận hành kết nối lại được. |
-| Sao lưu T0 | Tạo backup production sau khi chặn tiến trình ghi. Khôi phục vào Neon cách ly và đối chiếu 23 bảng, 354 dòng và 97 đối tượng schema với archive. Dữ liệu bảng tài chính khớp từng byte. Bản mã hóa tải lại từ Drive khớp SHA-256. Bản T0 dùng lại khóa sao lưu đã được xác minh trên USB với nonce mới. Môi trường restore được niêm phong sau đối chiếu. |
+| Sao lưu T0 | Tạo backup production sau khi chặn tiến trình ghi. Khôi phục vào Neon cách ly và đối chiếu 23 bảng, 354 dòng và 97 đối tượng schema với archive. Dữ liệu bảng tài chính khớp từng byte. Bản mã hóa tải lại từ Drive khớp SHA-256. Khả năng khôi phục ngoài máy đã được kiểm chứng. Môi trường restore được niêm phong sau đối chiếu. |
 | Migration và quyền | Áp dụng `20261123000000_add_unlock_operations` trên Neon PostgreSQL 18. Lịch sử có 18 migration đã áp dụng và 0 lỗi. `UnlockOperation` trống trước khi mở ghi và không có khóa idempotency trên ledger cũ. Đạt 56 kiểm tra quyền DML và các kiểm tra từ chối quyền nhạy cảm. Role ứng dụng đăng nhập được qua direct và pooler. |
-| Stage v7 | Deployment `dpl_ExVK7Jpvo9Vgv4PBFTGKK23SB4Yg` được build cho Production và đạt `READY` trên Node 24. Khi stage, các alias giữ nguyên. Ngoại lệ firewall ban đầu giới hạn ở hostname mới và một IP vận hành. |
+| Stage v7 | Deployment v7 được build cho Production và đạt `READY` trên Node 24. Khi stage, các alias giữ nguyên. Ngoại lệ firewall ban đầu giới hạn ở hostname mới và một IP vận hành. |
 | Recovery | Endpoint recovery trả `401` khi thiếu hoặc sai xác thực, trả `200` với credential đúng và báo không có lượt cần xử lý ở thời điểm kiểm tra. Người vận hành xử lý recovery khi cần trong beta. |
 | Mở khóa AI | Lượt thử trên production dùng prompt v7, thành công và lưu bài diễn giải. Ledger có đúng một dòng `UNLOCK_SPEND` trị giá −10 credit và không có dòng hoàn credit. |
 | PayOS | Lượt mua thật 19.000₫ chuyển sang `PAID` sau khi đối soát, có đúng một dòng `PURCHASE` cộng 50 credit. Chạy lại đối soát không cộng thêm. Trong thời gian bảo trì, webhook bị chặn, nên lượt thử được ghi nhận qua cron sau khoảng 5 phút kể từ lúc tạo đơn. |
@@ -23,10 +23,10 @@
 - [PR #5](https://github.com/nghiepnguyen/tarot/pull/5) đã merge sau khi lint, unit test, E2E và GitGuardian đạt. `main` ở `8ddba87af1d52e2be382a03d2d7f57bbf77827c1` và Git tree khớp với candidate đã deploy. Các benchmark v9 được lưu làm tư liệu. Prompt hoạt động vẫn là v7.
 - Build do lần merge kích hoạt đã bị bỏ qua khi khóa build còn hiệu lực. Lúc 15:58, giờ Việt Nam, Vercel đã bật lại build tự động sau khi xác minh `main` và cấu hình Production. Tên miền chính vẫn phục vụ deployment v7 đã kiểm thử và trang login trả `200`.
 
-## Các lần kiểm tra tiếp theo
+## Kiểm tra sau phát hành
 
-- Xác minh lần build tự động tiếp theo từ `main` lên production thành công. Việc bật lại build đã được xác minh qua cấu hình Vercel.
+- Lần build tự động sau khi merge [PR tài liệu #6](https://github.com/nghiepnguyen/tarot/pull/6) đã đạt `READY`. Tên miền chính đã chuyển sang bản build mới và trang đăng nhập trả `200`.
 - Đo độ trễ cộng credit qua webhook với một giao dịch tự nhiên. Lượt mua thử đã xác minh thanh toán và tính idempotent qua đối soát, còn kiểm tra sau khi mở traffic chỉ xác minh endpoint webhook truy cập được và kiểm tra chữ ký.
 - Recovery tự động cho lượt unlock vẫn chưa được xác nhận hoạt động. Khi có timeout hoặc lượt chờ, dùng [runbook sự cố unlock](v7-unlock-credit-incident-runbook.md). Bản legacy đã mất quyền ghi và chưa có artifact rollback production độc lập. Nếu lỗi sau migration, giữ dữ liệu và xử lý tiến về trước theo runbook.
 
-Bằng chứng cục bộ nằm trong `.model-compare/v7-live-release-20261127/`. Các tệp tổng hợp gồm `fence-proof.json`, `compare-proof.json`, `offdevice-proof.json`, `migration-grants-proof.json`, `private-smoke.json`, `unlock-canary-proof.json`, `payos-canary-proof.json`, `public-release-proof.json`, `future-production-env-proof.json` và `automatic-build-restore-proof.json`.
+Biên bản cutover chi tiết và bằng chứng vận hành được lưu riêng.

@@ -10,7 +10,7 @@ Candidate hiện là workspace chưa commit trên `codex/v7-unlock-credit-reliab
 
 - 818/818 Vitest, gồm 33 real-PostgreSQL credit integration tests và 4 rate-limit DB tests; không skip. 168 focused tests, 9 E2E auth/Next/DB thật + fake HTTP provider, 13 browser component tests.
 - Lint/typecheck, Prisma validation, 18 migrations lên DB mới, schema diff không khác và default Turbopack build đạt.
-- Read-only Vercel inspect cho deployment `dpl_BwWTyYxFfcAMywEn4idcKLk84pKb`: READY, function `index`, `history`, cả hai RSC counterparts đều timeout60/runtime nodejs24.x. Build mới local cũng khai báo60 cho `/`, `/history`, `/api/cron/recover-unlocks`. Recovery mới chưa deploy. Nguồn cấu hình chung: [Vercel function duration](https://vercel.com/docs/functions/configuring-functions/duration); proof cụ thể là metadata đã lọc trong artifacts, không suy từ default của plan.
+- Read-only Vercel inspect cho deployment đã kiểm tra: READY, function `index`, `history`, cả hai RSC counterparts đều timeout60/runtime nodejs24.x. Build mới local cũng khai báo60 cho `/`, `/history`, `/api/cron/recover-unlocks`. Recovery mới chưa deploy. Nguồn cấu hình chung: [Vercel function duration](https://vercel.com/docs/functions/configuring-functions/duration); proof cụ thể là metadata đã lọc trong artifacts, không suy từ default của plan.
 - Local runtime đã kiểm thử Node23.7.0, PostgreSQL16.15 trên Docker/aarch64; target project Node24.x. Cần smoke bằng runtime target trên preview được duyệt, không coi local build là smoke production.
 
 ## Các bước vận hành cần phê duyệt riêng

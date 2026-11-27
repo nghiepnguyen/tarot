@@ -14,7 +14,7 @@ Trạng thái cập nhật: **người dùng đã đồng ý cụ thể “oke l
 
 Payload preview đã dựng offline, không cần API key: `.model-compare/v9-task4-pending-requests-2026-11-21.json` (14 requests, gồm system instruction/content/schema/config thực định gửi). File riêng, không commit; không chứa API key.
 
-Lệnh chờ chạy: `node --conditions=react-server --env-file-if-exists=.env.local --import tsx /private/tmp/tarot-v9-diagnostic-continuation.cjs`.
+Lệnh chờ chạy: `node --conditions=react-server --env-file-if-exists=.env.local --import tsx thư mục tạm cục bộ`.
 
 Duyệt tự động nêu lý do: broad task authorization chưa xác nhận cụ thể việc xuất private prompt và benchmark inputs sang external Gemini destination. Cần lời đồng ý rõ cho hành động và loại dữ liệu trên trước khi thử lại; không chạy vòng hoặc dùng công cụ khác để vượt quyết định này.
 

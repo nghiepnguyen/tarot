@@ -62,7 +62,7 @@ Chạy lại full818, build, E2E9, lint/tsc sau sửa. 13 component tests đạt
 
 ## Duration task4.1
 
-Vercel read-only project API và `vercel inspect --format json` cho current READY deployment `dpl_BwWTyYxFfcAMywEn4idcKLk84pKb` trả lambda timeout60 cho index/history và RSC variants. Local compiled functions-config cũng60 ở main/history/recovery. Task4.1 có evidence thật và được đóng; deployment mới vẫn phải kiểm tra artifact trước mở traffic. New recovery chưa có trong deployment cũ, không suy nó đã live.
+Vercel read-only project API và `vercel inspect --format json` cho current READY deployment đã kiểm tra trả lambda timeout60 cho index/history và RSC variants. Local compiled functions-config cũng60 ở main/history/recovery. Task4.1 có evidence thật và được đóng; deployment mới vẫn phải kiểm tra artifact trước mở traffic. New recovery chưa có trong deployment cũ, không suy nó đã live.
 
 Artifacts đã lọc: `deployment-settings.json`, `deployed-functions.json`, `boundary-proof.json`, `local-functions-config.json` trong `.model-compare/v7-credit-task8/`, không lưu secrets/env payload. Hướng dẫn tham chiếu: [Vercel function duration](https://vercel.com/docs/functions/configuring-functions/duration).
 

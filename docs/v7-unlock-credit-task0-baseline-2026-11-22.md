@@ -4,7 +4,6 @@ Ngày 22/11/2026. **Task 0 hoàn tất; task 1 chưa bắt đầu.** Chưa sửa
 
 ## Workspace và nhánh
 
-- Workspace: `/Users/nghiepnguyen/My Files/tarot`.
 - Nhánh trước: `codex/tarot-ai-v9-evidence-grounded`.
 - Nhánh mới: `codex/v7-unlock-credit-reliability`.
 - Cả hai tại HEAD `81998706a409e2c1278217b8c87c552eef8bb622`; không tạo commit.
